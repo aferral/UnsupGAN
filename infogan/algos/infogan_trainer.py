@@ -257,10 +257,7 @@ class InfoGANTrainer(object):
                 all_log_vals = []
                 for i in range(self.dataset.batch_idx['train']):
                     pbar.update(i)
-                    if self.dataset.name == "mnist":
-                        x, _ = self.dataset.train.next_batch(self.batch_size)
-                    else:
-                        x, _ = self.dataset.next_batch(self.batch_size)
+                    x, _ = self.dataset.next_batch(self.batch_size)
                     feed_dict = {self.input_tensor: x}
                     all_log_vals = sess.run([self.discriminator_trainer] + log_vars, feed_dict)[1:]
                     for ii in range(5):
@@ -287,10 +284,7 @@ class InfoGANTrainer(object):
                         self.validate(sess)
 
                     # Get next batch
-                    if self.dataset.name == "mnist":
-                        x, _ = self.dataset.train.next_batch(self.batch_size)
-                    else:
-                        x, _ = self.dataset.next_batch(self.batch_size)
+                    x, _ = self.dataset.next_batch(self.batch_size)
 
                     # Write summary to log file
                     summary_str = sess.run(summary_op, {self.input_tensor: x})
@@ -324,7 +318,9 @@ class InfoGANTrainer(object):
 
         print "Getting all the training features."
         for ii in range(self.val_dataset.batch_idx['train']):
-            x, _ = self.val_dataset.next_batch(self.batch_size, split='train')
+
+            x, _ = self.dataset.next_batch(self.batch_size)
+
             d_features = sess.run(self.d_feat_real, {self.input_tensor: x})
             d_features = pool_features(d_features, pool_type='avg')
             if trainX.shape[0] == 0:  # Is empty

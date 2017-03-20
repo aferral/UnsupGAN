@@ -13,8 +13,8 @@ import dateutil.tz
 import datetime
 
 flags = tf.app.flags
-flags.DEFINE_string("train_dataset", "cifar", "The name of dataset in ./data")
-flags.DEFINE_string("val_dataset", "cifar", "The name of dataset in ./data")
+flags.DEFINE_string("train_dataset", "mnist", "The name of dataset in ./data")
+flags.DEFINE_string("val_dataset", "mnist", "The name of dataset in ./data")
 flags.DEFINE_integer("output_size", 64, "Size of the images to generate")
 flags.DEFINE_integer("categories", None, "Size of the images to generate")
 flags.DEFINE_integer("batch_size", 128, "Size of the images to generate")
@@ -60,13 +60,15 @@ if __name__ == "__main__":
         output_dist = MeanBernoulli(dataset.image_dim)
         network_type = 'mnist'
         dataset.batch_idx = 100
+
+        val_dataset = dataset
     else:
         dataset = datasets.Dataset(name=FLAGS.train_dataset,
                                    batch_size=batch_size,
                                    output_size=FLAGS.output_size)
-    val_dataset = datasets.Dataset(name=FLAGS.val_dataset,
-                                   batch_size=batch_size,
-                                   output_size=FLAGS.output_size)
+        val_dataset = datasets.Dataset(name=FLAGS.val_dataset,
+                                       batch_size=batch_size,
+                                       output_size=FLAGS.output_size)
 
     latent_spec = [
         (Uniform(100), False)

@@ -186,8 +186,23 @@ class MnistDataset(object):
         self.image_dim = 28 * 28
         self.image_shape = (28, 28, 1)
 
+        self.batch_idx = dict.fromkeys(['train','val'])
+
+        batch_size = 64
+        self.batch_idx['train'] = len(self.train.images.shape[0]) // batch_size
+        self.batch_idx['val'] = len(self.validation.images.shape[0]) // batch_size
+
+        self.n_labels = len(set(sup_labels)) #TODO ESTAN EN ONE HOT ???
+        output_size = 64
+
     def transform(self, data):
         return data
 
     def inverse_transform(self, data):
         return data
+
+    def next_batch(self, batch_size, split="train"):
+        if split == 'train':
+            return self.train.next_batch(batch_size)
+        elif split == 'val':
+            return self.validation.next_batch(batch_size)
