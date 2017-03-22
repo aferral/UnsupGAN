@@ -16,7 +16,7 @@ class Dataset(object):
             print "Need to provide a dataset name"
             sys.exit(1)
 
-        self.supported_datasets = ['celebA', 'imagenet', 'cifar', 'cifar100', 'stl10']
+        self.supported_datasets = ['celebA', 'imagenet', 'cifar', 'cifar100', 'stl10', "mnist"]
         if name not in self.supported_datasets:
             print "Dataset not supported"
             return NotImplementedError
@@ -177,10 +177,10 @@ class MnistDataset(object):
             sup_images.extend(self.train.images[ids[:10]])
             sup_labels.extend(self.train.labels[ids[:10]])
         np.random.set_state(rnd_state)
-        self.supervised_train = Dataset(
-            images=np.asarray(sup_images),
-            labels=np.asarray(sup_labels),
-        )
+        # self.supervised_train = Dataset(name=self.name,
+        #     images=np.asarray(sup_images),
+        #     labels=np.asarray(sup_labels),
+        # )
         self.test = dataset.test
         self.validation = dataset.validation
         self.image_dim = 28 * 28
@@ -188,9 +188,10 @@ class MnistDataset(object):
 
         self.batch_idx = dict.fromkeys(['train','val'])
 
+
         batch_size = 64
-        self.batch_idx['train'] = len(self.train.images.shape[0]) // batch_size
-        self.batch_idx['val'] = len(self.validation.images.shape[0]) // batch_size
+        self.batch_idx['train'] = (self.train.images.shape[0]) // batch_size
+        self.batch_idx['val'] = (self.validation.images.shape[0]) // batch_size
 
         self.n_labels = len(set(sup_labels)) #TODO ESTAN EN ONE HOT ???
         output_size = 64

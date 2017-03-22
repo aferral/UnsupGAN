@@ -251,6 +251,8 @@ class InfoGANTrainer(object):
 
             for epoch in range(self.max_epoch):
                 widgets = ["epoch #%d|" % epoch, Percentage(), Bar(), ETA()]
+                print("DatasetName ",self.dataset.name)
+                print('batchIdx ',self.dataset.batch_idx)
                 pbar = ProgressBar(maxval=self.dataset.batch_idx['train'], widgets=widgets)
                 pbar.start()
 

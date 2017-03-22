@@ -56,12 +56,15 @@ if __name__ == "__main__":
     output_dist = None
     network_type = 'dcgan'
     if FLAGS.train_dataset == "mnist":
+        print("Creating train dataset ")
         dataset = datasets.MnistDataset()
         output_dist = MeanBernoulli(dataset.image_dim)
+        print("CREATED train dataset ")
         network_type = 'mnist'
-        dataset.batch_idx = 100
 
+        print("Creating VAL dataset ")
         val_dataset = dataset
+        print("CREATED VAL dataset ")
     else:
         dataset = datasets.Dataset(name=FLAGS.train_dataset,
                                    batch_size=batch_size,

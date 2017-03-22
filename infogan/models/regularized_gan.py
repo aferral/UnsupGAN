@@ -43,8 +43,8 @@ class RegularizedGAN(object):
         with tf.variable_scope("d_net"):
             if self.network_type == "mnist":
                 self.D_model = D.InfoGAN_MNIST_net(image_shape=self.image_shape,is_reg=self.is_reg,encoder_dim=self.encoder_dim)
-                shared_template = self.D_model.shared_template
-                self.discriminator_template = shared_template.custom_fully_connected(1)
+                self.shared_template = self.D_model.shared_template
+                self.discriminator_template = self.shared_template.custom_fully_connected(1)
                 self.encoder_template = self.D_model.encoder_template
             else:
                 if self.network_type == 'dcgan':
