@@ -22,8 +22,7 @@ flags.DEFINE_bool("train", True, "Training mode or testing mode")
 flags.DEFINE_string("exp_name", None, "Used to load model")
 FLAGS = flags.FLAGS
 
-if __name__ == "__main__":
-
+def main():
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 
@@ -119,3 +118,7 @@ if __name__ == "__main__":
             restorer.restore(sess, 'model_name')
             print('Model restored.')
             # algo.validate(sess)
+
+
+if __name__ == "__main__":
+    main()

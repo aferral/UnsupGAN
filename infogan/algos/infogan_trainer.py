@@ -277,8 +277,7 @@ class InfoGANTrainer(object):
                         samples = samples[:64, ...]
                         if self.dataset.name != "mnist":
                             samples = inverse_transform(samples)
-                        save_images(samples, [8, 8],
-                                    '{}/train_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
+                        save_images(samples, [8, 8],'{}/train_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
 
                     # Test on validation (test) set
                     if counter % 500 == 0:
