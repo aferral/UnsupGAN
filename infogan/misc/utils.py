@@ -22,12 +22,13 @@ def save_images(images, size, image_path):
 
 
 def merge(images, size):
-    h, w = images.shape[1], images.shape[2]
+
     if len(images.shape) == 2:
-        px = np.sqrt(images.shape[1]).astype(np.int32)
-        images = images.reshape((images.shape[0], px, px))
+        h,w = np.sqrt(images.shape[1]).astype(np.int32)
+        images = images.reshape((images.shape[0], h, w))
         img = np.zeros((h * size[0], w * size[1]))
     else:
+        h, w = images.shape[1], images.shape[2]
         img = np.zeros((h * size[0], w * size[1], 3))
     for idx, image in enumerate(images):
         i = idx % size[1]
