@@ -336,6 +336,9 @@ class InfoGANTrainer(object):
         print "Extracting features from val set and predicting from it."
         for ii in range(self.val_dataset.batch_idx['val']):
             x, batch_labels = self.val_dataset.next_batch(self.batch_size, split="val")
+
+            if type(batch_labels) == np.ndarray:
+                batch_labels = list(batch_labels)
             labels = labels + batch_labels
 
             if predict_directly:
