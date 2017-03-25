@@ -277,8 +277,6 @@ class InfoGANTrainer(object):
                         samples = samples[:logSamples, ...]
                         if self.dataset.name != "mnist":
                             samples = inverse_transform(samples)
-                        else:
-                            samples = samples.reshape((logSamples,28,28))
                         sqS = int(np.sqrt(logSamples))
                         save_images(samples, [sqS, sqS],'{}/train_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
 
