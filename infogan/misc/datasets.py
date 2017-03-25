@@ -189,7 +189,7 @@ class MnistDataset(object):
         self.batch_idx = dict.fromkeys(['train','val'])
 
 
-        batch_size = 64
+        batch_size = 2
         self.batch_idx['train'] = (self.train.images.shape[0]) // batch_size
         self.batch_idx['val'] = (self.validation.images.shape[0]) // batch_size
 

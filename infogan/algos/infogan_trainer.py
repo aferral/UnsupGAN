@@ -11,7 +11,7 @@ from infogan.misc.utils import save_images, inverse_transform, compute_cluster_s
 from sklearn.preprocessing import normalize
 
 TINY = 1e-8
-
+logSamples = 64
 
 class InfoGANTrainer(object):
     def __init__(self,
@@ -274,10 +274,13 @@ class InfoGANTrainer(object):
                     # Save samples
                     if counter % 100 == 0:
                         samples = sess.run(self.sample_x, feed_dict)
-                        samples = samples[:64, ...]
+                        samples = samples[:logSamples, ...]
                         if self.dataset.name != "mnist":
                             samples = inverse_transform(samples)
-                        save_images(samples, [8, 8],'{}/train_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
+                        else:
+                            samples = samples.reshape((logSamples,28,28))
+                        sqS = int(np.sqrt(logSamples))
+                        save_images(samples, [sqS, sqS],'{}/train_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
 
                     # Test on validation (test) set
                     if counter % 500 == 0:
