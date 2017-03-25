@@ -24,7 +24,8 @@ def save_images(images, size, image_path):
 def merge(images, size):
 
     if len(images.shape) == 2:
-        h,w = np.sqrt(images.shape[1]).astype(np.int32)
+        h = np.sqrt(images.shape[1]).astype(np.int32)
+        w=h
         images = images.reshape((images.shape[0], h, w))
         img = np.zeros((h * size[0], w * size[1]))
     else:
