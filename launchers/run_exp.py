@@ -16,7 +16,7 @@ flags = tf.app.flags
 flags.DEFINE_string("train_dataset", "mnist", "The name of dataset in ./data")
 flags.DEFINE_string("val_dataset", "mnist", "The name of dataset in ./data")
 flags.DEFINE_integer("output_size", 64, "Size of the images to generate")
-flags.DEFINE_integer("categories", None, "Size of the images to generate")
+flags.DEFINE_integer("categories", 10, "Size of the images to generate")
 flags.DEFINE_integer("batch_size", 128, "Size of the images to generate")
 flags.DEFINE_bool("train", True, "Training mode or testing mode")
 flags.DEFINE_string("exp_name", None, "Used to load model")

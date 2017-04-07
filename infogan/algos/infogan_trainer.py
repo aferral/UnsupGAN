@@ -59,9 +59,9 @@ class InfoGANTrainer(object):
         self.input_tensor = input_tensor = tf.placeholder(tf.float32, [self.batch_size] + shape)
 
         with pt.defaults_scope(phase=pt.Phase.train):
-            z_var = self.model.latent_dist.sample_prior(self.batch_size)
-            fake_x, _ = self.model.generate(z_var)
-            self.sample_x, _ = self.model.generate(z_var)
+            self.z_var = self.model.latent_dist.sample_prior(self.batch_size)
+            fake_x, _ = self.model.generate(self.z_var)
+            self.sample_x, _ = self.model.generate(self.z_var)
             self.real_d = self.model.discriminate(input_tensor)
             self.d_feat_real = self.real_d['features']
             self.fake_d = self.model.discriminate(fake_x)
@@ -80,7 +80,7 @@ class InfoGANTrainer(object):
             fake_d_sum = tf.histogram_summary("fake_d", self.fake_d['prob'])
 
             if self.model.is_reg:
-                reg_z = self.model.reg_z(z_var)
+                reg_z = self.model.reg_z(self.z_var)
                 mi_est = tf.constant(0.)
                 cross_ent = tf.constant(0.)
 
