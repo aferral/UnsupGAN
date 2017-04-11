@@ -54,6 +54,8 @@ class InfoGANTrainer(object):
     def init_opt(self):
         if self.dataset.name == "mnist":
             shape = [self.dataset.image_dim]
+	elif 'FOLDER' in self.dataset.name:
+            shape = [self.dataset.output_size, self.dataset.output_size, 1]
         else:
             shape = [self.dataset.output_size, self.dataset.output_size, 3]
         self.input_tensor = input_tensor = tf.placeholder(tf.float32, [self.batch_size] + shape)
