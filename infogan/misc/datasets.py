@@ -157,7 +157,41 @@ class Dataset(object):
                 batch_images = np.array(batch).astype(np.float32)
             return batch_images, batch_labels
 
+class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
+    def __init__(self,folderName,batch_size):
+        import random
+        seed = int(100*random.random())
+        self.dataObj = Dataset(folderName,batch_size=batch_size,seed=seed)
 
+        self.name = folderName #TODO bypass if of chech name
+        self.batch_idx = dict.fromkeys(['train','val'])
+
+
+        self.batch_idx['train'] = self.dataObj.n_batches
+        self.batch_idx['val'] = 1 #this is because we give the entire val dataset in 1 batch
+
+
+        w = dataObj.imageSize
+
+        self.image_dim = w * w
+        self.image_shape = (w, w, 1)
+
+        
+
+
+        self.n_labels = self.dataObj.classes
+
+    def transform(self, data):
+        return data
+
+    def inverse_transform(self, data):
+        return data
+
+    def next_batch(self, batch_size, split="train"):
+        if split == 'train':
+            return self.dataObj.nextBatch()
+        elif split == 'val': #TODO USE BATCH IN VAL ???
+            return self.dataObj.getValidationSet()
 class MnistDataset(object):
     def __init__(self):
         self.name = "mnist"
