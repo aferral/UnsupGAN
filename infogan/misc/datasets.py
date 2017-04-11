@@ -5,6 +5,7 @@ import sys
 from infogan.misc.utils import get_image
 from joblib import Parallel, delayed
 import multiprocessing
+from dataset import Dataset
 
 
 class Dataset(object):
