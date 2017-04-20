@@ -160,10 +160,10 @@ class Dataset(object):
             return batch_images, batch_labels
 
 class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
-    def __init__(self,folderName,batch_size):
+    def __init__(self,folderName,batch_size,testProp=0.3, validation_proportion=0.3):
         import random
         seed = int(100*random.random())
-        self.dataObj = dataScalograms(folderName,batch_size=batch_size,seed=seed,normalize=False)
+        self.dataObj = dataScalograms(folderName,batch_size=batch_size,seed=seed,normalize=False,testProp=testProp, validation_proportion=validation_proportion)
 
         self.name = 'FOLDER '+folderName #TODO bypass if of chech name
         self.batch_idx = dict.fromkeys(['train','val'])
@@ -189,6 +189,9 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
     def inverse_transform(self, data):
         return data
+
+    def getTrainImageFile(self, index):
+        return self.dataObj.getTrainFilename(index)
 
     def next_batch(self, batch_size, split="train"):
 	toReturn = None

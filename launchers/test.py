@@ -8,10 +8,10 @@ from infogan.misc.dataset import Dataset
 
 #--------------------PARAMETROS--------------------
 
-modelPath = 'ckt/mnist/testC/t1.ckpt'
-#modelPath = 'ckt/mnist/testN/t2.ckpt'
+#modelPath = 'ckt/mnist/testC/t1.ckpt'
+modelPath = 'ckt/mnist/testN/t2.ckpt'
 #modelPath = 'ble.ckpt'
-modelPath = 'ckt/sca2.ckpt'
+#modelPath = 'ckt/sca2.ckpt'
 
 isCat = False
 ncat = 10
@@ -68,6 +68,20 @@ def test3():
 	#Mostrar centroide, mostrar distancia a el centroide
 	pass
 
+def test5():
+	if isCat:
+		testCvector = np.zeros((1, ncat))
+		testCvector[np.arange(1), testCat] = 1
+
+		joint=np.hstack([testV,testCvector])
+		print 'Ej cat : ',testV[0,-ncat:]
+		#test1(sess,sigm,entrada,joint,dimToTest)
+		test2(sess,sigm,entrada,joint,ncat)
+	else:
+		test1(sess,sigm,entrada,testV,dimToTest)
+			
+def test4():
+	pass
 
 def main():
 	print os.getcwd()
@@ -81,17 +95,7 @@ def main():
 
 		print 'Ej ruido : ',testV[0,0:10]
 		
-		if isCat:
-			testCvector = np.zeros((1, ncat))
-			testCvector[np.arange(1), testCat] = 1
-
-			joint=np.hstack([testV,testCvector])
-			print 'Ej cat : ',testV[0,-ncat:]
-			#test1(sess,sigm,entrada,joint,dimToTest)
-			test2(sess,sigm,entrada,joint,ncat)
-		else:
-			test1(sess,sigm,entrada,testV,dimToTest)
-			
+		
 
 		
 
