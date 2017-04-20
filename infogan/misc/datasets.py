@@ -6,6 +6,7 @@ from infogan.misc.utils import get_image
 from joblib import Parallel, delayed
 import multiprocessing
 from dataset import Dataset as dataScalograms
+from skimage.transform import resize
 
 
 class Dataset(object):
@@ -162,7 +163,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
     def __init__(self,folderName,batch_size):
         import random
         seed = int(100*random.random())
-        self.dataObj = dataScalograms(folderName,batch_size=batch_size,seed=seed)
+        self.dataObj = dataScalograms(folderName,batch_size=batch_size,seed=seed,normalize=False)
 
         self.name = 'FOLDER '+folderName #TODO bypass if of chech name
         self.batch_idx = dict.fromkeys(['train','val'])
@@ -170,13 +171,13 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
         self.batch_idx['train'] = self.dataObj.n_batches
         self.batch_idx['val'] = (len(self.dataObj.validation_labels)) // batch_size
-
+	self.batch_size = batch_size
 
         w = self.dataObj.imageSize
 
         self.image_dim = w * w
-        self.image_shape = (w, w, 1)
-	self.output_size = w
+        self.image_shape = (32, 32, 1)
+	self.output_size = 32
 
         self.valBatchIdx = 0
 
@@ -190,11 +191,21 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         return data
 
     def next_batch(self, batch_size, split="train"):
+	toReturn = None
         if split == 'train':
-            return self.dataObj.nextBatch()[0]
+            toReturn =  self.dataObj.nextBatch()[0]
         elif split == 'val': #TODO USE BATCH IN VAL ???
             self.valBatchIdx = (self.valBatchIdx+1) % (self.batch_idx['val'])
-            return self.dataObj.getValidationSet(asBatches=True)[self.valBatchIdx]
+            toReturn = self.dataObj.getValidationSet(asBatches=True)[self.valBatchIdx]
+	if toReturn[0].shape != ([batch_size] + list(self.image_shape)):
+		temp = np.zeros([batch_size] + list(self.image_shape))
+		for i in range(toReturn[0].shape[0]):
+			temp[i,:,:] = resize(toReturn[0][i,:,:],(self.output_size,self.output_size))
+		toReturn = (temp,toReturn[1])
+	#Here all the images are in 255-0 range we have to get them in -1 +1 range
+	toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])
+
+	return toReturn
 
 class MnistDataset(object):
     def __init__(self):

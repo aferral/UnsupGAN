@@ -93,6 +93,8 @@ def transform(image, is_crop=True, resize_w=64):
 
 def compute_cluster_scores(labels, pred_labels, path):
     assert len(labels) == len(pred_labels)
+    if len(labels.shape) == 2:
+	labels = np.where(labels)[1] #FROM ONE HOT TO INTEGER
     rand_score = metrics.adjusted_rand_score(labels, pred_labels)
     nmi_score = metrics.normalized_mutual_info_score(labels, pred_labels)
     with open(path, 'a') as rr:

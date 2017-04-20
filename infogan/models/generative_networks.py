@@ -33,7 +33,7 @@ class InfoGAN_mnist_net():
 class dcgan_net():
     def __init__(self):
         self.gf_dim = 64
-        self.c_dim = 3
+        self.c_dim = 1
         self.batch_size = 64
         self.k_h = self.k_w = 5
 

@@ -55,6 +55,7 @@ class InfoGANTrainer(object):
         if self.dataset.name == "mnist":
             shape = [self.dataset.image_dim]
 	elif 'FOLDER' in self.dataset.name:
+            print "Selected folder image"
             shape = [self.dataset.output_size, self.dataset.output_size, 1]
         else:
             shape = [self.dataset.output_size, self.dataset.output_size, 3]
@@ -274,16 +275,20 @@ class InfoGANTrainer(object):
                         print("Model saved in file: %s" % fn)
 
                     # Save samples
-                    if counter % 100 == 0:
+                    if counter % 10 == 0:
                         samples = sess.run(self.sample_x, feed_dict)
                         samples = samples[:logSamples, ...]
+			sqS = int(np.sqrt(logSamples))
                         if self.dataset.name != "mnist":
                             samples = inverse_transform(samples)
-                        sqS = int(np.sqrt(logSamples))
+                            #xTolog = inverse_transform(x)[:logSamples, ...]
+			    #save_images(xTolog, [sqS, sqS],'{}/trainDATA_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
+                        
                         save_images(samples, [sqS, sqS],'{}/train_{:02d}_{:04d}.png'.format(self.samples_dir, epoch, counter))
+			
 
                     # Test on validation (test) set
-                    if counter % 500 == 0:
+                    if counter % 500 == 1:
                         print "Validating current model on val set..."
                         self.validate(sess)
 

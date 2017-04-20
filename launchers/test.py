@@ -4,22 +4,28 @@ import tensorflow as tf
 from skimage.io import imsave
 from skimage.transform import rescale
 import os
+from infogan.misc.dataset import Dataset
 
 #--------------------PARAMETROS--------------------
 
 modelPath = 'ckt/mnist/testC/t1.ckpt'
 #modelPath = 'ckt/mnist/testN/t2.ckpt'
 #modelPath = 'ble.ckpt'
+modelPath = 'ckt/sca2.ckpt'
 
-isCat = True
+isCat = False
 ncat = 10
 nNoise = 100
 batchSize = 128
 
 dimToTest = 2
 testCat = 9
+imageShape = (96,96)
+scaleOut = 1
+isTan = True
+outFolder = '/home/user/Escritorio/imagenesTest'
 
-outFolder = 'imagenesTest'
+useDataset = Dataset("data/MFPT96Scalograms")
 #--------------------PARAMETROS--------------------
 
 def rG(sess,fun,inp,val):
@@ -31,10 +37,18 @@ def test1(sess,fun,inp,v0,dim):
 	testVector[:,dim] = np.linspace(-1,1,batchSize)
 
 	resultado = rG(sess,fun,inp,testVector)
+	if isTan: #the result was in -1 to +1 units
+		resultado = (resultado + 1.0 ) * 0.5
+	#mean =  useDataset.mean / 255
+	#std = useDataset.std / 255
+	#resultado = (resultado[:,:,:,0]*std) + mean
 
 	for i in range(batchSize):
-		toSave = rescale(resultado[i].reshape((28,28)) , 10)
-		imsave(os.path.join(outFolder,'test'+str(i)+'.png'), toSave)
+		#toSave = rescale(resultado[i].reshape(imageShape) , scaleOut)
+		#imsave(os.path.join(outFolder,'test'+str(i)+'.png'), toSave)
+		plt.imshow(resultado[i].reshape(imageShape))
+		plt.show()
+		#plt.savefig(os.path.join(outFolder,'test'+str(i)+'.png'))
 
 def test2(sess,fun,inp,v0,nc):
 	testVector = np.repeat(v0,batchSize,axis=0)
@@ -61,7 +75,7 @@ def main():
 	with tf.Session() as sess:
 		new_saver = tf.train.import_meta_graph(modelPath+'.meta')
 		new_saver.restore(sess, modelPath)
-		sigm = sess.graph.get_tensor_by_name('Sigmoid:0')
+		sigm = sess.graph.get_tensor_by_name('apply_op_9/Tanh:0')
 		entrada = sess.graph.get_tensor_by_name('concat:0')
 		testV = np.random.rand(1,nNoise)
 

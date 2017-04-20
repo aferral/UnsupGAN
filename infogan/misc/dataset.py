@@ -18,7 +18,7 @@ def labels_to_one_hot(labels,n):
 
 #Todo crear indice y dar batch en demand nomas
 class Dataset:
-    def __init__(self,dataFolder, batch_size=100,testProp=0.3, validation_proportion=0.3,seed = 1):
+    def __init__(self,dataFolder, batch_size=100,testProp=0.3, validation_proportion=0.3,seed = 1, normalize=True):
         # Training set 181 datos
         # 30 Clase 1 Train, 30 Clase 1 Test. 60 Clase 0 Train, 60 clase 0 Test
         #140      41
@@ -74,17 +74,19 @@ class Dataset:
         # Normalize data
         self.mean = self.train_data.mean(axis=0)
         self.std = self.train_data.std(axis=0)
-        self.train_data = np.array([   (im-self.mean)/self.std for im in self.train_data])
-        self.validation_data = np.array([   (im-self.mean)/self.std for im in self.validation_data])
-        self.test_data =  np.array([   (im-self.mean)/self.std for im in self.test_data])
 
-        #If we find image with no variation std = 0 and the data will have mean / 0 = nan. Replace nan with zero
-        zeroStdTrain = np.where(self.std < 1e-10)  #I tried with the scipy zscore but the error in cords [0,73] keep happening (-1 const in Z score of constant value)
+	if normalize:
+		self.train_data = np.array([   (im-self.mean)/self.std for im in self.train_data])
+		self.validation_data = np.array([   (im-self.mean)/self.std for im in self.validation_data])
+		self.test_data =  np.array([   (im-self.mean)/self.std for im in self.test_data])
 
-        self.train_data[:, zeroStdTrain] = 0
-        self.train_data = np.nan_to_num(self.train_data)
-        self.validation_data = np.nan_to_num(self.validation_data)
-        self.test_data = np.nan_to_num(self.test_data)
+		#If we find image with no variation std = 0 and the data will have mean / 0 = nan. Replace nan with zero
+		zeroStdTrain = np.where(self.std < 1e-10)  #I tried with the scipy zscore but the error in cords [0,73] keep happening (-1 const in Z score of constant value)
+
+		self.train_data[:, zeroStdTrain] = 0
+		self.train_data = np.nan_to_num(self.train_data)
+		self.validation_data = np.nan_to_num(self.validation_data)
+		self.test_data = np.nan_to_num(self.test_data)
 
         # Batching & epochs
         self.batch_size = batch_size
