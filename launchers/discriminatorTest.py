@@ -144,7 +144,7 @@ def showPCA2(points,labels,name):
 	allscatter = []
 	n_classes = len(set(labels))
 	for c in range(n_classes):
-		elements = np.where(labels == c)
+		elements = np.where(np.array(labels) == c)
 		temp = plt.scatter(transformed[elements, 0], transformed[elements, 1],
 				   facecolors='none', label='Class ' + str(c), c=np.random.rand(3, 1))
 		allscatter.append(temp)
@@ -164,7 +164,7 @@ def showResults(dataset,points,labels,realLabels,name):
 	log += ("Showing PCA2 with predicted labels"+'\n')
 	showPCA2(points,labels,name+str('Predicted'))
 
-	log += "Showing PCA2 with real labels"
+	log += ("Showing PCA2 with real labels"+'\n')
 	showPCA2(points,realLabels,name+str('Real'))
 
 	log += ("The ARI was "+str(metrics.adjusted_rand_score(realLabels, labels) )+'\n')
