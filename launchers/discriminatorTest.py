@@ -18,21 +18,20 @@ from sklearn import metrics
 #----------------------PARAMETERS --------------------
 #Discriminator TEST
 dataFolder = "data/MFPT96Scalograms"
-modelPath = 'ckt/t-dataFolder_v-dataFolder_o-64_c-4_2017_04_18_17_30_17_2000.ckpt'
+modelPath = 'ckt/t-dataFolder_v-dataFolder_o-64_2017_04_16_16_28_49_4000.ckpt'
 
 #Define methods to use for label
 
 doCluster = True
-doEncoderLabel = True
-
+doEncoderLabel = False
 
 #Define in and outputs to use
 discrInputName = "apply_op_4/Tanh:0"
-discrLastFeatName = "custom_fully_connected_6/Linear/add:0"
-discrEncoderName = "Softmax_1:0"
+discrLastFeatName = "d_h3_conv_3/d_h3_conv/BiasAdd:0"
+discrEncoderName = None
 outFolder = "imagenesTest"
 #This has to be the saved batch_size
-batch_size = 128
+batch_size = 64
 
 #----------------------PARAMETERS --------------------
 
@@ -154,7 +153,7 @@ def showPCA2(points,labels,name):
 	       loc='lower left',
 	       ncol=3,
 	       fontsize=8)
-	plt.savefig(name+'.png')
+	plt.savefig(os.path.join(outFolder,name+'.png'))
 
 def showResults(dataset,points,labels,realLabels,name):
 	#Mostrar plot pca2 del clustering o de classify
