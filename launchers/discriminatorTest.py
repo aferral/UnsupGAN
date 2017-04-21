@@ -171,8 +171,8 @@ def showResults(dataset,points,labels,realLabels,name):
 
 	for i in range(n_classes):
 		tempFolder = 'Predicted '+str(i)
-		if not os.path.exists(tempFolder):
-			os.makedirs(tempFolder)
+		if not os.path.exists(os.path.join(outFolder,tempFolder)):
+			os.makedirs(os.path.join(outFolder,tempFolder))
 
 		#Get all index of that class
 		elements = np.where(labels == i)\
