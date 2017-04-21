@@ -109,7 +109,7 @@ def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 	return transformed,predited,realLabels
 
 
-def showPCA2(points,labels):
+def showPCA2(points,labels,name):
 	pca = PCA(n_components=2)
 	pca.fit(points)
 	# Show a few statistics of the data
@@ -132,15 +132,15 @@ def showPCA2(points,labels):
 	       loc='lower left',
 	       ncol=3,
 	       fontsize=8)
-	plt.show()
+	plt.savefig(name+'.png')
 
-def showResults(dataset,points,labels,realLabels):
+def showResults(dataset,points,labels,realLabels,name):
 	#Mostrar plot pca2 del clustering o de classify
 	print "Showing PCA2 with predicted labels"
-	showPCA2(points,labels)
+	showPCA2(points,labels,name+str('Predicted'))
 
 	print "Showing PCA2 with real labels"
-	showPCA2(points,realLabels)
+	showPCA2(points,realLabels,name+str('Real'))
 
 	print "The ARI was ",2
 	print "The NMI was ",2
@@ -174,8 +174,9 @@ def showResults(dataset,points,labels,realLabels):
 			label = dataset.dataObj.train_labels[indexs[j]]
 			plt.figure()
 			plt.imshow(image)
-			plt.title('Close '+str(j)+" dist "+str(distances[j])+" label "+str(label))
-		plt.show()
+			title='Close '+str(j)+" dist "+str(distances[j])+" label "+str(label)
+			plt.title(title)
+			plt.savefig(name+title+ '.png')
 
 		
 
@@ -236,14 +237,14 @@ def main():
 
 			#Show results
 			print "Showing results for Cluster labeling"
-			showResults(dataset,points,predClust,realsLab)
+			showResults(dataset,points,predClust,realsLab,'Cluster')
 		if doEncoderLabel:
 
 			points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,d_feat,d_encoder)
 
 			#Show results
 			print "Showing results for Encoder labeling"
-			showResults(dataset,points,predEncoder,realsLab)
+			showResults(dataset,points,predEncoder,realsLab,'Encoder')
 
 if __name__ == '__main__':
 	main()
