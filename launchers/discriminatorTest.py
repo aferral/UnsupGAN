@@ -23,7 +23,7 @@ def pool_features(feat, pool_type='avg'):
 
 
 
-def clusterLabeling(dataset,d_in,d_feat):
+def clusterLabeling(sess,dataset,d_in,d_feat):
 	
 	trainX = np.array([]).reshape(0, 0)
 
@@ -72,7 +72,7 @@ def clusterLabeling(dataset,d_in,d_feat):
 	return transformed,predicted,realLabels
 
 
-def encoderLabeling(dataset,d_in,d_feat,d_encoder):
+def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 	#Now predict validation and train data
 	realLabels = []
 	predited = []
@@ -220,14 +220,14 @@ def main():
 		assert( not(doEncoderLabel) or (doEncoderLabel and not(d_encoder is None) ))
 
 		if doCluster:
-			points,predClust,realsLab = clusterLabeling(dataset,d_in,d_feat)
+			points,predClust,realsLab = clusterLabeling(sess,dataset,d_in,d_feat)
 
 			#Show results
 			print "Showing results for Cluster labeling"
 			showResults(points,predClust,realsLab)
 		if doEncoderLabel:
 
-			points,predEncoder,realsLab = encoderLabeling(dataset,d_in,d_feat,d_encoder)
+			points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,d_feat,d_encoder)
 
 			#Show results
 			print "Showing results for Encoder labeling"
