@@ -36,7 +36,7 @@ def clusterLabeling(sess,dataset,d_in,d_feat):
 		d_features_norm = normalize(d_features, axis=1, norm='l2')
 
 		if trainX.shape[0] == 0:  # Is empty
-			trainX = d_features
+			trainX = d_features_norm
 		else:
 			trainX = np.concatenate((trainX, d_features_norm), axis=0)
 
