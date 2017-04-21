@@ -69,11 +69,10 @@ def clusterLabeling(sess,dataset,d_in,d_feat):
 		realLabels = realLabels + list(batch_labels)
 
 	#If realLabels are in one hot pass to list of integer labels
-	if type(realLabels) == np.ndarray:
-		if realLabels[0].shape[0] > 1:
-			realLabels =np.where(realLabels)[1].tolist()
-		else:
-			realLabels = realLabels.tolist()
+	if realLabels[0].shape[0] > 1:
+		realLabels = np.where(realLabels)[1].tolist()
+	else:
+		realLabels = realLabels.tolist()
 
 	return transformed,predited,realLabels
 
@@ -103,11 +102,10 @@ def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 		predited = predited + list(pred)
 		realLabels = realLabels + list(batch_labels)
 	# If realLabels are in one hot pass to list of integer labels
-	if type(realLabels) == np.ndarray:
-		if realLabels[0].shape[0] > 1:
-			realLabels = np.where(realLabels)[1].tolist()
-		else:
-			realLabels = realLabels.tolist()
+	if realLabels[0].shape[0] > 1:
+		realLabels = np.where(realLabels)[1].tolist()
+	else:
+		realLabels = realLabels.tolist()
 	return transformed,predited,realLabels
 
 
@@ -157,7 +155,7 @@ def showResults(dataset,points,labels,realLabels):
 		#Make a KD-tree to seach nearest points
 		tree = spatial.KDTree(points)
 
-		print "For class ",i," there are ",elements.shape[0]
+		print "For class ",i," there are ",elements[0].shape[0]
 		#Get the real classes for those points
 		rl = realLabels[elements]
 		#Show distribution
