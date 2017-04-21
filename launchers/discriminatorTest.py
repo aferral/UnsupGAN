@@ -170,6 +170,10 @@ def showResults(dataset,points,labels,realLabels,name):
 	labels = np.array(labels)
 
 	for i in range(n_classes):
+		tempFolder = 'Predicted '+str(i)
+		if not os.path.exists(tempFolder):
+			os.makedirs(tempFolder)
+
 		#Get all index of that class
 		elements = np.where(labels == i)\
 
@@ -194,10 +198,10 @@ def showResults(dataset,points,labels,realLabels,name):
 			image = dataset.dataObj.train_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
 			label = dataset.dataObj.train_labels[indexs[j]]
 
-			title = 'Close ' + str(j) + " dist " + str(distances[j]) + " label " + str(label)
+			title = 'PredictedLabel '+str(i)+" Cls " + str(j) + " dist " + str(distances[j]) + " RealLabel " + str(label)
 			toSave = rescale(image , 2)
 			toSave = (toSave / 255).astype(np.float)
-			imsave(os.path.join(outFolder,title+'.png'), toSave)
+			imsave(os.path.join(outFolder,tempFolder,title+'.png'), toSave)
 
 
 
