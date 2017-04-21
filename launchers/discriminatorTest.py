@@ -196,6 +196,7 @@ def showResults(dataset,points,labels,realLabels,name):
 
 			title = 'Close ' + str(j) + " dist " + str(distances[j]) + " label " + str(label)
 			toSave = rescale(image , 2)
+			toSave = (toSave / 255).astype(np.float)
 			imsave(os.path.join(outFolder,title+'.png'), toSave)
 
 
