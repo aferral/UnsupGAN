@@ -183,7 +183,7 @@ def showResults(dataset,points,labels,realLabels,name):
 		#Make a KD-tree to seach nearest points
 		tree = spatial.KDTree(points)
 
-		log += ("For class "+str(i)+" there are "+elements[0].shape[0]+'\n')
+		log += ("For class "+str(i)+" there are "+str(elements[0].shape[0])+'\n')
 		#Get the real classes for those points
 		rl = np.array(realLabels)[elements]
 		#Show distribution
