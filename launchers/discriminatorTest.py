@@ -7,7 +7,9 @@ import os
 from infogan.misc.datasets import DataFolder
 from sklearn.cluster import KMeans
 from collections import Counter
-
+from sklearn.preprocessing import normalize
+from sklearn.decomposition import PCA
+from scipy import spatial
 
 #TODO generalize to VAL TEST SET
 
@@ -24,14 +26,14 @@ def pool_features(feat, pool_type='avg'):
 
 
 def clusterLabeling(sess,dataset,d_in,d_feat):
-	
+	n_clusters = 3
 	trainX = np.array([]).reshape(0, 0)
 
 	#From train data create clustering
         for ii in range(dataset.batch_idx['train']):
 		x, _ = dataset.next_batch(dataset.batch_size)
 
-		d_features = sess.run(d_feat, {dataset: x})
+		d_features = sess.run(d_feat, {d_in: x})
 		d_features = pool_features(d_features, pool_type='avg')
 		d_features_norm = normalize(d_features, axis=1, norm='l2')
 
@@ -42,7 +44,7 @@ def clusterLabeling(sess,dataset,d_in,d_feat):
 
         print "Learning the clusters."
 	#Learn the clusters
-        kmeans = KMeans(n_clusters=n_clusters, init='k-means++').fit(trainX_norm)
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++').fit(trainX)
 
 
 	#Now predict validation and train data
@@ -69,7 +71,7 @@ def clusterLabeling(sess,dataset,d_in,d_feat):
 		predited = predited + list(pred)
 		realLabels = realLabels + list(batch_labels)
 
-	return transformed,predicted,realLabels
+	return transformed,predited,realLabels
 
 
 def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
@@ -96,7 +98,7 @@ def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 		
 		predited = predited + list(pred)
 		realLabels = realLabels + list(batch_labels)
-	return datasetRep,labels
+	return transformed,predited,realLabels
 
 
 def showPCA2(points,labels):
@@ -231,7 +233,7 @@ def main():
 
 			#Show results
 			print "Showing results for Encoder labeling"
-			showResults(pointsDataset,labelsEncoder,realsLab)
+			showResults(points,predEncoder,realsLab)
 
 if __name__ == '__main__':
 	main()
