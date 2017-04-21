@@ -223,14 +223,14 @@ def main():
 
 			#Show results
 			print "Showing results for Cluster labeling"
-			showResults(points,predClust,realsLab)
+			showResults(dataset,points,predClust,realsLab)
 		if doEncoderLabel:
 
 			points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,d_feat,d_encoder)
 
 			#Show results
 			print "Showing results for Encoder labeling"
-			showResults(points,predEncoder,realsLab)
+			showResults(dataset,points,predEncoder,realsLab)
 
 if __name__ == '__main__':
 	main()
