@@ -14,6 +14,27 @@ from scipy import spatial
 #TODO generalize to VAL TEST SET
 
 
+#----------------------PARAMETERS --------------------
+#Discriminator TEST
+dataFolder = "data/MFPT96Scalograms"
+modelPath = 'ckt/t-dataFolder_v-dataFolder_o-64_c-4_2017_04_18_17_30_17_2000.ckpt'
+
+#Define methods to use for label
+
+doCluster = True
+doEncoderLabel = True
+
+
+#Define in and outputs to use
+discrInputName = "apply_op_4/Tanh:0"
+discrLastFeatName = "custom_fully_connected_6/Linear/add:0"
+discrEncoderName = "Softmax_1:0"
+outFolder = "imagenesTest"
+#This has to be the saved batch_size
+batch_size = 128
+
+#----------------------PARAMETERS --------------------
+
 def pool_features(feat, pool_type='avg'):
     if len(feat.shape) >= 3:
         if pool_type == 'avg':
@@ -172,34 +193,11 @@ def showResults(dataset,points,labels,realLabels,name):
 		for j in range(toShow):
 			image = dataset.dataObj.train_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
 			label = dataset.dataObj.train_labels[indexs[j]]
-			plt.figure()
-			plt.imshow(image)
-			title='Close '+str(j)+" dist "+str(distances[j])+" label "+str(label)
-			plt.title(title)
-			plt.savefig(name+title+ '.png')
 
-		
+			title = 'Close ' + str(j) + " dist " + str(distances[j]) + " label " + str(label)
+			toSave = rescale(image , 2)
+			imsave(os.path.join(outFolder,title+'.png'), toSave)
 
-
-#----------------------PARAMETERS --------------------
-#Discriminator TEST
-dataFolder = "data/MFPT96Scalograms"
-modelPath = 'ckt/t-dataFolder_v-dataFolder_o-64_c-4_2017_04_18_17_30_17_2000.ckpt'
-
-#Define methods to use for label
-
-doCluster = True
-doEncoderLabel = True
-
-
-#Define in and outputs to use
-discrInputName = "apply_op_4/Tanh:0"
-discrLastFeatName = "custom_fully_connected_6/Linear/add:0"
-discrEncoderName = "Softmax_1:0"
-#This has to be the saved batch_size 
-batch_size = 128
-
-#----------------------PARAMETERS --------------------
 
 
 def main():
