@@ -21,8 +21,6 @@ def pool_features(feat, pool_type='avg'):
         if pool_type == 'max':
             feat = feat.mean(axis=(1, 2))
     return feat.reshape((feat.shape[0], feat.shape[-1]))
-		#Get last layer vector
-
 
 
 def clusterLabeling(sess,dataset,d_in,d_feat):
@@ -30,7 +28,7 @@ def clusterLabeling(sess,dataset,d_in,d_feat):
 	trainX = np.array([]).reshape(0, 0)
 
 	#From train data create clustering
-        for ii in range(dataset.batch_idx['train']):
+	for ii in range(dataset.batch_idx['train']):
 		x, _ = dataset.next_batch(dataset.batch_size)
 
 		d_features = sess.run(d_feat, {d_in: x})
@@ -40,12 +38,11 @@ def clusterLabeling(sess,dataset,d_in,d_feat):
 		if trainX.shape[0] == 0:  # Is empty
 			trainX = d_features
 		else:
-			trainX = np.concatenate((trainX, d_features), axis=0)
+			trainX = np.concatenate((trainX, d_features_norm), axis=0)
 
-        print "Learning the clusters."
+	print "Learning the clusters."
 	#Learn the clusters
-        kmeans = KMeans(n_clusters=n_clusters, init='k-means++').fit(trainX)
-
+	kmeans = KMeans(n_clusters=n_clusters, init='k-means++').fit(trainX)
 
 	#Now predict validation and train data
 	realLabels = []
