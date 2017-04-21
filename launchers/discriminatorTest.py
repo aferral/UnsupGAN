@@ -157,20 +157,23 @@ def showPCA2(points,labels,name):
 
 def showResults(dataset,points,labels,realLabels,name):
 	#Mostrar plot pca2 del clustering o de classify
-	print "Showing PCA2 with predicted labels"
+	outNameFile = "Results for "+str(name)+'.txt'
+	log = ""
+
+	log += ("Showing PCA2 with predicted labels"+'\n')
 	showPCA2(points,labels,name+str('Predicted'))
 
-	print "Showing PCA2 with real labels"
+	log += "Showing PCA2 with real labels"
 	showPCA2(points,realLabels,name+str('Real'))
 
-	print "The ARI was ",2
-	print "The NMI was ",2
+	log += ("The ARI was "+str(2)+'\n')
+	log += ("The NMI was "+str(2)+'\n')
 
 	n_classes = len(set(labels))
 	labels = np.array(labels)
 
 	for i in range(n_classes):
-		tempFolder = 'Predicted '+str(i)
+		tempFolder = name+' Predicted '+str(i)
 		if not os.path.exists(os.path.join(outFolder,tempFolder)):
 			os.makedirs(os.path.join(outFolder,tempFolder))
 
@@ -180,12 +183,12 @@ def showResults(dataset,points,labels,realLabels,name):
 		#Make a KD-tree to seach nearest points
 		tree = spatial.KDTree(points)
 
-		print "For class ",i," there are ",elements[0].shape[0]
+		log += ("For class "+str(i)+" there are "+elements[0].shape[0]+'\n')
 		#Get the real classes for those points
 		rl = np.array(realLabels)[elements]
 		#Show distribution
 		dist = Counter(rl)
-		print "Showing Real distribution for that generated Label ",str(dist)
+		log += ("Showing Real distribution for that generated Label "+str(dist)+'\n')
 
 		#Calculate centroid
 		selected = points[elements]
@@ -203,6 +206,8 @@ def showResults(dataset,points,labels,realLabels,name):
 			toSave = (toSave / 255).astype(np.float)
 			imsave(os.path.join(outFolder,tempFolder,title+'.png'), toSave)
 
+	with open(os.path.join(outFolder,outNameFile),'w+') as f:
+		f.write(log)
 
 
 def main():
