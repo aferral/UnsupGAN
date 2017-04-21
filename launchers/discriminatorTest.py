@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import pylab as plt
 import tensorflow as tf
 from skimage.io import imsave
 from skimage.transform import rescale
@@ -10,6 +10,7 @@ from collections import Counter
 from sklearn.preprocessing import normalize
 from sklearn.decomposition import PCA
 from scipy import spatial
+from sklearn import metrics
 
 #TODO generalize to VAL TEST SET
 
@@ -166,8 +167,8 @@ def showResults(dataset,points,labels,realLabels,name):
 	log += "Showing PCA2 with real labels"
 	showPCA2(points,realLabels,name+str('Real'))
 
-	log += ("The ARI was "+str(2)+'\n')
-	log += ("The NMI was "+str(2)+'\n')
+	log += ("The ARI was "+str(metrics.adjusted_rand_score(realLabels, labels) )+'\n')
+	log += ("The NMI was "+str( metrics.normalized_mutual_info_score(realLabels, labels))+'\n')
 
 	n_classes = len(set(labels))
 	labels = np.array(labels)
