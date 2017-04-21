@@ -157,22 +157,24 @@ def showResults(dataset,points,labels,realLabels):
 
 		print "For class ",i," there are ",elements[0].shape[0]
 		#Get the real classes for those points
-		rl = realLabels[elements]
+		rl = np.array(realLabels)[elements]
 		#Show distribution
 		dist = Counter(rl)
 		print "Showing Real distribution for that generated Label ",str(dist)
 
 		#Calculate centroid
-		centroid = np.mean(elements,axis=0)
+		selected = points[elements]
+		centroid = np.mean(selected,axis=0)
 		#Get X closest points from that centroid
 		toShow =10
 		distances,indexs = tree.query(centroid,k=toShow)
 		#Get those points images
 		for j in range(toShow):
-			image = dataset.dataObj.trainData[elements[indexs[j]]]
+			image = dataset.dataObj.train_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
+			label = dataset.dataObj.train_labels[indexs[j]]
 			plt.figure()
 			plt.imshow(image)
-			plt.title('Close '+str(j)+" dist "+str(distances[j]))
+			plt.title('Close '+str(j)+" dist "+str(distances[j])+" label "+str(label))
 		plt.show()
 
 		
