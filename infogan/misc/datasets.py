@@ -160,7 +160,7 @@ class Dataset(object):
             return batch_images, batch_labels
 
 class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
-    def __init__(self,folderName,batch_size,testProp=0.3, validation_proportion=0.3):
+    def __init__(self,folderName,batch_size,testProp=0.3, validation_proportion=0.3,out_size=96):
         import random
         seed = int(100*random.random())
         self.dataObj = dataScalograms(folderName,batch_size=batch_size,seed=seed,normalize=False,testProp=testProp, validation_proportion=validation_proportion)
@@ -176,8 +176,8 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         w = self.dataObj.imageSize
 
         self.image_dim = w * w
-        self.image_shape = (96, 96, 1)
-	self.output_size = 96
+        self.image_shape = (out_size, out_size, 1)
+	self.output_size = out_size
 
         self.valBatchIdx = 0
 

@@ -31,12 +31,13 @@ doEncoderLabel = True
 
 #Define in and outputs to use
 discrInputName = "apply_op_4/Tanh:0"
-discrLastFeatName = "custom_fully_connected_6/Linear/add:0"
+discrLastFeatName = "apply_op_34/Maximum:0"
 discrEncoderName = "Softmax_1:0"
 outFolder = "imagenesTest"
 #This has to be the saved batch_size
 batch_size = 128
 
+imageSize = 32
 nClustersTofind = 3 #Some cluster methods requiere the number of labels to seach
 
 #----------------------PARAMETERS --------------------
@@ -90,7 +91,11 @@ def clusterLabeling(sess,dataset,d_in,d_feat,clusterAlg,trainX):
         else:
             transformed = np.concatenate((transformed, d_features_norm), axis=0)
 
-        pred = clusterAlg.predict(d_features_norm)
+        if hasattr(clusterAlg, 'predict'):
+            pred = clusterAlg.predict(d_features_norm)
+        else:
+            pred = clusterAlg.labels_.astype(np.int)
+        
 
         predited = predited + list(pred)
         realLabels = realLabels + list(batch_labels)
@@ -137,10 +142,11 @@ def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 
 
 def showDimRed(points, labels, name,dimRalg):
-    dimRalg.fit(points)
+
 
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
+    	dimRalg.fit(points)
         transformed = dimRalg.transform(points)
     else:
         transformed = dimRalg.fit_transform(points)
@@ -170,24 +176,24 @@ def showResults(dataset,points,labels,realLabels,name):
     #SHOW PCA2 of data with PREDICTED labels
     log += ("Showing PCA2 with predicted labels"+'\n')
     pca = PCA(n_components=2)
-    print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
     showDimRed(points, labels, name + str('PCA_Predicted'),pca)
+    print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     # SHOW 	TSNE of data with REAL labels
     log += ("Showing PCA2 with real labels"+'\n')
     pca = PCA(n_components=2)
     showDimRed(points, realLabels, name + str('PCA_Real'),pca)
+    print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     # SHOW 	TSNE of data with PREDICTED labels
     log += ("Showing TSNE with predicted labels" + '\n')
     model = TSNE(n_components=2)
-    print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
-    showDimRed(points, labels, name + str('TSNE_Predicted'), model)
+    #showDimRed(points, labels, name + str('TSNE_Predicted'), model)
 
     # SHOW PCA2 of data with REAL labels
     log += ("Showing TSNE with real labels" + '\n')
     model = TSNE(n_components=2)
-    showDimRed(points, realLabels, name + str('TSNE_Real'), model)
+    #showDimRed(points, realLabels, name + str('TSNE_Real'), model)
 
     log += ("The ARI was "+str(metrics.adjusted_rand_score(realLabels, labels) )+'\n')
     log += ("The NMI was "+str( metrics.normalized_mutual_info_score(realLabels, labels))+'\n')
@@ -236,7 +242,7 @@ def showResults(dataset,points,labels,realLabels,name):
 def main():
     #Get dataset
     #TODO by the moment it just uses train to cluster and predict
-    dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.001)
+    dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.001, out_size=imageSize)
 
 
     #Load discriminator
@@ -269,8 +275,6 @@ def main():
             trainX = extractPointsLstConv(sess, dataset, d_feat, d_in)
 
             #----------------Define cluster methods----------------------------------------
-            # estimate bandwidth for mean shift-
-            bandwidth = cluster.estimate_bandwidth(trainX, quantile=0.3)
 
             # connectivity matrix for structured Ward
             connectivity = kneighbors_graph(trainX, n_neighbors=10, include_self=False)
@@ -278,16 +282,15 @@ def main():
             connectivity = 0.5 * (connectivity + connectivity.T)
 
             # create clustering estimators
-            ms = cluster.MeanShift(bandwidth=bandwidth, bin_seeding=True)
-            two_means = cluster.MiniBatchKMeans(n_clusters=nClustersTofind)
+
+            two_means = cluster.KMeans(n_clusters=nClustersTofind)
             ward = cluster.AgglomerativeClustering(n_clusters=nClustersTofind, linkage='ward',
                                                    connectivity=connectivity)
             spectral = cluster.SpectralClustering(n_clusters=nClustersTofind,
                                                   eigen_solver='arpack',
                                                   affinity="nearest_neighbors")
             dbscan = cluster.DBSCAN(eps=.2)
-            affinity_propagation = cluster.AffinityPropagation(damping=.9,
-                                                               preference=-200)
+            affinity_propagation = cluster.AffinityPropagation()
 
             average_linkage = cluster.AgglomerativeClustering(
                 linkage="average", affinity="cityblock", n_clusters=nClustersTofind,
@@ -295,7 +298,7 @@ def main():
 
             birch = cluster.Birch(n_clusters=nClustersTofind)
             clustering_algorithms = [
-                two_means, affinity_propagation, ms, spectral, ward, average_linkage,
+                two_means, affinity_propagation, spectral, ward, average_linkage,
                 dbscan, birch]
 
             # ----------------Define cluster methods----------------------------------------
@@ -303,7 +306,8 @@ def main():
                 points,predClust,realsLab = clusterLabeling(sess,dataset,d_in,d_feat,clusterAlg,trainX)
                 #Show results
                 print "Showing results for Cluster ",str(clusterAlg)[0:20]
-                showResults(dataset,points,predClust,realsLab,'Cluster')
+		name = str(str(clusterAlg)[0:20])
+                showResults(dataset,points,predClust,realsLab,'Cluster '+str(name))
 
 
         if doEncoderLabel:
