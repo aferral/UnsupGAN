@@ -176,8 +176,8 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         w = self.dataObj.imageSize
 
         self.image_dim = w * w
-        self.image_shape = (32, 32, 1)
-	self.output_size = 32
+        self.image_shape = (96, 96, 1)
+	self.output_size = 96
 
         self.valBatchIdx = 0
 
