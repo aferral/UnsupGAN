@@ -15,32 +15,52 @@ from sklearn.preprocessing import normalize
 from sklearn.decomposition import PCA
 from scipy import spatial
 from sklearn import metrics, cluster
+import sys
+import json
 
 #TODO generalize to VAL TEST SET
 #TODO This can scale to large datasets ????
 
+#----------------------PARAMETERS ALL DEFINED IN CONFIG FILE --------------------
+
+configFile = sys.argv[1]
+print os.getcwd()
+print "Loading config file ",configFile
+
+res = {}
+with open(configFile,'r') as f:
+    res = json.load(f)
+
+dataFolder = res['dataFolder']
+modelPath = res['modelPath']
+
+#Define methods to use for label (BOOLEAN)
+doCluster = res['doCluster']
+doEncoderLabel = res['doEncoderLabel']
+showTNSE = res['showTNSE']
+
+#Define in and outputs to use (String)
+discrInputName = res['discrInputName']
+discrLastFeatName = res['discrLastFeatName']
+discrEncoderName = res['discrEncoderName']
+#Define output folder for results (STRING)
+outFolder = res['outFolder']
+#This has to be the saved batch_size (INT)
+batch_size = res['batch_size']
+#The image size used in the arch (int) (square image)
+imageSize = res['imageSize']
+
+#Define data_transform to use "convFeat" OR "convFeatEncoder" (STRING)
+nameDataTransform = res['nameDataTransform']
+nClustersTofind = res['nClustersTofind']
+
+
 #----------------------PARAMETERS --------------------
-#Discriminator TEST
-dataFolder = "data/MFPT96Scalograms"
-modelPath = 'ckt/t-dataFolder_v-dataFolder_o-64_c-4_2017_04_18_17_30_17_2000.ckpt'
 
-#Define methods to use for label
 
-doCluster = True
-doEncoderLabel = True
+if not os.path.exists(outFolder):
+    os.makedirs(outFolder)
 
-#Define in and outputs to use
-discrInputName = "apply_op_4/Tanh:0"
-discrLastFeatName = "apply_op_34/Maximum:0"
-discrEncoderName = "Softmax_1:0"
-outFolder = "imagenesTest"
-#This has to be the saved batch_size
-batch_size = 128
-
-imageSize = 32
-nClustersTofind = 3 #Some cluster methods requiere the number of labels to seach
-
-#----------------------PARAMETERS --------------------
 
 def pool_features(feat, pool_type='avg'):
     if len(feat.shape) >= 3:
@@ -50,26 +70,46 @@ def pool_features(feat, pool_type='avg'):
             feat = feat.mean(axis=(1, 2))
     return feat.reshape((feat.shape[0], feat.shape[-1]))
 
-def extractPointsLstConv(sess, dataset, lastConvTensor, inputTensor):
+def trainsetTransform(data_transform, dataset):#TODO this wont scale if dataset is big
     trainX = np.array([]).reshape(0, 0)
+    realLabels = []
     # From train data create clustering
     for ii in range(dataset.batch_idx['train']):
-        x, _ = dataset.next_batch(dataset.batch_size)
+        x, batch_labels = dataset.next_batch(dataset.batch_size)
 
-        d_features = sess.run(lastConvTensor, {inputTensor: x})
-        d_features = pool_features(d_features, pool_type='avg')
-        d_features_norm = normalize(d_features, axis=1, norm='l2')
+        d_features_norm = data_transform(x)
 
         if trainX.shape[0] == 0:  # Is empty
             trainX = d_features_norm
         else:
             trainX = np.concatenate((trainX, d_features_norm), axis=0)
-        return trainX
+        realLabels = realLabels + list(batch_labels)
+    return trainX,batch_labels
 
-def clusterLabeling(sess,dataset,d_in,d_feat,clusterAlg,trainX):
+def transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in):
+    d_features = sess.run(d_feat, {d_in : x})
+    d_features = pool_features(d_features, pool_type='avg')
+    encoderOut = sess.run(d_encoder, {d_in : x})
+    result=normalize(np.hstack([d_features,encoderOut ]), axis=1, norm='l2')
+    return result
+
+def transformFeature_Norm(x,sess,d_feat,d_in):
+    d_features = sess.run(d_feat, {d_in : x})
+    d_features = pool_features(d_features, pool_type='avg')
+    return normalize(d_features, axis=1, norm='l2')
+
+def OneHotToInt(labels):
+    #If realLabels are in one hot pass to list of integer labels
+    if labels[0].shape[0] > 1:
+        labels = np.where(labels)[1].tolist()
+    else:
+        labels = labels.tolist()
+    return labels
+
+def clusterLabeling(sess,dataset,data_transform,clusterAlg,trainX):
 
     print "Learning the clusters."
-    #Learn the clusters
+    #Fit the cluster
     clusterAlg.fit(trainX)
 
     #Now predict validation and train data
@@ -79,12 +119,10 @@ def clusterLabeling(sess,dataset,d_in,d_feat,clusterAlg,trainX):
 
 
     #Predict TrainData data
-    for ii in range(dataset.batch_idx['train']):
-        x, batch_labels = dataset.next_batch(dataset.batch_size, split="train")
+    for ii in range(dataset.batch_idx['val']):
+        x, batch_labels = dataset.next_batch(dataset.batch_size, split="val")
 
-        d_features = sess.run(d_feat, {d_in : x})
-        d_features = pool_features(d_features, pool_type='avg')
-        d_features_norm = normalize(d_features, axis=1, norm='l2')
+        d_features_norm = data_transform(x)
 
         if transformed.shape[0] == 0:  # Is empty
             transformed = d_features_norm
@@ -100,16 +138,12 @@ def clusterLabeling(sess,dataset,d_in,d_feat,clusterAlg,trainX):
         predited = predited + list(pred)
         realLabels = realLabels + list(batch_labels)
 
-    #If realLabels are in one hot pass to list of integer labels
-    if realLabels[0].shape[0] > 1:
-        realLabels = np.where(realLabels)[1].tolist()
-    else:
-        realLabels = realLabels.tolist()
+    realLabels = OneHotToInt(realLabels)
 
     return transformed,predited,realLabels
 
 
-def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
+def encoderLabeling(sess,dataset,d_in,data_transform,d_encoder):
     #Now predict validation and train data
     realLabels = []
     predited = []
@@ -117,12 +151,10 @@ def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 
 
     #Predict TrainData data
-    for ii in range(dataset.batch_idx['train']):
-        x, batch_labels = dataset.next_batch(dataset.batch_size, split="train")
+    for ii in range(dataset.batch_idx['val']):
+        x, batch_labels = dataset.next_batch(dataset.batch_size, split="val")
 
-        d_features = sess.run(d_feat, {d_in: x})
-        d_features = pool_features(d_features, pool_type='avg')
-        d_features_norm = normalize(d_features, axis=1, norm='l2')
+        d_features_norm = data_transform(x)
 
         if transformed.shape[0] == 0:  # Is empty
             transformed = d_features_norm
@@ -133,11 +165,8 @@ def encoderLabeling(sess,dataset,d_in,d_feat,d_encoder):
 
         predited = predited + list(pred)
         realLabels = realLabels + list(batch_labels)
-    # If realLabels are in one hot pass to list of integer labels
-    if realLabels[0].shape[0] > 1:
-        realLabels = np.where(realLabels)[1].tolist()
-    else:
-        realLabels = realLabels.tolist()
+
+    realLabels = OneHotToInt(realLabels)
     return transformed,predited,realLabels
 
 
@@ -168,7 +197,6 @@ def showDimRed(points, labels, name,dimRalg):
     plt.savefig(os.path.join(outFolder,name+'.png'))
 
 def showResults(dataset,points,labels,realLabels,name):
-    #Mostrar plot pca2 del clustering o de classify
     outNameFile = "Results for "+str(name)+'.txt'
     log = ""
 
@@ -179,21 +207,13 @@ def showResults(dataset,points,labels,realLabels,name):
     showDimRed(points, labels, name + str('PCA_Predicted'),pca)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
-    # SHOW 	TSNE of data with REAL labels
+    # SHOW PCA2 of data with REAL labels
     log += ("Showing PCA2 with real labels"+'\n')
     pca = PCA(n_components=2)
     showDimRed(points, realLabels, name + str('PCA_Real'),pca)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
-    # SHOW 	TSNE of data with PREDICTED labels
-    log += ("Showing TSNE with predicted labels" + '\n')
-    model = TSNE(n_components=2)
-    #showDimRed(points, labels, name + str('TSNE_Predicted'), model)
 
-    # SHOW PCA2 of data with REAL labels
-    log += ("Showing TSNE with real labels" + '\n')
-    model = TSNE(n_components=2)
-    #showDimRed(points, realLabels, name + str('TSNE_Real'), model)
 
     log += ("The ARI was "+str(metrics.adjusted_rand_score(realLabels, labels) )+'\n')
     log += ("The NMI was "+str( metrics.normalized_mutual_info_score(realLabels, labels))+'\n')
@@ -207,7 +227,7 @@ def showResults(dataset,points,labels,realLabels,name):
             os.makedirs(os.path.join(outFolder,tempFolder))
 
         #Get all index of that class
-        elements = np.where(labels == i)\
+        elements = np.where(labels == i)
 
         #Make a KD-tree to seach nearest points
         tree = spatial.KDTree(points)
@@ -218,7 +238,8 @@ def showResults(dataset,points,labels,realLabels,name):
         #Show distribution
         dist = Counter(rl)
         log += ("Showing Real distribution for that generated Label "+str(dist)+'\n')
-
+	pdist = [(elem,dist[elem]*1.0/sum(dist.values())) for elem in set(dist.elements())]
+	log += ("%dist "+str(pdist)+'\n')
         #Calculate centroid
         selected = points[elements]
         centroid = np.mean(selected,axis=0)
@@ -227,8 +248,8 @@ def showResults(dataset,points,labels,realLabels,name):
         distances,indexs = tree.query(centroid,k=toShow)
         #Get those points images
         for j in range(toShow):
-            image = dataset.dataObj.train_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
-            label = dataset.dataObj.train_labels[indexs[j]] #HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+            image = dataset.dataObj.validation_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
+            label = dataset.dataObj.validation_labels[indexs[j]] #HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
 
             title = 'PredictedLabel '+str(i)+" Cls " + str(j) + " dist " + str(distances[j]) + " RealLabel " + str(label)
             toSave = rescale(image , 2)
@@ -242,7 +263,7 @@ def showResults(dataset,points,labels,realLabels,name):
 def main():
     #Get dataset
     #TODO by the moment it just uses train to cluster and predict
-    dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.001, out_size=imageSize)
+    dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
 
 
     #Load discriminator
@@ -257,11 +278,11 @@ def main():
         d_feat = None
         d_encoder = None
 
-        if not(discrInputName is None):
+        if not(discrInputName == 'None'):
             d_in  = sess.graph.get_tensor_by_name(discrInputName)
-        if not(discrLastFeatName is None):
+        if not(discrLastFeatName == 'None'):
             d_feat  = sess.graph.get_tensor_by_name(discrLastFeatName)
-        if not(discrEncoderName is None):
+        if not(discrEncoderName == 'None'):
             d_encoder  = sess.graph.get_tensor_by_name(discrEncoderName)
 
         #Check if we have the data to run test
@@ -269,19 +290,25 @@ def main():
         assert(not(d_feat is None) )
         assert( not(doEncoderLabel) or (doEncoderLabel and not(d_encoder is None) ))
 
+	#Check and define data transform
+	dtransform = None
+	if nameDataTransform == "convFeat":
+	    dtransform = lambda x : transformFeature_Norm(x,sess,d_feat,d_in)
+	elif nameDataTransform == "convFeatEncoder":
+	    dtransform = lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)
+	else:
+	    raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
+
+
         if doCluster:
-
-
-            trainX = extractPointsLstConv(sess, dataset, d_feat, d_in)
+            
+            trainX,_ = trainsetTransform(dtransform, dataset)
 
             #----------------Define cluster methods----------------------------------------
 
-            # connectivity matrix for structured Ward
-            connectivity = kneighbors_graph(trainX, n_neighbors=10, include_self=False)
-            # make connectivity symmetric
-            connectivity = 0.5 * (connectivity + connectivity.T)
 
-            # create clustering estimators
+            connectivity = kneighbors_graph(trainX, n_neighbors=10, include_self=False)
+            connectivity = 0.5 * (connectivity + connectivity.T)
 
             two_means = cluster.KMeans(n_clusters=nClustersTofind)
             ward = cluster.AgglomerativeClustering(n_clusters=nClustersTofind, linkage='ward',
@@ -290,7 +317,7 @@ def main():
                                                   eigen_solver='arpack',
                                                   affinity="nearest_neighbors")
             dbscan = cluster.DBSCAN(eps=.2)
-            affinity_propagation = cluster.AffinityPropagation()
+            affinity_propagation = cluster.AffinityPropagation(damping=.9,preference=-200)
 
             average_linkage = cluster.AgglomerativeClustering(
                 linkage="average", affinity="cityblock", n_clusters=nClustersTofind,
@@ -303,20 +330,27 @@ def main():
 
             # ----------------Define cluster methods----------------------------------------
             for clusterAlg in clustering_algorithms:
-                points,predClust,realsLab = clusterLabeling(sess,dataset,d_in,d_feat,clusterAlg,trainX)
-                #Show results
-                print "Showing results for Cluster ",str(clusterAlg)[0:20]
-		name = str(str(clusterAlg)[0:20])
+                points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
+             
+		name = clusterAlg.__class__.__name__
+		print "Showing results for Cluster ",name
                 showResults(dataset,points,predClust,realsLab,'Cluster '+str(name))
 
 
         if doEncoderLabel:
 
-            points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,d_feat,d_encoder)
+            points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
 
-            #Show results
             print "Showing results for Encoder labeling"
             showResults(dataset,points,predEncoder,realsLab,'Encoder')
+
+	if showTNSE:
+	    print "About to show TSNE with real labels (may take a while)"
+	    trainX,rlbs = trainsetTransform(dtransform, dataset)
+	    print "Showing TSNE with real labels"
+            model = TSNE(n_components=2)
+	    rlbs = OneHotToInt(rlbs)
+            showDimRed(trainX, rlbs, str('TSNE_Real'), model)
 
 if __name__ == '__main__':
     main()
