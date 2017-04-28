@@ -132,7 +132,6 @@ def clusterLabeling(sess,dataset,data_transform,clusterAlg,trainX):
         clusterAlg.fit(trainX)
         predited = list(clusterAlg.predict(transformed))
     else:
-        clusterAlg.fit()
         predited = list(clusterAlg.fit_predict(transformed))
 
     realLabels = OneHotToInt(realLabels)
@@ -313,7 +312,7 @@ def main():
                                                   eigen_solver='arpack',
                                                   affinity="nearest_neighbors")
             dbscan = cluster.DBSCAN(eps=.2)
-            affinity_propagation = cluster.AffinityPropagation()
+            affinity_propagation = cluster.AffinityPropagation(preference=-0.7)
 
             average_linkage = cluster.AgglomerativeClustering(
                 linkage="average", affinity="cityblock", n_clusters=nClustersTofind,
