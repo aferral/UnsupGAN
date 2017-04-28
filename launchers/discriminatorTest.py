@@ -88,6 +88,13 @@ def trainsetTransform(data_transform, dataset):#TODO this wont scale if dataset 
 
 def transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in):
     d_features = sess.run(d_feat, {d_in : x})
+    d_features = pool_features(d_features, pool_type='avg')
+    encoderOut = sess.run(d_encoder, {d_in : x})
+    result=normalize(np.hstack([d_features,encoderOut ]), axis=1, norm='l2')
+    return result
+
+def transformFeatureAndEncoderDontNorm(x,sess,d_feat,d_encoder,d_in):
+    d_features = sess.run(d_feat, {d_in : x})
     d_features = normalize(pool_features(d_features, pool_type='avg'), axis=1, norm='l2')
     encoderOut = sess.run(d_encoder, {d_in : x})
     result=np.hstack([d_features,encoderOut ])
@@ -292,6 +299,8 @@ def main():
             dtransform = lambda x : transformFeature_Norm(x,sess,d_feat,d_in)
         elif nameDataTransform == "convFeatEncoder":
             dtransform = lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)
+        elif nameDataTransform == 'convFeatEncoderDontNorm':
+            dtransform = lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)
         else:
             raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
 
