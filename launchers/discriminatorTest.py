@@ -224,6 +224,11 @@ def showResults(dataset,points,labels,realLabels,name):
     n_classes = len(set(labels))
     labels = np.array(labels)
 
+    show = True
+    if n_classes > 60:
+        show = False
+        log += ("The number of cluster is > 60 So no images will be shown "+ '\n')
+
     for i in range(n_classes):
         tempFolder = name+' Predicted '+str(i)
         if not os.path.exists(os.path.join(outFolder,tempFolder)):
@@ -243,21 +248,23 @@ def showResults(dataset,points,labels,realLabels,name):
         log += ("Showing Real distribution for that generated Label "+str(dist)+'\n')
         pdist = [(elem,dist[elem]*1.0/sum(dist.values())) for elem in set(dist.elements())]
         log += ("%dist "+str(pdist)+'\n')
-        #Calculate centroid
-        selected = points[elements]
-        centroid = np.mean(selected,axis=0)
-        #Get X closest points from that centroid
-        toShow =10
-        distances,indexs = tree.query(centroid,k=toShow)
-        #Get those points images
-        for j in range(toShow):
-            image = dataset.dataObj.validation_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
-            label = dataset.dataObj.validation_labels[indexs[j]] #HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
 
-            title = 'PredictedLabel '+str(i)+" Cls " + str(j) + " dist " + str(distances[j]) + " RealLabel " + str(label)
-            toSave = rescale(image , 2)
-            toSave = (toSave / 255).astype(np.float)
-            imsave(os.path.join(outFolder,tempFolder,title+'.png'), toSave)
+        if show:
+            #Calculate centroid
+            selected = points[elements]
+            centroid = np.mean(selected,axis=0)
+            #Get X closest points from that centroid
+            toShow =10
+            distances,indexs = tree.query(centroid,k=toShow)
+            #Get those points images
+            for j in range(toShow):
+                image = dataset.dataObj.validation_data[indexs[j]] #TODO DONT USE THE PRIVATE VARIABLES
+                label = dataset.dataObj.validation_labels[indexs[j]] #HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+
+                title = 'PredictedLabel '+str(i)+" Cls " + str(j) + " dist " + str(distances[j]) + " RealLabel " + str(label)
+                toSave = rescale(image , 2)
+                toSave = (toSave / 255).astype(np.float)
+                imsave(os.path.join(outFolder,tempFolder,title+'.png'), toSave)
 
     with open(os.path.join(outFolder,outNameFile),'w+') as f:
         f.write(log)
