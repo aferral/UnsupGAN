@@ -88,9 +88,9 @@ def trainsetTransform(data_transform, dataset):#TODO this wont scale if dataset 
 
 def transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in):
     d_features = sess.run(d_feat, {d_in : x})
-    d_features = pool_features(d_features, pool_type='avg')
+    d_features = normalize(pool_features(d_features, pool_type='avg'), axis=1, norm='l2')
     encoderOut = sess.run(d_encoder, {d_in : x})
-    result=normalize(np.hstack([d_features,encoderOut ]), axis=1, norm='l2')
+    result=np.hstack([d_features,encoderOut ])
     return result
 
 def transformFeature_Norm(x,sess,d_feat,d_in):
