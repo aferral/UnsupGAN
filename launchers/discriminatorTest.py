@@ -84,7 +84,7 @@ def trainsetTransform(data_transform, dataset):#TODO this wont scale if dataset 
         else:
             trainX = np.concatenate((trainX, d_features_norm), axis=0)
         realLabels = realLabels + list(batch_labels)
-    return trainX,batch_labels
+    return trainX,realLabels
 
 def transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in):
     d_features = sess.run(d_feat, {d_in : x})
@@ -109,14 +109,12 @@ def OneHotToInt(labels):
 def clusterLabeling(sess,dataset,data_transform,clusterAlg,trainX):
 
     print "Learning the clusters."
-    #Fit the cluster
-    clusterAlg.fit(trainX)
+
 
     #Now predict validation and train data
     realLabels = []
     predited = []
     transformed = np.array([]).reshape(0, 0)
-
 
     #Predict TrainData data
     for ii in range(dataset.batch_idx['val']):
@@ -128,15 +126,14 @@ def clusterLabeling(sess,dataset,data_transform,clusterAlg,trainX):
             transformed = d_features_norm
         else:
             transformed = np.concatenate((transformed, d_features_norm), axis=0)
-
-        if hasattr(clusterAlg, 'predict'):
-            pred = clusterAlg.predict(d_features_norm)
-        else:
-            pred = clusterAlg.labels_.astype(np.int)
-        
-
-        predited = predited + list(pred)
         realLabels = realLabels + list(batch_labels)
+
+    if hasattr(clusterAlg, 'predict'):
+        clusterAlg.fit(trainX)
+        predited = list(clusterAlg.predict(transformed))
+    else:
+        clusterAlg.fit()
+        predited = list(clusterAlg.fit_predict(transformed))
 
     realLabels = OneHotToInt(realLabels)
 
@@ -175,7 +172,7 @@ def showDimRed(points, labels, name,dimRalg):
 
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
-    	dimRalg.fit(points)
+        dimRalg.fit(points)
         transformed = dimRalg.transform(points)
     else:
         transformed = dimRalg.fit_transform(points)
@@ -238,8 +235,8 @@ def showResults(dataset,points,labels,realLabels,name):
         #Show distribution
         dist = Counter(rl)
         log += ("Showing Real distribution for that generated Label "+str(dist)+'\n')
-	pdist = [(elem,dist[elem]*1.0/sum(dist.values())) for elem in set(dist.elements())]
-	log += ("%dist "+str(pdist)+'\n')
+        pdist = [(elem,dist[elem]*1.0/sum(dist.values())) for elem in set(dist.elements())]
+        log += ("%dist "+str(pdist)+'\n')
         #Calculate centroid
         selected = points[elements]
         centroid = np.mean(selected,axis=0)
@@ -290,15 +287,14 @@ def main():
         assert(not(d_feat is None) )
         assert( not(doEncoderLabel) or (doEncoderLabel and not(d_encoder is None) ))
 
-	#Check and define data transform
-	dtransform = None
-	if nameDataTransform == "convFeat":
-	    dtransform = lambda x : transformFeature_Norm(x,sess,d_feat,d_in)
-	elif nameDataTransform == "convFeatEncoder":
-	    dtransform = lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)
-	else:
-	    raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
-
+        #Check and define data transform
+        dtransform = None
+        if nameDataTransform == "convFeat":
+            dtransform = lambda x : transformFeature_Norm(x,sess,d_feat,d_in)
+        elif nameDataTransform == "convFeatEncoder":
+            dtransform = lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)
+        else:
+            raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
 
         if doCluster:
             
@@ -317,7 +313,7 @@ def main():
                                                   eigen_solver='arpack',
                                                   affinity="nearest_neighbors")
             dbscan = cluster.DBSCAN(eps=.2)
-            affinity_propagation = cluster.AffinityPropagation(damping=.9,preference=-200)
+            affinity_propagation = cluster.AffinityPropagation()
 
             average_linkage = cluster.AgglomerativeClustering(
                 linkage="average", affinity="cityblock", n_clusters=nClustersTofind,
@@ -331,25 +327,22 @@ def main():
             # ----------------Define cluster methods----------------------------------------
             for clusterAlg in clustering_algorithms:
                 points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
-             
-		name = clusterAlg.__class__.__name__
-		print "Showing results for Cluster ",name
+                name = clusterAlg.__class__.__name__
+                print "Showing results for Cluster ",name
                 showResults(dataset,points,predClust,realsLab,'Cluster '+str(name))
 
-
         if doEncoderLabel:
-
             points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
 
             print "Showing results for Encoder labeling"
             showResults(dataset,points,predEncoder,realsLab,'Encoder')
 
-	if showTNSE:
-	    print "About to show TSNE with real labels (may take a while)"
-	    trainX,rlbs = trainsetTransform(dtransform, dataset)
-	    print "Showing TSNE with real labels"
+        if showTNSE:
+            print "About to show TSNE with real labels (may take a while)"
+            trainX,rlbs = trainsetTransform(dtransform, dataset)
+            print "Showing TSNE with real labels"
             model = TSNE(n_components=2)
-	    rlbs = OneHotToInt(rlbs)
+            rlbs = OneHotToInt(rlbs)
             showDimRed(trainX, rlbs, str('TSNE_Real'), model)
 
 if __name__ == '__main__':
