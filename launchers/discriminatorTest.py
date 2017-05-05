@@ -340,7 +340,7 @@ def main():
         if doEncoderLabel:
             nAlgCluster += 1
 
-        f, axarr = plt.subplots((len(transformList), nAlgCluster))
+        f, axarr = plt.subplots(len(transformList), nAlgCluster)
 
         for indT,dtransform in enumerate(transformList):
             currentCol = 0
