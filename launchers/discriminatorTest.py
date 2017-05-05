@@ -319,6 +319,8 @@ def main():
         new_saver.restore(sess, modelPath)
 
         #Load in and outs to use
+        validTransforms = nameDataTransform.split(',')
+        transformList = []
         d_in = None
         d_feat = None
         d_encoder = None
@@ -327,7 +329,7 @@ def main():
             d_in  = sess.graph.get_tensor_by_name(discrInputName)
         if not(discrLastFeatName == 'None'):
             d_feat  = sess.graph.get_tensor_by_name(discrLastFeatName)
-        if not(discrEncoderName == 'None'):
+        if not(discrEncoderName == 'None') and (('cen' in validTransforms) or ('cend' in validTransforms)):
             d_encoder  = sess.graph.get_tensor_by_name(discrEncoderName)
 
         #Check if we have the data to run test
@@ -336,8 +338,7 @@ def main():
         assert( not(doEncoderLabel) or (doEncoderLabel and not(d_encoder is None) ))
 
         #Check and define data transform c,cen,cend define valid transform of data
-        validTransforms = nameDataTransform.split(',')
-        transformList = []
+
 
         for elem in validTransforms:
             if elem == "c":
