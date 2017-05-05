@@ -211,6 +211,7 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
            loc='lower left',
            ncol=3,
            fontsize=8)
+    objPlot.set_title(name)
     objPlot.savefig(os.path.join(outFolder,name+'.png'))
     return objPlot
 
