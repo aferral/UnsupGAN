@@ -211,6 +211,8 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
            fontsize=8)
     if ax is None:
         plt.savefig(os.path.join(outFolder,name+'.png'))
+    else:
+        return objPlot
 
 def showResults(dataset,points,labels,realLabels,name,ax=None):
     outNameFile = "Results for "+str(name)+'.txt'
@@ -220,7 +222,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     #SHOW PCA2 of data with PREDICTED labels
     log += ("Showing PCA2 with predicted labels"+'\n')
     pca = PCA(n_components=2)
-    showDimRed(points, labels, name + str('PCA_Predicted'),pca,ax=ax)
+    res = showDimRed(points, labels, name + str('PCA_Predicted'),pca,ax=ax)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
 
@@ -289,6 +291,9 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     with open(os.path.join(outFolder,outNameFile),'w+') as f:
         f.write(log)
 
+    if not(ax is None):
+        return res
+
 
 def main():
     #Get dataset
@@ -353,7 +358,7 @@ def main():
                 print "About to show TSNE with real labels (may take a while)"
                 print "Showing TSNE with real labels"
                 model = TSNE(n_components=2)
-                showDimRed(trainX, rlbs, str('TSNE_Real'), model,ax=axarr[indT,currentCol])
+                showDimRed(trainX[0:50], rlbs[0:50], str('TSNE_Real'), model,ax=axarr[indT,currentCol])
                 currentCol += 1
 
             # SHOW PCA2 of data with REAL labels
