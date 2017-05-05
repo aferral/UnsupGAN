@@ -190,6 +190,8 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
         objPlot = plt
     else:
         objPlot = ax
+        objPlot.get_xaxis().set_visible(False)
+        objPlot.get_yaxis().set_visible(False)
 
     allscatter = []
     n_classes = len(set(labels))
@@ -209,10 +211,8 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
            loc='lower left',
            ncol=3,
            fontsize=8)
-    if ax is None:
-        plt.savefig(os.path.join(outFolder,name+'.png'))
-    else:
-        return objPlot
+    objPlot.savefig(os.path.join(outFolder,name+'.png'))
+    return objPlot
 
 def showResults(dataset,points,labels,realLabels,name,ax=None):
     outNameFile = "Results for "+str(name)+'.txt'
@@ -340,10 +340,12 @@ def main():
                 raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
 
         #Define grid of images for table1
-        nAlgCluster = 2
+        nAlgCluster = 1
         if doCluster:
             nAlgCluster += 8 #TODO DONT HARDCODE THIS
         if doEncoderLabel:
+            nAlgCluster += 1
+        if showTNSE:
             nAlgCluster += 1
 
         f, axarr = plt.subplots(2 if len(transformList) == 1 else len(transformList), nAlgCluster)
@@ -408,7 +410,7 @@ def main():
                 print "Showing results for Encoder labeling"
                 showResults(dataset,points,predEncoder,realsLab,'Encoder',ax=axarr[indT,currentCol])
                 currentCol += 1
-        plt.savefig('test.png')
+        plt.savefig(os.path.join(outFolder,'table1.png'))
 
 
 
