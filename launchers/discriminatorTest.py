@@ -408,7 +408,7 @@ def main():
                 print "Showing results for Encoder labeling"
                 showResults(dataset,points,predEncoder,realsLab,'Encoder',ax=axarr[indT,currentCol])
                 currentCol += 1
-        plt.show()
+        plt.savefig('test.png')
 
 
 
