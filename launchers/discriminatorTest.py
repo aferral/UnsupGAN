@@ -223,7 +223,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
 
 
     #SHOW PCA2 of data with PREDICTED labels
-    log += ("Showing PCA2 with predicted labels"+'\n')
+
     pca = PCA(n_components=2)
 
     showDimRed(points, labels, name + str('PCA_Predicted'), pca)
@@ -293,6 +293,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     log += ("Predicted cluster number is " + str(n_classes) + '\n')
     log += ("The mean classificationScore is " + str(np.mean(np.array(globalClassScore))) + '\n')
     log += ("The std classificationScore is " + str(np.std(np.array(globalClassScore))) + '\n')
+    log += ("PCA2 with predicted variance" + str(pca.explained_variance_ratio_)+ '\n')
 
     with open(os.path.join(outFolder,outNameFile),'w+') as f:
         f.write(log)
