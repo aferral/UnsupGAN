@@ -260,7 +260,10 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         log += ("%dist "+str(pdist)+'\n')
 
         #place the clasification score
-        classScore = max(pdist, key = lambda x : x[1])[1]
+        if len(pdist) > 0:
+            classScore = max(pdist, key = lambda x : x[1])[1]
+        else:
+            classScore = 0
         log += ("Clasification score " + str(classScore) + '\n')
         globalClassScore.append(classScore)
 
