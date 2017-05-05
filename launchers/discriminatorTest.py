@@ -213,7 +213,7 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
            fontsize=8)
     objPlot.set_title(name)
     if ax is None:
-        objPlot.savefig(os.path.join(outFolder,name+'.png'))
+        plt.savefig(os.path.join(outFolder,name+'.png'))
     return objPlot
 
 def showResults(dataset,points,labels,realLabels,name,ax=None):
@@ -224,6 +224,8 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     #SHOW PCA2 of data with PREDICTED labels
     log += ("Showing PCA2 with predicted labels"+'\n')
     pca = PCA(n_components=2)
+
+    showDimRed(points, labels, name + str('PCA_Predicted'), pca)
     res = showDimRed(points, labels, name + str('PCA_Predicted'),pca,ax=ax)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
