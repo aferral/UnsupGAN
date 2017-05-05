@@ -211,9 +211,11 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
            loc='lower left',
            ncol=3,
            fontsize=8)
-    objPlot.set_title(name)
+    
     if ax is None:
         plt.savefig(os.path.join(outFolder,name+'.png'))
+    else:
+        objPlot.set_title(name)
     return objPlot
 
 def showResults(dataset,points,labels,realLabels,name,ax=None):
@@ -335,11 +337,11 @@ def main():
 
         for elem in validTransforms:
             if elem == "c":
-                transformList.append(lambda x : transformFeature_Norm(x,sess,d_feat,d_in))
+                transformList.append((elem,lambda x : transformFeature_Norm(x,sess,d_feat,d_in)))
             elif elem == "cen":
-                transformList.append(lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in))
+                transformList.append((elem,lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)))
             elif elem == 'cend':
-                transformList.append(lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in))
+                transformList.append((elem,lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)))
             else:
                 raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
 
@@ -354,7 +356,9 @@ def main():
 
         f, axarr = plt.subplots(2 if len(transformList) == 1 else len(transformList), nAlgCluster)
 
-        for indT,dtransform in enumerate(transformList):
+        for indT,tupleTranform in enumerate(transformList):
+            transformName = tupleTranform[0]
+            dtransform = tupleTranform[1]
             currentCol = 0
 
             trainX, rlbs = trainsetTransform(dtransform, dataset)
@@ -405,14 +409,14 @@ def main():
                     points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
                     name = clusterAlg.__class__.__name__
                     print "Showing results for Cluster ",name
-                    showResults(dataset,points,predClust,realsLab,'Cluster '+str(name),ax=axarr[indT,currentCol])
+                    showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name),ax=axarr[indT,currentCol])
                     currentCol += 1
 
             if doEncoderLabel:
                 points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
 
                 print "Showing results for Encoder labeling"
-                showResults(dataset,points,predEncoder,realsLab,'Encoder',ax=axarr[indT,currentCol])
+                showResults(dataset,points,predEncoder,realsLab,transformName+" "+'Encoder',ax=axarr[indT,currentCol])
                 currentCol += 1
         plt.savefig(os.path.join(outFolder,'table1.png'))
 
