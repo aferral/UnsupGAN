@@ -22,6 +22,7 @@ import json
 #TODO This can scale to large datasets ????
 
 #----------------------PARAMETERS ALL DEFINED IN CONFIG FILE --------------------
+from infogan.misc.utilsTest import generate_new_color
 
 configFile = sys.argv[1]
 print os.getcwd()
@@ -175,7 +176,6 @@ def encoderLabeling(sess,dataset,d_in,data_transform,d_encoder):
 
 def showDimRed(points, labels, name,dimRalg):
 
-
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
         dimRalg.fit(points)
@@ -186,10 +186,15 @@ def showDimRed(points, labels, name,dimRalg):
     plt.figure()
     allscatter = []
     n_classes = len(set(labels))
+
+    colors = []
+    for i in range(0, n_classes):
+        colors.append(generate_new_color(colors, pastel_factor=0.9))
+
     for c in range(n_classes):
         elements = np.where(np.array(labels) == c)
         temp = plt.scatter(transformed[elements, 0], transformed[elements, 1],
-                   facecolors='none', label='Class ' + str(c), c=np.random.rand(3, 1))
+                   facecolors='none', label='Class ' + str(c), c=colors[c])
         allscatter.append(temp)
     plt.legend(tuple(allscatter),
            tuple(["class " + str(c) for c in range(n_classes)]),
@@ -218,13 +223,12 @@ def showResults(dataset,points,labels,realLabels,name):
 
 
 
-    log += ("The ARI was "+str(metrics.adjusted_rand_score(realLabels, labels) )+'\n')
-    log += ("The NMI was "+str( metrics.normalized_mutual_info_score(realLabels, labels))+'\n')
-
     n_classes = len(set(labels))
     labels = np.array(labels)
 
-    show = True
+    globalClassScore = []
+
+    show = False
     if n_classes > 60:
         show = False
         log += ("The number of cluster is > 60 So no images will be shown "+ '\n')
@@ -249,6 +253,11 @@ def showResults(dataset,points,labels,realLabels,name):
         pdist = [(elem,dist[elem]*1.0/sum(dist.values())) for elem in set(dist.elements())]
         log += ("%dist "+str(pdist)+'\n')
 
+        #place the clasification score
+        classScore = max(pdist, key = lambda x : x[1])[1]
+        log += ("Clasification score " + str(classScore) + '\n')
+        globalClassScore.append(classScore)
+
         if show:
             #Calculate centroid
             selected = points[elements]
@@ -265,6 +274,16 @@ def showResults(dataset,points,labels,realLabels,name):
                 toSave = rescale(image , 2)
                 toSave = (toSave / 255).astype(np.float)
                 imsave(os.path.join(outFolder,tempFolder,title+'.png'), toSave)
+
+    #Log all the global information
+    log += ('\n')
+    log += ('Global metrics \n')
+    log += ('\n')
+    log += ("The ARI was " + str(metrics.adjusted_rand_score(realLabels, labels)) + '\n')
+    log += ("The NMI was " + str(metrics.normalized_mutual_info_score(realLabels, labels)) + '\n')
+    log += ("Predicted cluster number is " + str(n_classes) + '\n')
+    log += ("The mean classificationScore is " + str(np.mean(np.array(globalClassScore))) + '\n')
+    log += ("The std classificationScore is " + str(np.std(np.array(globalClassScore))) + '\n')
 
     with open(os.path.join(outFolder,outNameFile),'w+') as f:
         f.write(log)
