@@ -174,7 +174,7 @@ def encoderLabeling(sess,dataset,d_in,data_transform,d_encoder):
     return transformed,predited,realLabels
 
 
-def showDimRed(points, labels, name,dimRalg):
+def showDimRed(points, labels, name,dimRalg, ax=None):
 
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
@@ -183,7 +183,13 @@ def showDimRed(points, labels, name,dimRalg):
     else:
         transformed = dimRalg.fit_transform(points)
 
-    plt.figure()
+    objPlot = None
+    if ax is None:
+        plt.figure()
+        objPlot = plt
+    else:
+        objPlot = ax
+
     allscatter = []
     n_classes = len(set(labels))
 
@@ -193,18 +199,19 @@ def showDimRed(points, labels, name,dimRalg):
 
     for c in range(n_classes):
         elements = np.where(np.array(labels) == c)
-        temp = plt.scatter(transformed[elements, 0], transformed[elements, 1],
+        temp = objPlot.scatter(transformed[elements, 0], transformed[elements, 1],
                    facecolors='none', label='Class ' + str(c), c=colors[c])
         allscatter.append(temp)
-    plt.legend(tuple(allscatter),
+    objPlot.legend(tuple(allscatter),
            tuple(["class " + str(c) for c in range(n_classes)]),
            scatterpoints=1,
            loc='lower left',
            ncol=3,
            fontsize=8)
-    plt.savefig(os.path.join(outFolder,name+'.png'))
+    if ax is None:
+        plt.savefig(os.path.join(outFolder,name+'.png'))
 
-def showResults(dataset,points,labels,realLabels,name):
+def showResults(dataset,points,labels,realLabels,name,ax=None):
     outNameFile = "Results for "+str(name)+'.txt'
     log = ""
 
@@ -212,15 +219,8 @@ def showResults(dataset,points,labels,realLabels,name):
     #SHOW PCA2 of data with PREDICTED labels
     log += ("Showing PCA2 with predicted labels"+'\n')
     pca = PCA(n_components=2)
-    showDimRed(points, labels, name + str('PCA_Predicted'),pca)
+    showDimRed(points, labels, name + str('PCA_Predicted'),pca,ax=ax)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
-
-    # SHOW PCA2 of data with REAL labels
-    log += ("Showing PCA2 with real labels"+'\n')
-    pca = PCA(n_components=2)
-    showDimRed(points, realLabels, name + str('PCA_Real'),pca)
-    print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
-
 
 
     n_classes = len(set(labels))
@@ -319,65 +319,92 @@ def main():
         assert(not(d_feat is None) )
         assert( not(doEncoderLabel) or (doEncoderLabel and not(d_encoder is None) ))
 
-        #Check and define data transform
-        dtransform = None
-        if nameDataTransform == "convFeat":
-            dtransform = lambda x : transformFeature_Norm(x,sess,d_feat,d_in)
-        elif nameDataTransform == "convFeatEncoder":
-            dtransform = lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)
-        elif nameDataTransform == 'convFeatEncoderDontNorm':
-            dtransform = lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)
-        else:
-            raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
+        #Check and define data transform c,cen,cend define valid transform of data
+        validTransforms = nameDataTransform.split(',')
+        transformList = []
 
+        for elem in validTransforms:
+            if elem == "c":
+                transformList.append(lambda x : transformFeature_Norm(x,sess,d_feat,d_in))
+            elif elem == "cen":
+                transformList.append(lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in))
+            elif elem == 'cend':
+                transformList.append(lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in))
+            else:
+                raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
+
+        #Define grid of images for table1
+        nAlgCluster = 0
         if doCluster:
-            
-            trainX,_ = trainsetTransform(dtransform, dataset)
-
-            #----------------Define cluster methods----------------------------------------
-
-
-            connectivity = kneighbors_graph(trainX, n_neighbors=10, include_self=False)
-            connectivity = 0.5 * (connectivity + connectivity.T)
-
-            two_means = cluster.KMeans(n_clusters=nClustersTofind)
-            ward = cluster.AgglomerativeClustering(n_clusters=nClustersTofind, linkage='ward',
-                                                   connectivity=connectivity)
-            spectral = cluster.SpectralClustering(n_clusters=nClustersTofind,
-                                                  eigen_solver='arpack',
-                                                  affinity="nearest_neighbors")
-            dbscan = cluster.DBSCAN(eps=.2)
-            affinity_propagation = cluster.AffinityPropagation(preference=-0.7)
-
-            average_linkage = cluster.AgglomerativeClustering(
-                linkage="average", affinity="cityblock", n_clusters=nClustersTofind,
-                connectivity=connectivity)
-
-            birch = cluster.Birch(n_clusters=nClustersTofind)
-            clustering_algorithms = [
-                two_means, affinity_propagation, spectral, ward, average_linkage,
-                dbscan, birch]
-
-            # ----------------Define cluster methods----------------------------------------
-            for clusterAlg in clustering_algorithms:
-                points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
-                name = clusterAlg.__class__.__name__
-                print "Showing results for Cluster ",name
-                showResults(dataset,points,predClust,realsLab,'Cluster '+str(name))
-
+            nAlgCluster += 8 #TODO DONT HARDCODE THIS
         if doEncoderLabel:
-            points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
+            nAlgCluster += 1
 
-            print "Showing results for Encoder labeling"
-            showResults(dataset,points,predEncoder,realsLab,'Encoder')
+        f, axarr = plt.subplots((len(transformList), nAlgCluster))
 
-        if showTNSE:
-            print "About to show TSNE with real labels (may take a while)"
-            trainX,rlbs = trainsetTransform(dtransform, dataset)
-            print "Showing TSNE with real labels"
-            model = TSNE(n_components=2)
+        for indT,dtransform in enumerate(transformList):
+            currentCol = 0
+
+            trainX, rlbs = trainsetTransform(dtransform, dataset)
             rlbs = OneHotToInt(rlbs)
-            showDimRed(trainX, rlbs, str('TSNE_Real'), model)
+
+            if showTNSE:
+                print "About to show TSNE with real labels (may take a while)"
+                print "Showing TSNE with real labels"
+                model = TSNE(n_components=2)
+                showDimRed(trainX, rlbs, str('TSNE_Real'), model,ax=axarr[indT,currentCol])
+                currentCol += 1
+
+            # SHOW PCA2 of data with REAL labels
+            pca = PCA(n_components=2)
+            showDimRed(trainX, rlbs, str('PCA_Real'), pca,ax=axarr[indT,currentCol])
+            currentCol += 1
+
+            if doCluster:
+
+                trainX,_ = trainsetTransform(dtransform, dataset)
+
+                #----------------Define cluster methods----------------------------------------
+
+
+                connectivity = kneighbors_graph(trainX, n_neighbors=10, include_self=False)
+                connectivity = 0.5 * (connectivity + connectivity.T)
+
+                two_means = cluster.KMeans(n_clusters=nClustersTofind)
+                ward = cluster.AgglomerativeClustering(n_clusters=nClustersTofind, linkage='ward',
+                                                       connectivity=connectivity)
+                spectral = cluster.SpectralClustering(n_clusters=nClustersTofind,
+                                                      eigen_solver='arpack',
+                                                      affinity="nearest_neighbors")
+                dbscan = cluster.DBSCAN(eps=.2)
+                affinity_propagation = cluster.AffinityPropagation(preference=-0.7)
+
+                average_linkage = cluster.AgglomerativeClustering(
+                    linkage="average", affinity="cityblock", n_clusters=nClustersTofind,
+                    connectivity=connectivity)
+
+                birch = cluster.Birch(n_clusters=nClustersTofind)
+                clustering_algorithms = [
+                    two_means, affinity_propagation, spectral, ward, average_linkage,
+                    dbscan, birch]
+
+                # ----------------Define cluster methods----------------------------------------
+                for clusterAlg in clustering_algorithms:
+                    points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
+                    name = clusterAlg.__class__.__name__
+                    print "Showing results for Cluster ",name
+                    showResults(dataset,points,predClust,realsLab,'Cluster '+str(name),ax=axarr[indT,currentCol])
+                    currentCol += 1
+
+            if doEncoderLabel:
+                points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
+
+                print "Showing results for Encoder labeling"
+                showResults(dataset,points,predEncoder,realsLab,'Encoder',ax=axarr[indT,currentCol])
+                currentCol += 1
+        plt.show()
+
+
 
 if __name__ == '__main__':
     main()
