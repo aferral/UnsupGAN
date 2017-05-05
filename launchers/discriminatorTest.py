@@ -24,8 +24,7 @@ import json
 #----------------------PARAMETERS ALL DEFINED IN CONFIG FILE --------------------
 from infogan.misc.utilsTest import generate_new_color
 
-#configFile = sys.argv[1]
-configFile = "exp/testt.json"
+configFile = sys.argv[1]
 print os.getcwd()
 print "Loading config file ",configFile
 
@@ -208,10 +207,10 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
     objPlot.legend(tuple(allscatter),
            tuple(["class " + str(c) for c in range(n_classes)]),
            scatterpoints=1,
-           loc='lower left',
+           loc='upper left',
            ncol=3,
            fontsize=8)
-    
+
     if ax is None:
         plt.savefig(os.path.join(outFolder,name+'.png'))
     else:
@@ -243,9 +242,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         log += ("The number of cluster is > 60 So no images will be shown "+ '\n')
 
     for i in range(n_classes):
-        tempFolder = name+' Predicted '+str(i)
-        if not os.path.exists(os.path.join(outFolder,tempFolder)):
-            os.makedirs(os.path.join(outFolder,tempFolder))
+
 
         #Get all index of that class
         elements = np.where(labels == i)
@@ -268,6 +265,9 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         globalClassScore.append(classScore)
 
         if show:
+            tempFolder = name + ' Predicted ' + str(i)
+            if not os.path.exists(os.path.join(outFolder, tempFolder)):
+                os.makedirs(os.path.join(outFolder, tempFolder))
             #Calculate centroid
             selected = points[elements]
             centroid = np.mean(selected,axis=0)
@@ -368,7 +368,7 @@ def main():
                 print "About to show TSNE with real labels (may take a while)"
                 print "Showing TSNE with real labels"
                 model = TSNE(n_components=2)
-                showDimRed(trainX[0:50], rlbs[0:50], str('TSNE_Real'), model,ax=axarr[indT,currentCol])
+                showDimRed(trainX, rlbs, str('TSNE_Real'), model,ax=axarr[indT,currentCol])
                 currentCol += 1
 
             # SHOW PCA2 of data with REAL labels
