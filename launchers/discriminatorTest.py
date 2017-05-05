@@ -335,7 +335,7 @@ def main():
                 raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
 
         #Define grid of images for table1
-        nAlgCluster = 0
+        nAlgCluster = 2
         if doCluster:
             nAlgCluster += 8 #TODO DONT HARDCODE THIS
         if doEncoderLabel:
