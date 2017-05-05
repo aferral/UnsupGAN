@@ -372,12 +372,12 @@ def main():
                 print "About to show TSNE with real labels (may take a while)"
                 print "Showing TSNE with real labels"
                 model = TSNE(n_components=2)
-                showDimRed(trainX, rlbs, str('TSNE_Real'), model,ax=axarr[indT,currentCol])
+                showDimRed(trainX, rlbs, transformName+str(' TSNE_Real'), model)
                 currentCol += 1
 
             # SHOW PCA2 of data with REAL labels
             pca = PCA(n_components=2)
-            showDimRed(trainX, rlbs, str('PCA_Real'), pca,ax=axarr[indT,currentCol])
+            showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca)
             currentCol += 1
 
             if doCluster:
