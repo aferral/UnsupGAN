@@ -24,7 +24,8 @@ import json
 #----------------------PARAMETERS ALL DEFINED IN CONFIG FILE --------------------
 from infogan.misc.utilsTest import generate_new_color
 
-configFile = sys.argv[1]
+#configFile = sys.argv[1]
+configFile = "exp/testt.json"
 print os.getcwd()
 print "Loading config file ",configFile
 
