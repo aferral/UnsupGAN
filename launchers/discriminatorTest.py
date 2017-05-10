@@ -174,7 +174,7 @@ def encoderLabeling(sess,dataset,d_in,data_transform,d_encoder):
     return transformed,predited,realLabels
 
 
-def showDimRed(points, labels, name,dimRalg, ax=None):
+def showDimRed(points, labels, name,dimRalg):
 
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
@@ -184,13 +184,10 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
         transformed = dimRalg.fit_transform(points)
 
     objPlot = None
-    if ax is None:
-        plt.figure()
-        objPlot = plt
-    else:
-        objPlot = ax
-        objPlot.get_xaxis().set_visible(False)
-        objPlot.get_yaxis().set_visible(False)
+
+    plt.figure()
+    objPlot = plt
+
 
     allscatter = []
     n_classes = len(set(labels))
@@ -211,11 +208,9 @@ def showDimRed(points, labels, name,dimRalg, ax=None):
            ncol=3,
            fontsize=8)
 
-    if ax is None:
-        plt.savefig(os.path.join(outFolder,name+'.png'))
-    else:
-        objPlot.set_title(name)
-    return objPlot
+    plt.savefig(os.path.join(outFolder,name+'.png'))
+
+    return transformed
 
 def showResults(dataset,points,labels,realLabels,name,ax=None):
     outNameFile = "Results for "+str(name)+'.txt'
@@ -226,11 +221,11 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
 
     pca = PCA(n_components=2)
 
-    showDimRed(points, labels, name + str('PCA_Predicted'), pca)
+    transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     #Save points,labels,name,fileNames TODO still here uses validation hardcoded
-    savepoints = points
+    savepoints = transformed
     savelabels = labels
     iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
     saverls = dataset.dataObj.validation_labels # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
