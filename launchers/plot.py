@@ -70,13 +70,18 @@ def main(pklPath,real=False):
     #POINTS,LABELS,IMAGES
     nPoints = savepoints.shape[0]
 
-    if nPoints > 1000:
+    if nPoints < 1000:
         savepoints = savepoints[0:1000]
         savelabels = savelabels[0:1000]
         iamgeSave = iamgeSave[0:1000]
         saverls = saverls[0:1000]
         names = names[0:1000]
         nPoints = 1000
+
+    #Sometimes there are less batches
+    iamgeSave = iamgeSave[0:nPoints]
+    saverls = saverls[0:nPoints]
+    names = names[0:nPoints]
 
 
     df = pd.DataFrame(index=np.arange(nPoints), columns={'z','w','image_files','source_filenames','label'})
