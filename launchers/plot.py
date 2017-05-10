@@ -73,7 +73,7 @@ def main(pklPath,real=False):
         savepoints = savepoints[0:1000]
         savelabels = savelabels[0:1000]
         iamgeSave = iamgeSave[0:1000]
-        saverls = iamgeSave[0:1000]
+        saverls = saverls[0:1000]
         nPoints = 1000
 
 
@@ -90,9 +90,9 @@ def main(pklPath,real=False):
     df['source_filenames'] = 'test'
 
     if real:
-        df['label'] = savelabels
-    else:
         df['label'] = saverls
+    else:
+        df['label'] = savelabels
 
     bplot.output_file('plot.html')
     hover0 = HoverTool(tooltips=tooltip)
