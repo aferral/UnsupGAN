@@ -242,6 +242,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     desfase = saverls.shape[0] - np.array(realLabels).shape[0]
     #THIS WILL MAKE THE saverls and realLabels coincide in values
     saverls = np.roll(saverls[:-1*desfase], -dataset.dataObj.batch_size)
+    assert(np.array_equal(saverls,realLabels))
     iamgeSave = np.roll(iamgeSave[:-1*desfase], -dataset.dataObj.batch_size)
     names = np.roll(names[:-1*desfase], -dataset.dataObj.batch_size)
 
@@ -424,8 +425,7 @@ def main():
 
                 birch = cluster.Birch(n_clusters=nClustersTofind)
                 clustering_algorithms = [
-                    two_means, affinity_propagation, spectral, ward, average_linkage,
-                    dbscan, birch]
+                    two_means, spectral]
 
                 # ----------------Define cluster methods----------------------------------------
                 for clusterAlg in clustering_algorithms:
