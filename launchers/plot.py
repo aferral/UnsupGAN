@@ -123,6 +123,16 @@ def main(pklPath,real=False):
 
 
     colors = colorList[df['label'].values]
+    import pylab as plt
+
+
+    for c in range(nClases):
+        elements = np.where(np.array(df['label']) == c)
+        temp = plt.scatter(df['z'][elements], df['w'][elements],
+                   facecolors='none', label='Class ' + str(c), c=colors[c])
+    plt.show()
+
+
     p.scatter(source=df, x='z', y='w', fill_color=colors,size=10 )
     show(p)
 
