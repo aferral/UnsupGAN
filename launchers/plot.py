@@ -127,7 +127,8 @@ def main(pklPath,real=False):
 
 
     for c in range(nClases):
-        elements = np.where(np.array(df['label']) == c)
+        elements = np.where(np.array(df['label'].values) == c)
+        print "c ",c," elements ",elements.shape
         temp = plt.scatter(df['z'].values[elements], df['w'].values[elements],
                    facecolors='none', label='Class ' + str(c))
     plt.show()
