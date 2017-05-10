@@ -38,7 +38,7 @@ def main(pklPath,real=False):
     assert(len(lista) == 5)
     savepoints = lista[0]
     savelabels = lista[1]
-    iamgeSave = lista[2]
+    iamgeSave = lista[2]/255
     saverls = lista[3]
     names = lista[4]
 
