@@ -107,10 +107,9 @@ def main(pklPath,real=False):
     colorList = []
     for i in range(0, len(set(df['label']))):
         nc = generate_new_color(colorList, pastel_factor=0.9)
-
         colorList.append(nc)
-    for nc in colorList:
-        nc = [nc[0] * 255, nc[1] * 255, nc[2] * 255]
+    for i in range(len(colorList)):
+        colorList[i] = [colorList[i][0] * 255, colorList[i][1] * 255, colorList[i][2] * 255]
     colorList =  ['#%02x%02x%02x' % tuple(x) for x in colorList]
     colorList = np.array(colorList)
 
