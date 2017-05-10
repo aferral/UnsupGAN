@@ -228,7 +228,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     savepoints = transformed
     savelabels = labels
     iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
-    saverls = dataset.dataObj.validation_labels # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+    saverls = np.where(dataset.dataObj.validation_labels)[1] # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
     names = [dataset.dataObj.getValFilename(i) for i in range(savepoints.shape[0])]
 
     with open('exp_'+str(name)+'.pkl','wb') as f:
