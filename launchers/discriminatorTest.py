@@ -228,11 +228,22 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     #Save points,labels,name,fileNames TODO still here uses validation hardcoded
+
+    #TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
+    #if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
+
+
     savepoints = transformed
     savelabels = labels
     iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
     saverls = np.where(dataset.dataObj.validation_labels)[1] # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
-    names = [dataset.dataObj.getValFilename(i) for i in range(savepoints.shape[0])]
+    names = [dataset.dataObj.getValFilename(i) for i in range(saverls.shape[0])]
+
+    desfase = saverls.shape[0] - np.array(realLabels).shape[0]
+    #THIS WILL MAKE THE saverls and realLabels coincide in values
+    saverls = np.roll(saverls[:-1*desfase], -dataset.dataObj.batch_size)
+    iamgeSave = np.roll(iamgeSave[:-1*desfase], -dataset.dataObj.batch_size)
+    names = np.roll(names[:-1*desfase], -dataset.dataObj.batch_size)
 
     with open('exp_'+str(name)+'.pkl','wb') as f:
         pickle.dump([savepoints,savelabels,iamgeSave,saverls,names],f,-1)
@@ -255,8 +266,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         #Get all index of that class
         elements = np.where(labels == i)
 
-        #Make a KD-tree to seach nearest points
-        tree = spatial.KDTree(points)
+
 
         log += ("For class "+str(i)+" there are "+str(elements[0].shape[0])+'\n')
         #Get the real classes for those points
@@ -276,6 +286,8 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         globalClassScore.append(classScore)
 
         if show:
+            # Make a KD-tree to seach nearest points
+            tree = spatial.KDTree(points)
             tempFolder = name + ' Predicted ' + str(i)
             if not os.path.exists(os.path.join(outFolder, tempFolder)):
                 os.makedirs(os.path.join(outFolder, tempFolder))
