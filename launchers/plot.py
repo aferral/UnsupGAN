@@ -87,7 +87,7 @@ def main(pklPath,real=False):
 
     filenames = b64_image_files(images)
     df['image_files'] = filenames
-    df['source_filenames'] = iamgeSave
+    df['source_filenames'] = 'test'
 
     if real:
         df['label'] = savelabels
