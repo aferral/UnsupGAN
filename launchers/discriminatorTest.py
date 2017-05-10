@@ -4,7 +4,7 @@ import tensorflow as tf
 from skimage.io import imsave
 from skimage.transform import rescale
 import os
-
+import pickle
 from sklearn.manifold import TSNE
 from sklearn.neighbors import kneighbors_graph
 
@@ -227,8 +227,17 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     pca = PCA(n_components=2)
 
     showDimRed(points, labels, name + str('PCA_Predicted'), pca)
-    res = showDimRed(points, labels, name + str('PCA_Predicted'),pca,ax=ax)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
+
+    #Save points,labels,name,fileNames TODO still here uses validation hardcoded
+    savepoints = points
+    savelabels = labels
+    iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
+    saverls = dataset.dataObj.validation_labels # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+
+    with open('exp_'+str(name)+'.pkl','wb') as f:
+        pickle.dump([savepoints,savelabels,iamgeSave,saverls],f,-1)
+
 
 
     n_classes = len(set(labels))
@@ -359,8 +368,6 @@ def main():
         if showTNSE:
             nAlgCluster += 1
 
-        f, axarr = plt.subplots(2 if len(transformList) == 1 else len(transformList), nAlgCluster)
-
         for indT,tupleTranform in enumerate(transformList):
             transformName = tupleTranform[0]
             dtransform = tupleTranform[1]
@@ -414,14 +421,14 @@ def main():
                     points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
                     name = clusterAlg.__class__.__name__
                     print "Showing results for Cluster ",name
-                    showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name),ax=axarr[indT,currentCol])
+                    showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name))
                     currentCol += 1
 
             if doEncoderLabel:
                 points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
 
                 print "Showing results for Encoder labeling"
-                showResults(dataset,points,predEncoder,realsLab,transformName+" "+'Encoder',ax=axarr[indT,currentCol])
+                showResults(dataset,points,predEncoder,realsLab,transformName+" "+'Encoder')
                 currentCol += 1
         plt.savefig(os.path.join(outFolder,'table1.png'))
 
