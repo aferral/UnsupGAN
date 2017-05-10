@@ -32,18 +32,25 @@ def b64_image_files(images, colormap='magma'):
 
 def main(pklPath,real=False):
 
-    lista = []
-    with open(pklPath,'rb') as f:
-        lista = pickle.load(f)
-    assert(len(lista) == 5)
-    savepoints = lista[0]
-    savelabels = lista[1]
-    iamgeSave = lista[2]/255
-    saverls = lista[3]
-    names = lista[4]
+    if pklPath != 'test' :
+        lista = []
+        with open(pklPath,'rb') as f:
+            lista = pickle.load(f)
+        assert(len(lista) == 5)
+        savepoints = lista[0]
+        savelabels = lista[1]
+        iamgeSave = lista[2]/255
+        saverls = lista[3]
+        names = lista[4]
 
-    assert (len(savepoints.shape) == 2)
-    assert(savepoints.shape[1] == 2)
+        assert (len(savepoints.shape) == 2)
+        assert(savepoints.shape[1] == 2)
+    else:
+        savepoints = np.random.rand(1000, 2)
+        savelabels = np.random.randint(0, 3, size=(1000))
+        iamgeSave = np.random.rand(1000, 96, 96)
+        saverls = np.random.randint(0, 3, size=(1000))
+        names = 'test'
 
     tooltip = """
         <div>
@@ -60,11 +67,7 @@ def main(pklPath,real=False):
         </div>
               """
 
-    # savepoints = np.random.rand(1000,2)
-    # savelabels = np.random.randint(0,3,size=(1000))
-    # iamgeSave = np.random.rand(1000,96,96)
-    # iamgeSave = ['test' for i in range(1000)]
-    # saverls = np.random.randint(0,3,size=(1000))
+
 
 
     #POINTS,LABELS,IMAGES
@@ -130,7 +133,7 @@ def main(pklPath,real=False):
         elements = np.where(np.array(df['label']) == c)
         print "c ",c," elements ",elements[0].shape
         temp = plt.scatter(df['z'].values[elements], df['w'].values[elements],
-                   facecolors='none', label='Class ' + str(c))
+                   facecolors='none', label='Class ' + str(c),c=colorList[c])
     plt.show()
 
 
@@ -141,8 +144,15 @@ def test():
     main('exp_cEncoder.pkl', real=real)
 
 if __name__ == '__main__':
-    path = sys.argv[1]
-    real = sys.argv[2]
+
+
+    if len(sys.argv) < 3:
+        path = 'test'
+        real = '0'
+    else:
+        path = sys.argv[1]
+        real = sys.argv[2]
+
     if real == '1':
         real = True
     else:
