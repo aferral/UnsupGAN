@@ -105,7 +105,9 @@ def main(pklPath,real=False):
                title="Mouse over the dots")
 
     colorList = []
-    for i in range(0, len(set(df['label']))):
+    nClases = len(set(df['label']))
+    print "There are ",nClases," classes"
+    for i in range(nClases):
         nc = generate_new_color(colorList, pastel_factor=0.9)
         colorList.append(nc)
     print colorList
