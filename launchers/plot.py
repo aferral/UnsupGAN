@@ -115,6 +115,9 @@ def main(pklPath,real=False):
     p.scatter(source=df, x='z', y='w', fill_color=colors,size=10 )
     show(p)
 
+def test():
+    main('exp_cEncoder.pkl', real=real)
+
 if __name__ == '__main__':
     path = sys.argv[1]
     real = sys.argv[2]
