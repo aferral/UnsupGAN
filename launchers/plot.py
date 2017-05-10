@@ -68,7 +68,7 @@ def main(pklPath,real=False):
 
     #POINTS,LABELS,IMAGES
     nPoints = savepoints.shape[0]
-    
+
     if nPoints > 1000:
         savepoints = savepoints[0:1000]
         savelabels = savelabels[0:1000]
@@ -121,4 +121,4 @@ if __name__ == '__main__':
         real = True
     else:
         real = False
-    main('test', real=real)
+    main(path, real=real)
