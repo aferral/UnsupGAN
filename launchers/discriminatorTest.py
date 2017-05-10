@@ -243,7 +243,8 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     #THIS WILL MAKE THE saverls and realLabels coincide in values
     saverls = np.roll(saverls[:-1*desfase], -dataset.dataObj.batch_size)
     assert(np.array_equal(saverls,realLabels))
-    iamgeSave = np.roll(iamgeSave[:-1*desfase], -dataset.dataObj.batch_size)
+
+    iamgeSave = np.roll(iamgeSave[:-1*desfase], -dataset.dataObj.batch_size, axis=0)
     names = np.roll(names[:-1*desfase], -dataset.dataObj.batch_size)
 
     with open('exp_'+str(name)+'.pkl','wb') as f:
