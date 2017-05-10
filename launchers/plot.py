@@ -74,6 +74,7 @@ def main(pklPath,real=False):
         savelabels = savelabels[0:1000]
         iamgeSave = iamgeSave[0:1000]
         saverls = iamgeSave[0:1000]
+        nPoints = 1000
 
 
     df = pd.DataFrame(index=np.arange(nPoints), columns={'z','w','image_files','source_filenames','label'})
