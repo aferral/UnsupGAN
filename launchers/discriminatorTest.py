@@ -229,9 +229,10 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     savelabels = labels
     iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
     saverls = dataset.dataObj.validation_labels # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+    names = [dataset.dataObj.getValFilename(i) for i in range(savepoints.shape[0])]
 
     with open('exp_'+str(name)+'.pkl','wb') as f:
-        pickle.dump([savepoints,savelabels,iamgeSave,saverls],f,-1)
+        pickle.dump([savepoints,savelabels,iamgeSave,saverls,names],f,-1)
 
 
 

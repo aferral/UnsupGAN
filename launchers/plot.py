@@ -35,11 +35,12 @@ def main(pklPath,real=False):
     lista = []
     with open(pklPath,'rb') as f:
         lista = pickle.load(f)
-    assert(len(lista) == 4)
+    assert(len(lista) == 5)
     savepoints = lista[0]
     savelabels = lista[1]
     iamgeSave = lista[2]
     saverls = lista[3]
+    names = lista[4]
 
     assert (len(savepoints.shape) == 2)
     assert(savepoints.shape[1] == 2)
@@ -74,6 +75,7 @@ def main(pklPath,real=False):
         savelabels = savelabels[0:1000]
         iamgeSave = iamgeSave[0:1000]
         saverls = saverls[0:1000]
+        names = names[0:1000]
         nPoints = 1000
 
 
@@ -87,7 +89,7 @@ def main(pklPath,real=False):
 
     filenames = b64_image_files(images)
     df['image_files'] = filenames
-    df['source_filenames'] = 'test'
+    df['source_filenames'] = names
 
     if real:
         df['label'] = saverls
