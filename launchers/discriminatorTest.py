@@ -246,8 +246,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
 
     iamgeSave = np.roll(iamgeSave[:-1*desfase], -dataset.dataObj.batch_size, axis=0)
     names = np.roll(names[:-1*desfase], -dataset.dataObj.batch_size)
-
-    with open('exp_'+str(name)+'.pkl','wb') as f:
+    with open(os.path.join(outFolder,'exp_'+str(name.replace(' ','_'))+'.pkl'),'wb') as f:
         pickle.dump([savepoints,savelabels,iamgeSave,saverls,names],f,-1)
 
 

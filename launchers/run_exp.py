@@ -15,11 +15,11 @@ import datetime
 flags = tf.app.flags
 flags.DEFINE_string("train_dataset", "dataFolder", "The name of dataset in ./data")
 flags.DEFINE_string("val_dataset", "dataFolder", "The name of dataset in ./data")
-flags.DEFINE_integer("output_size", 32, "Size of the images to generate")
+flags.DEFINE_integer("output_size", 96, "Size of the images to generate")
 flags.DEFINE_integer("categories", None, "Size of the images to generate")
-flags.DEFINE_integer("batch_size", 128, "Size of the images to generate")
+flags.DEFINE_integer("batch_size", 64, "Size of the images to generate")
 flags.DEFINE_bool("train", True, "Training mode or testing mode")
-flags.DEFINE_string("exp_name","MFPT dcganf2 vanilla", "Used to load model")
+flags.DEFINE_string("exp_name","CWR_96_vanilla", "Used to load model")
 FLAGS = flags.FLAGS
 
 def main():
@@ -66,7 +66,7 @@ def main():
 	print("CREATED VAL dataset ")
 
     elif FLAGS.train_dataset == "dataFolder":
-        folder = 'data/MFPT96Scalograms'
+        folder = 'data/CW96Scalograms'
 
         dataset = datasets.DataFolder(folder,batch_size,out_size=FLAGS.output_size)
 

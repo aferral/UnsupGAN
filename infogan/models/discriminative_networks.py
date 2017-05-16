@@ -67,7 +67,7 @@ class dcgan_net():
         self.image_shape = image_shape
 
         if self.image_shape[0] == 32:
-            self.k_h = self.k_w = 2
+            self.k_h = self.k_w = 3
         else:
             self.k_h = self.k_w = 5
 
