@@ -11,36 +11,40 @@ from infogan.misc.utils import mkdir_p
 import dateutil
 import dateutil.tz
 import datetime
+import sys
+import json
+#Load exp Json
 
-flags = tf.app.flags
-flags.DEFINE_string("train_dataset", "dataFolder", "The name of dataset in ./data")
-flags.DEFINE_string("val_dataset", "dataFolder", "The name of dataset in ./data")
-flags.DEFINE_integer("output_size", 96, "Size of the images to generate")
-flags.DEFINE_integer("categories", None, "Size of the images to generate")
-flags.DEFINE_integer("batch_size", 64, "Size of the images to generate")
-flags.DEFINE_bool("train", True, "Training mode or testing mode")
-flags.DEFINE_string("exp_name","CWR_96_vanilla", "Used to load model")
-FLAGS = flags.FLAGS
 
-def main():
+
+
+def main(configPath):
+    with open(configPath, 'r') as f:
+        d = json.load(f)
+
+        train_dataset = d['train_dataset']
+        train_Folder = d['train_Folder']
+        val_dataset = d['val_dataset']
+        output_size = d['output_size']
+        categories = d['categories']
+        batch_size = d['batch_size']
+        exp_name = d['exp_name']
+        arch = d['arch']
+
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 
-    root_log_dir = "logs/" + FLAGS.train_dataset
-    root_checkpoint_dir = "ckt/" + FLAGS.train_dataset
-    root_samples_dir = "samples/" + FLAGS.train_dataset
-    batch_size = FLAGS.batch_size
+    root_log_dir = "logs/" + train_dataset
+    root_checkpoint_dir = "ckt/" + train_dataset
+    root_samples_dir = "samples/" + train_dataset
     updates_per_epoch = 100
     max_epoch = 50
 
-    if not FLAGS.exp_name:
-        exp_name = "t-%s_v-%s_o-%d" % (FLAGS.train_dataset, FLAGS.val_dataset,
-                                       FLAGS.output_size)
-        if FLAGS.categories is not None:
-            exp_name = exp_name + "_c-%d" % (FLAGS.categories)
+    if not (exp_name is None):
+        exp_name = "t-%s_v-%s_o-%d" % (train_dataset, val_dataset,output_size)
+        if not (categories is None):
+            exp_name = exp_name + "_c-%d" % (categories)
         exp_name = exp_name + "_%s" % (timestamp)
-    else:
-        exp_name = FLAGS.exp_name
 
     print("Experiment Name: %s" % (exp_name))
 
@@ -53,8 +57,8 @@ def main():
     mkdir_p(samples_dir)
 
     output_dist = None
-    network_type = 'dcgan'
-    if FLAGS.train_dataset == "mnist":
+    network_type = arch
+    if train_dataset == "mnist":
         print("Creating train dataset ")
         dataset = datasets.MnistDataset()
         output_dist = MeanBernoulli(dataset.image_dim)
@@ -63,31 +67,24 @@ def main():
 
         print("Creating VAL dataset ")
         val_dataset = dataset
-	print("CREATED VAL dataset ")
-
-    elif FLAGS.train_dataset == "dataFolder":
-        folder = 'data/CW96Scalograms'
-
-        dataset = datasets.DataFolder(folder,batch_size,out_size=FLAGS.output_size)
-
-        network_type = 'deeper_dcgan'
-        network_type = 'dcgan'
+    elif train_dataset == "dataFolder":
+        dataset = datasets.DataFolder(train_Folder,batch_size,out_size=output_size)
 
         print("Folder datasets created ")
         val_dataset = dataset
     else:
-        dataset = datasets.Dataset(name=FLAGS.train_dataset,
+        dataset = datasets.Dataset(name=train_dataset,
                                    batch_size=batch_size,
-                                   output_size=FLAGS.output_size)
-        val_dataset = datasets.Dataset(name=FLAGS.val_dataset,
+                                   output_size=output_size)
+        val_dataset = datasets.Dataset(name= val_dataset,
                                        batch_size=batch_size,
-                                       output_size=FLAGS.output_size)
+                                       output_size= output_size)
 
     latent_spec = [
         (Uniform(100), False)
     ]
-    if FLAGS.categories is not None:
-        latent_spec.append((Categorical(FLAGS.categories), True))
+    if categories is not None:
+        latent_spec.append((Categorical(categories), True))
 
     is_reg = False
     for x, y in latent_spec:
@@ -108,7 +105,7 @@ def main():
         dataset=dataset,
         val_dataset=val_dataset,
         batch_size=batch_size,
-        isTrain=FLAGS.train,
+        isTrain=True,
         exp_name=exp_name,
         log_dir=log_dir,
         checkpoint_dir=checkpoint_dir,
@@ -122,14 +119,13 @@ def main():
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
     algo.init_opt()
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        if FLAGS.train:
-            algo.train(sess)
-        else:
-            restorer = tf.train.Saver()
-            restorer.restore(sess, 'model_name')
-            print('Model restored.')
-            # algo.validate(sess)
+        algo.train(sess)
 
 
 if __name__ == "__main__":
-    main()
+    configPath = ''
+    if len(sys.argv) < 2:
+        print("Please specify path of config file")
+    else:
+        configPath = sys.argv[1]
+        main(configPath)
