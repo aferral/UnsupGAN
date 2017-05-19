@@ -99,6 +99,10 @@ class Dataset:
         self.current_batch = 0
         self.current_epoch = 0
 
+    def getNumberOfBatches(self):
+        return self.n_batches
+    def getDataShape(self):
+        return (self.imageSize,self.imageSize)
     def classDistribution(self):
         return "Train set "+str(Counter(np.where(self.train_labels == 1)[1]))+\
                " test set "+str(Counter(np.where(self.test_labels == 1)[1]))

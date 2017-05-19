@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-import tf
+import tensorflow as tf
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report
 
@@ -21,7 +21,7 @@ def main(configPath):
     expName = "clasifyExp"
 
     res = {}
-    with open(configFile, 'r') as f:
+    with open(configPath, 'r') as f:
         res = json.load(f)
 
     dataFolder = res['dataFolder']
@@ -38,44 +38,39 @@ def main(configPath):
     with tf.Session() as sess:
         new_saver = tf.train.import_meta_graph(modelPath + '.meta')
         new_saver.restore(sess, modelPath)
+        # Define dtransform to use (raw,cond)
+        transformList = loadDatatransform(res, sess)
+        transformList.append(('rawImageFlat',flatImage))
 
-    # Define dtransform to use (raw,cond)
-    transformList = loadDatatransform(res, sess)
-    transformList.append(('rawImageFlat'),flatImage)
+        result = {}
 
-    result = {}
+        for name,datatransform in transformList:
+            #Transform dataseet
+            trainX, realLabels = trainsetTransform(datatransform, dataset)
+            tX,ty = testsetTransform(datatransform, dataset)
 
-    for name,datatransform in transformList:
-        #Transform dataseet
-        trainX, realLabels = trainsetTransform(datatransform, dataset)
-        tX,ty = testsetTransform(datatransform, dataset)
+            realLabels = np.where(realLabels)[1]
+            ty = np.where(ty)[1]
 
-        # do LSVM clasify
-        clf = SGDClassifier()
-        clf.fit(trainX, realLabels)
-        pred = clf.predict(tX)
+            # do LSVM clasify
+            clf = SGDClassifier()
+            clf.fit(trainX, realLabels)
+            pred = clf.predict(tX)
 
-        fullRes = classification_report(ty, pred)
-        acc =  accuracy_score(ty, pred)
-        result[name] = {"acc" : acc, "full" : fullRes}
-
+            fullRes = classification_report(ty, pred)
+            acc =  accuracy_score(ty, pred)
+            result[name] = {"acc" : acc, "full" : fullRes}
+            
+    tf.reset_default_graph()
     # do CNN clasify with images
-    l, y1, y2, seed, runTime, trainLoss, valLoss, valAc = runSession(dataFolder, 0.3,
-                                                                     0.3,
-                                                                     batch_size,
-                                                                     'temp',
-                                                                     1e-4,
-                                                                     'temp',
-                                                                     False,
-                                                                     epochs=20)
+    l, y1, y2, seed, runTime, trainLoss, valLoss, valAc = runSession(dataFolder, 0.3,0.3,batch_size,'temp',1e-4,'temp',False,epochs=10)
     fullRes = classification_report(y1, y2)
     acc = accuracy_score(y1, y2)
     result['CNN-alt2'] = {"acc": acc, "full": fullRes}
 
     data=pd.DataFrame.from_dict(result)
 
-
-    writer = pd.ExcelWriter(os.path.join(outFolder,'output.xlsx'))
+    writer = pd.ExcelWriter(os.path.join(outFolder,expName+'.xlsx'))
     data.to_excel(writer, 'Sheet1')
     writer.save()
 
