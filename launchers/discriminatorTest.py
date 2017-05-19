@@ -90,6 +90,22 @@ def trainsetTransform(data_transform, dataset):#TODO this wont scale if dataset 
         realLabels = realLabels + list(batch_labels)
     return trainX,realLabels
 
+def testsetTransform(data_transform, dataset):#TODO this wont scale if dataset is big ALSO THIS ISNT TEST SET !!! IS VAL
+    trainX = np.array([]).reshape(0, 0)
+    realLabels = []
+    # From train data create clustering
+    for ii in range(dataset.batch_idx['val']):
+        x, batch_labels = dataset.next_batch(dataset.batch_size)
+
+        d_features_norm = data_transform(x)
+
+        if trainX.shape[0] == 0:  # Is empty
+            trainX = d_features_norm
+        else:
+            trainX = np.concatenate((trainX, d_features_norm), axis=0)
+        realLabels = realLabels + list(batch_labels)
+    return trainX,realLabels
+
 def transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in):
     d_features = sess.run(d_feat, {d_in : x})
     d_features = pool_features(d_features, pool_type='avg')
@@ -326,9 +342,47 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         return res
 
 
+def loadDatatransform(values,sess):
+    # Define in and outputs to use (String)
+    discrInputName = values['discrInputName']
+    discrLastFeatName = values['discrLastFeatName']
+    discrEncoderName = values['discrEncoderName']
+    nameDataTransform = values['nameDataTransform']
+
+    validTransforms = nameDataTransform.split(',')
+    transformList = []
+    d_in = None
+    d_feat = None
+    d_encoder = None
+
+    if not (discrInputName == 'None'):
+        d_in = sess.graph.get_tensor_by_name(discrInputName)
+    if not (discrLastFeatName == 'None'):
+        d_feat = sess.graph.get_tensor_by_name(discrLastFeatName)
+    if not (discrEncoderName == 'None') and (('cen' in validTransforms) or ('cend' in validTransforms)):
+        d_encoder = sess.graph.get_tensor_by_name(discrEncoderName)
+
+    # Check if we have the data to run test
+    assert (not (d_in is None))
+    assert (not (d_feat is None))
+    assert (not (doEncoderLabel) or (doEncoderLabel and not (d_encoder is None)))
+
+    # Check and define data transform c,cen,cend define valid transform of data
+
+    for elem in validTransforms:
+        if elem == "c":
+            transformList.append((elem, lambda x: transformFeature_Norm(x, sess, d_feat, d_in)))
+        elif elem == "cen":
+            transformList.append((elem, lambda x: transformFeatureAndEncoder(x, sess, d_feat, d_encoder, d_in)))
+        elif elem == 'cend':
+            transformList.append((elem, lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)))
+        else:
+            raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
+
+    return transformList
+
 def main():
     #Get dataset
-    #TODO by the moment it just uses train to cluster and predict
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
 
 
@@ -339,37 +393,8 @@ def main():
         new_saver = tf.train.import_meta_graph(modelPath+'.meta')
         new_saver.restore(sess, modelPath)
 
-        #Load in and outs to use
-        validTransforms = nameDataTransform.split(',')
-        transformList = []
-        d_in = None
-        d_feat = None
-        d_encoder = None
-
-        if not(discrInputName == 'None'):
-            d_in  = sess.graph.get_tensor_by_name(discrInputName)
-        if not(discrLastFeatName == 'None'):
-            d_feat  = sess.graph.get_tensor_by_name(discrLastFeatName)
-        if not(discrEncoderName == 'None') and (('cen' in validTransforms) or ('cend' in validTransforms)):
-            d_encoder  = sess.graph.get_tensor_by_name(discrEncoderName)
-
-        #Check if we have the data to run test
-        assert( not(d_in is None))
-        assert(not(d_feat is None) )
-        assert( not(doEncoderLabel) or (doEncoderLabel and not(d_encoder is None) ))
-
-        #Check and define data transform c,cen,cend define valid transform of data
-
-
-        for elem in validTransforms:
-            if elem == "c":
-                transformList.append((elem,lambda x : transformFeature_Norm(x,sess,d_feat,d_in)))
-            elif elem == "cen":
-                transformList.append((elem,lambda x : transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in)))
-            elif elem == 'cend':
-                transformList.append((elem,lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)))
-            else:
-                raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
+        #Load datatrasnform to use
+        transformList = loadDatatransform(res, sess)
 
         #Define grid of images for table1
         nAlgCluster = 1
@@ -436,6 +461,8 @@ def main():
                     currentCol += 1
 
             if doEncoderLabel:
+                d_in = sess.graph.get_tensor_by_name(discrInputName)
+                d_encoder = sess.graph.get_tensor_by_name(discrEncoderName)
                 points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
 
                 print "Showing results for Encoder labeling"
