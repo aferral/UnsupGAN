@@ -50,9 +50,9 @@ for folder in listaFolders: #Tabla
 
 				data[str(dataTransform) + "_" + str(methodName)] = temp
 
-	df = pd.DataFrame(data).transpose()
-	df.to_excel(writer,'hoja0')
-	hoja+=1
-	writer.save()
+		df = pd.DataFrame(data).transpose()
+		df.to_excel(writer,'hoja0')
+		hoja+=1
+		writer.save()
 
 
