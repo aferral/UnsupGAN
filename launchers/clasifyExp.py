@@ -28,7 +28,7 @@ def main(configPath):
     modelPath = res['modelPath']
     batch_size = res['batch_size']
     imageSize = res['imageSize']
-    outFolder = res['outFolder']
+    outFolder = "/home/user/Escritorio/reportes"
     batch_size = res['batch_size']
 
     # Define dataset
