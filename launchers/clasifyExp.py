@@ -7,7 +7,7 @@ from sklearn.metrics import classification_report
 
 from infogan.misc.alt2 import runSession
 from infogan.misc.datasets import DataFolder
-from launchers.discriminatorTest import trainsetTransform, testsetTransform, loadDatatransform
+from launchers.discriminatorTest import trainsetTransform, testsetTransform, loadDatatransform, transformEncoder
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
@@ -39,7 +39,7 @@ def main(configPath):
         new_saver = tf.train.import_meta_graph(modelPath + '.meta')
         new_saver.restore(sess, modelPath)
         # Define dtransform to use (raw,cond)
-        transformList = loadDatatransform(res, sess)
+        transformList = loadDatatransform(res, sess,addEnc=True)
         transformList.append(('rawImageFlat',flatImage))
 
         result = {}

@@ -106,6 +106,11 @@ def testsetTransform(data_transform, dataset):#TODO this wont scale if dataset i
         realLabels = realLabels + list(batch_labels)
     return trainX,realLabels
 
+def transformEncoder(x,sess,d_in,d_encoder):
+    encoderOut = sess.run(d_encoder, {d_in: x})
+    result = normalize(encoderOut, axis=1, norm='l2')
+    return result
+
 def transformFeatureAndEncoder(x,sess,d_feat,d_encoder,d_in):
     d_features = sess.run(d_feat, {d_in : x})
     d_features = pool_features(d_features, pool_type='avg')
@@ -342,7 +347,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         return res
 
 
-def loadDatatransform(values,sess):
+def loadDatatransform(values,sess,addEnc=False):
     # Define in and outputs to use (String)
     discrInputName = values['discrInputName']
     discrLastFeatName = values['discrLastFeatName']
@@ -378,6 +383,8 @@ def loadDatatransform(values,sess):
             transformList.append((elem, lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)))
         else:
             raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
+    if addEnc:
+        transformList.append(('encoder', lambda x: transformEncoder(x, sess, d_in, d_encoder)))
 
     return transformList
 
