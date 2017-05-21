@@ -383,7 +383,7 @@ def loadDatatransform(values,sess,addEnc=False):
             transformList.append((elem, lambda x: transformFeatureAndEncoderDontNorm(x, sess, d_feat, d_encoder, d_in)))
         else:
             raise Exception("ERROR DATA TRANSFORM NOT DEFINED")
-    if addEnc:
+    if addEnc and values['doEncoderLabel']:
         transformList.append(('encoder', lambda x: transformEncoder(x, sess, d_in, d_encoder)))
 
     return transformList
