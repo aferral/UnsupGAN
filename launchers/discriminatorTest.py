@@ -61,9 +61,9 @@ nClustersTofind = res['nClustersTofind']
 
 #----------------------PARAMETERS --------------------
 
-
-if not os.path.exists(outFolder):
-    os.makedirs(outFolder)
+if __name__ == '__main__':
+    if not os.path.exists(outFolder):
+        os.makedirs(outFolder)
 
 
 def pool_features(feat, pool_type='avg'):
