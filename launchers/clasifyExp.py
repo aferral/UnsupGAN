@@ -28,8 +28,11 @@ def main(configPath):
     modelPath = res['modelPath']
     batch_size = res['batch_size']
     imageSize = res['imageSize']
-    outFolder = "/home/user/Escritorio/reportes"
+    outFolder = os.path.join("/home/user/Escritorio/reportes",res['outFolder'])
     batch_size = res['batch_size']
+
+    if not os.path.exists(outFolder):
+        os.makedirs(outFolder)
 
     # Define dataset
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)

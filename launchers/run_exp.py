@@ -40,7 +40,7 @@ def main(configPath):
     updates_per_epoch = 100
     max_epoch = 50
 
-    if not (exp_name is None):
+    if exp_name is None:
         exp_name = "t-%s_v-%s_o-%d" % (train_dataset, val_dataset,output_size)
         if not (categories is None):
             exp_name = exp_name + "_c-%d" % (categories)
