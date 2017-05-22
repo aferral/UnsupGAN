@@ -296,12 +296,14 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
         #Show distribution
         dist = Counter(rl)
         log += ("Showing Real distribution for that generated Label "+str(dist)+'\n')
-        pdist = [(elem,dist[elem]*1.0/sum(dist.values())) for elem in set(dist.elements())]
+        totalPointsClass = sum(dist.values())
+        pdist = [(elem,dist[elem]*1.0/ totalPointsClass) for elem in set(dist.elements())]
         log += ("%dist "+str(pdist)+'\n')
 
         #place the clasification score
         if len(pdist) > 0:
             classScore = max(pdist, key = lambda x : x[1])[1]
+            classScore = classScore * ( totalPointsClass * 1.0 / labels.shape[0]) #Ponderate all classScore according to N of points
         else:
             classScore = 0
         log += ("Clasification score " + str(classScore) + '\n')
