@@ -338,7 +338,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
     log += ("The ARI was " + str(metrics.adjusted_rand_score(realLabels, labels)) + '\n')
     log += ("The NMI was " + str(metrics.normalized_mutual_info_score(realLabels, labels)) + '\n')
     log += ("Predicted cluster number is " + str(n_classes) + '\n')
-    log += ("The mean classificationScore is " + str(np.mean(np.array(globalClassScore))) + '\n')
+    log += ("The mean classificationScore is " + str(np.sum(np.array(globalClassScore))) + '\n')
     log += ("The std classificationScore is " + str(np.std(np.array(globalClassScore))) + '\n')
     log += ("PCA2 with predicted variance" + str(pca.explained_variance_ratio_)+ '\n')
 
