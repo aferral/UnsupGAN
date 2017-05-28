@@ -214,7 +214,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         testLabels = self.dataObj.test_labels
 
         if testSet.shape[1:] != (self.image_shape): #TODO why i dont use the self.batch_size
-            temp = np.zeros(list(testSet.shape[0]) + list(self.image_shape))
+            temp = np.zeros([testSet.shape[0]] + list(self.image_shape))
             for i in range(testSet.shape[0]):
                 temp[i,:,:] = resize(testSet[i,:,:],(self.output_size,self.output_size))
             testSet = temp
