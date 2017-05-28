@@ -3,11 +3,11 @@ import numpy as np
 
 import matplotlib
 
-from launchers.plot import plotBlokeh
+
 
 matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
-
+from launchers.plot import plotBlokeh
 import tensorflow as tf
 from skimage.io import imsave
 from skimage.transform import rescale
