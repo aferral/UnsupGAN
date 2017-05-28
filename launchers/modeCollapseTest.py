@@ -99,7 +99,7 @@ def main(configPath):
         res = json.load(f)
 
     # Define parameters
-    epochsClasifier = 50
+    epochsClasifier = 5
     discrInputName = res['discrInputName']
     featName = res['discrLastFeatName']
     dataFolder = res['dataFolder']
@@ -116,7 +116,7 @@ def main(configPath):
 
 
     #Set MLP for clasification
-    clf = MLPClassifier( alpha=1e-5, hidden_layer_sizes = (200, 1))
+    clf = MLPClassifier( alpha=1e-5, hidden_layer_sizes = (50, 1))
 
     # Load saved GAN
     with tf.Session() as sess:
