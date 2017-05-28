@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import tensorflow as tf
-import matplotlib as plt
+import matplotlib
 from sklearn.decomposition import PCA
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report
@@ -13,7 +13,11 @@ from launchers.discriminatorTest import trainsetTransform, testsetTransform, loa
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
-plt.use('Agg')
+
+import matplotlib
+matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
+import matplotlib.pyplot as plt
+
 from sklearn.neural_network import MLPClassifier
 
 def experimentPlot(dataset,sess,d_feat,d_in,batch_size,outFolder):
