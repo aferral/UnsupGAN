@@ -256,7 +256,8 @@ def showResults(dataset,points,labels,realLabels,name,ax=None,showBlokeh=False):
     transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca,outFolder)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
-
+    if showBlokeh:
+        plotInteractive(transformed, realLabels, dataset)
 
     n_classes = len(set(labels))
     labels = np.array(labels)
@@ -474,12 +475,15 @@ def main():
                     points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
                     name = clusterAlg.__class__.__name__
                     print "Showing results for Cluster ",name
-                    showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name))
+                    
+                    if showBlokeh: #This will plot once per transformation
+                        showResults(dataset, points, predClust, realsLab, transformName + " " + 'Cluster ' + str(name),showBlokeh=True)
+                        showBlokeh = False
+                    else:
+                        showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name))
                     currentCol += 1
 
-                    if showBlokeh: #This will plot once per transformation
-                        plotInteractive(points,realsLab,dataset)
-                        showBlokeh = False
+
 
             if doEncoderLabel:
                 d_in = sess.graph.get_tensor_by_name(discrInputName)
