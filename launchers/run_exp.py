@@ -18,7 +18,7 @@ import json
 
 
 
-def main(configPath):
+def train(configPath):
     with open(configPath, 'r') as f:
         d = json.load(f)
 
@@ -128,4 +128,4 @@ if __name__ == "__main__":
         print("Please specify path of config file")
     else:
         configPath = sys.argv[1]
-        main(configPath)
+        train(configPath)
