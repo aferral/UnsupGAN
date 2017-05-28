@@ -104,13 +104,13 @@ def main(configPath):
         res = json.load(f)
 
     # Define parameters
-    iterationsClasifier = 50
+    iterationsClasifier = 200
     discrInputName = res['discrInputName']
     featName = res['discrLastFeatName']
     dataFolder = res['dataFolder']
     modelPath = res['modelPath']
     imageSize = res['imageSize']
-    outFolder = os.path.join("/home/user/Escritorio/reportes",res['outFolder']) #TODO  WERE TO STORE??
+    outFolder = res['outFolder']
 
     originalBatchSize = res['batch_size']
     half_batch = int(res['batch_size'] * 0.5)

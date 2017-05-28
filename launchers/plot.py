@@ -30,26 +30,21 @@ def b64_image_files(images, colormap='magma'):
         urls.append(url)
     return urls
 
-def main(pklPath,real=False):
+def plotBlokeh(lista, test=False):
+    assert (len(lista) == 4)
 
-    if pklPath != 'test' :
-        lista = []
-        with open(pklPath,'rb') as f:
-            lista = pickle.load(f)
-        assert(len(lista) == 5)
-        savepoints = lista[0]
-        savelabels = lista[1]
-        iamgeSave = lista[2]/255
-        saverls = lista[3]
-        names = lista[4]
+    savepoints = lista[0]
+    savelabels = lista[1]
+    iamgeSave = lista[2]/255
+    names = lista[3]
 
-        assert (len(savepoints.shape) == 2)
-        assert(savepoints.shape[1] == 2)
-    else:
+    assert (len(savepoints.shape) == 2)
+    assert(savepoints.shape[1] == 2)
+
+    if test:
         savepoints = np.random.rand(1000, 2)
         savelabels = np.random.randint(0, 3, size=(1000))
         iamgeSave = np.random.rand(1000, 96, 96)
-        saverls = np.random.randint(0, 3, size=(1000))
         names = 'test'
 
     tooltip = """
@@ -67,23 +62,18 @@ def main(pklPath,real=False):
         </div>
               """
 
-
-
-
     #POINTS,LABELS,IMAGES
     nPoints = savepoints.shape[0]
 
-    if nPoints < 1000:
+    if nPoints > 1000:
         savepoints = savepoints[0:1000]
         savelabels = savelabels[0:1000]
         iamgeSave = iamgeSave[0:1000]
-        saverls = saverls[0:1000]
         names = names[0:1000]
         nPoints = 1000
 
     #Sometimes there are less batches
     iamgeSave = iamgeSave[0:nPoints]
-    saverls = saverls[0:nPoints]
     names = names[0:nPoints]
 
 
@@ -99,10 +89,8 @@ def main(pklPath,real=False):
     df['image_files'] = filenames
     df['source_filenames'] = names
 
-    if real:
-        df['label'] = saverls
-    else:
-        df['label'] = savelabels
+
+    df['label'] = savelabels
 
     bplot.output_file('plot.html')
     hover0 = HoverTool(tooltips=tooltip)
@@ -140,11 +128,7 @@ def main(pklPath,real=False):
     p.scatter(source=df, x='z', y='w', fill_color=colors,size=10 )
     show(p)
 
-def test():
-    main('exp_cEncoder.pkl', real=real)
-
 if __name__ == '__main__':
-
 
     if len(sys.argv) < 3:
         path = 'test'
@@ -157,4 +141,12 @@ if __name__ == '__main__':
         real = True
     else:
         real = False
-    main(path, real=real)
+
+    lista = []
+    if path != 'test' :
+        with open(path,'rb') as f:
+            lista = pickle.load(f)
+        plotBlokeh(lista)
+    else:
+        plotBlokeh(lista, test=True)
+

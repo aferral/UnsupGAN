@@ -2,6 +2,9 @@ import numpy as np
 
 
 import matplotlib
+
+from launchers.plot import plotBlokeh
+
 matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
 
@@ -241,7 +244,7 @@ def showDimRed(points, labels, name,dimRalg,outF):
 
     return transformed
 
-def showResults(dataset,points,labels,realLabels,name,ax=None):
+def showResults(dataset,points,labels,realLabels,name,ax=None,showBlokeh=False):
     outNameFile = "Results for "+str(name)+'.txt'
     log = ""
 
@@ -252,28 +255,6 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
 
     transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca,outFolder)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
-
-    #Save points,labels,name,fileNames TODO still here uses validation hardcoded
-
-    #TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
-    #if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
-
-
-    savepoints = transformed
-    savelabels = labels
-    iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
-    saverls = np.where(dataset.dataObj.validation_labels)[1] # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
-    names = [dataset.dataObj.getValFilename(i) for i in range(saverls.shape[0])]
-
-    desfase = saverls.shape[0] - np.array(realLabels).shape[0]
-    #THIS WILL MAKE THE saverls and realLabels coincide in values
-    saverls = np.roll(saverls[:-1*desfase], -dataset.dataObj.batch_size)
-    assert(np.array_equal(saverls,realLabels))
-
-    iamgeSave = np.roll(iamgeSave[:-1*desfase], -dataset.dataObj.batch_size, axis=0)
-    names = np.roll(names[:-1*desfase], -dataset.dataObj.batch_size)
-    with open(os.path.join(outFolder,'exp_'+str(name.replace(' ','_'))+'.pkl'),'wb') as f:
-        pickle.dump([savepoints,savelabels,iamgeSave,saverls,names],f,-1)
 
 
 
@@ -398,7 +379,7 @@ def loadDatatransform(values,sess,addEnc=False):
 def main():
     #Get dataset
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
-
+    showBlokeh = True
 
     #Load discriminator
     print os.getcwd()
@@ -436,7 +417,28 @@ def main():
 
             # SHOW PCA2 of data with REAL labels
             pca = PCA(n_components=2)
-            showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca,outFolder)
+            transformed = showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca,outFolder)
+
+
+            if showBlokeh:
+                # Save points,labels,name,fileNames TODO still here uses validation hardcoded
+                # TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
+                # if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
+                savepoints = transformed
+                savelabels = np.where(dataset.dataObj.validation_labels)[
+                    1] # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+                iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
+                names = [dataset.dataObj.getValFilename(i) for i in range(savelabels.shape[0])]
+                desfase = savelabels.shape[0] - np.array(rlbs).shape[0]
+                # THIS WILL MAKE THE saverls and realLabels coincide in values
+                saverls = np.roll(savelabels[:-1 * desfase], -dataset.dataObj.batch_size)
+                assert (np.array_equal(saverls, rlbs))
+
+                iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
+                names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
+
+                plotBlokeh([savepoints, savelabels, iamgeSave, names], test=False)
+
             currentCol += 1
 
             if doCluster:
