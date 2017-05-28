@@ -9,13 +9,12 @@ from sklearn.metrics import classification_report
 from infogan.misc.alt2 import runSession
 from infogan.misc.datasets import DataFolder
 from launchers.discriminatorTest import trainsetTransform, testsetTransform, loadDatatransform, transformEncoder, \
-    transformFeature_Norm, showDimRed
+    transformFeature_Norm, showDimRed, OneHotToInt
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
 
 import matplotlib
-matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
 
 from sklearn.neural_network import MLPClassifier
@@ -26,6 +25,7 @@ def experimentPlot(dataset,sess,d_feat,d_in,batch_size,outFolder):
     #First do the PCA2 of the real data
     cVectorTransform = lambda x: transformFeature_Norm(x, sess, d_feat, d_in)
     trainX, rlbs = trainsetTransform(cVectorTransform, dataset)
+    rlbs = OneHotToInt(rlbs)
     pca = PCA(n_components=2)
 
     showDimRed(trainX, rlbs, str('PCA_Real'), pca,outFolder)
