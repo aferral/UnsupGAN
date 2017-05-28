@@ -63,7 +63,7 @@ def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, o
         batchData = np.vstack([generatedBatch, realBatch])
         batchData = batchData + np.random.normal(0, 0.3, batchData.shape)
 
-        clasifier.partial_fit(batchData, batchLabels, classes=2)
+        clasifier.partial_fit(batchData, batchLabels, classes=np.unique(batchLabels))
     threshold = 0.9
     # Now at test set get all data with realProb > threshold
     # This are weird points that could mean a mode collapse in the generator
