@@ -2,6 +2,10 @@ import os
 import sys
 import json
 import tensorflow as tf
+
+import matplotlib
+matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
+import matplotlib.pyplot as plt
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report
 
@@ -11,6 +15,8 @@ from launchers.discriminatorTest import trainsetTransform, testsetTransform, loa
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
+
+
 
 def flatImage(x):
     return x.reshape(x.shape[0],-1)

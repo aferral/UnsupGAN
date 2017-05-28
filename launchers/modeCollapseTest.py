@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import tensorflow as tf
-import matplotlib
 from sklearn.decomposition import PCA
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report
@@ -15,6 +14,7 @@ import pandas as pd
 import numpy as np
 
 import matplotlib
+matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
 
 from sklearn.neural_network import MLPClassifier
