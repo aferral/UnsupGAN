@@ -194,21 +194,21 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         return self.dataObj.getTrainFilename(index)
 
     def next_batch(self, batch_size, split="train"):
-	toReturn = None
+        toReturn = None
         if split == 'train':
             toReturn =  self.dataObj.nextBatch()[0]
         elif split == 'val': #TODO USE BATCH IN VAL ???
             self.valBatchIdx = (self.valBatchIdx+1) % (self.batch_idx['val'])
             toReturn = self.dataObj.getValidationSet(asBatches=True)[self.valBatchIdx]
-	if toReturn[0].shape != ([batch_size] + list(self.image_shape)):
-		temp = np.zeros([batch_size] + list(self.image_shape))
-		for i in range(toReturn[0].shape[0]):
-			temp[i,:,:] = resize(toReturn[0][i,:,:],(self.output_size,self.output_size))
-		toReturn = (temp,toReturn[1])
-	#Here all the images are in 255-0 range we have to get them in -1 +1 range
-	toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])
+        if toReturn[0].shape != ([batch_size] + list(self.image_shape)): #TODO why i dont use the self.batch_size
+            temp = np.zeros([batch_size] + list(self.image_shape))
+            for i in range(toReturn[0].shape[0]):
+                temp[i,:,:] = resize(toReturn[0][i,:,:],(self.output_size,self.output_size))
+            toReturn = (temp,toReturn[1])
+        #Here all the images are in 255-0 range we have to get them in -1 +1 range
+        toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])   #todo config dataset image format
 
-	return toReturn
+        return toReturn
 
 class MnistDataset(object):
     def __init__(self):

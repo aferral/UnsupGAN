@@ -198,7 +198,7 @@ def encoderLabeling(sess,dataset,d_in,data_transform,d_encoder):
     return transformed,predited,realLabels
 
 
-def showDimRed(points, labels, name,dimRalg):
+def showDimRed(points, labels, name,dimRalg,outF):
 
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
@@ -232,7 +232,7 @@ def showDimRed(points, labels, name,dimRalg):
            ncol=3,
            fontsize=8)
 
-    plt.savefig(os.path.join(outFolder,name+'.png'))
+    plt.savefig(os.path.join(outF,name+'.png'))
 
     return transformed
 
@@ -245,7 +245,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None):
 
     pca = PCA(n_components=2)
 
-    transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca)
+    transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca,outFolder)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     #Save points,labels,name,fileNames TODO still here uses validation hardcoded
@@ -426,12 +426,12 @@ def main():
                 print "About to show TSNE with real labels (may take a while)"
                 print "Showing TSNE with real labels"
                 model = TSNE(n_components=2)
-                showDimRed(trainX, rlbs, transformName+str(' TSNE_Real'), model)
+                showDimRed(trainX, rlbs, transformName+str(' TSNE_Real'), model,outFolder)
                 currentCol += 1
 
             # SHOW PCA2 of data with REAL labels
             pca = PCA(n_components=2)
-            showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca)
+            showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca,outFolder)
             currentCol += 1
 
             if doCluster:
