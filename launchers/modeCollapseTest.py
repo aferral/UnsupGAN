@@ -85,6 +85,7 @@ def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, o
     result = {}
     result['threshold'] = threshold
     result['MissPoints'] = len(weirdPoints)
+    result['clasifyRep'] = fullRes
 
     data = pd.DataFrame(result, index=[0])
 
@@ -106,13 +107,15 @@ def main(configPath):
     modelPath = res['modelPath']
     imageSize = res['imageSize']
     outFolder = os.path.join("/home/user/Escritorio/reportes",res['outFolder']) #TODO  WERE TO STORE??
-    batch_size = int(res['batch_size'] * 0.5)
+
+    originalBatchSize = res['batch_size']
+    half_batch = int(res['batch_size'] * 0.5)
 
     if not os.path.exists(outFolder):
         os.makedirs(outFolder)
 
     # Define read dataset train and test
-    dataset = DataFolder(dataFolder,batch_size,testProp=0.2, validation_proportion=0.3, out_size=imageSize)
+    dataset = DataFolder(dataFolder,half_batch,testProp=0.2, validation_proportion=0.3, out_size=imageSize)
 
 
     #Set MLP for clasification
@@ -128,10 +131,10 @@ def main(configPath):
         featuresDiscr = sess.graph.get_tensor_by_name(featName)
 
         #Do the clasify exp for mode Collapse
-        modeCollapseClasify(dataset, outputGenerator, epochsClasifier, sess, batch_size, clf, outFolder)
+        modeCollapseClasify(dataset, outputGenerator, epochsClasifier, sess, half_batch, clf, outFolder)
 
         # Do the other experiment
-        experimentPlot(dataset, sess, featuresDiscr, outputGenerator, batch_size, outFolder)
+        experimentPlot(dataset, sess, featuresDiscr, outputGenerator, originalBatchSize, outFolder)
 
     tf.reset_default_graph()
 
