@@ -60,7 +60,7 @@ class dcgan_net():
              conv_batch_norm().
              apply(tf.nn.relu).
              custom_deconv2d([self.batch_size, s, s, self.c_dim], name='g_h4', k_h=self.k_h, k_w=self.k_w).
-             apply(tf.nn.tanh))
+             apply(tf.nn.tanh,name="OutGenerator"))
 
         return generator_template
 
@@ -104,6 +104,6 @@ class deeper_dcgan_net():
              conv_batch_norm().
              apply(tf.nn.relu).
              custom_deconv2d([self.batch_size, s, s, self.c_dim], name='g_h4', k_h=self.k_h, k_w=self.k_w).
-             apply(tf.nn.tanh))
+             apply(tf.nn.tanh,name="OutGenerator"))
 
         return generator_template
