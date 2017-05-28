@@ -47,9 +47,9 @@ def experimentPlot(dataset,sess,d_feat,d_in,batch_size,outFolder):
     plt.plot(generatedSample)
     plt.savefig(os.path.join(outFolder,'generatedSamplePCA.png'))
 
-def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, outFolder):
+def modeCollapseClasify(dataset,outGenerator,iterations,sess,batch_size,clasifier, outFolder):
     expName = "ModeCollapseExp"
-    for i in range(epochs):
+    for i in range(iterations):
         # Get generated samples for half the batch
         generatedBatch = sess.run(outGenerator)[0:batch_size]
 
@@ -100,7 +100,7 @@ def main(configPath):
         res = json.load(f)
 
     # Define parameters
-    epochsClasifier = 5
+    iterationsClasifier = 50
     discrInputName = res['discrInputName']
     featName = res['discrLastFeatName']
     dataFolder = res['dataFolder']
@@ -131,9 +131,10 @@ def main(configPath):
         featuresDiscr = sess.graph.get_tensor_by_name(featName)
 
         #Do the clasify exp for mode Collapse
-        modeCollapseClasify(dataset, outputGenerator, epochsClasifier, sess, half_batch, clf, outFolder)
+        modeCollapseClasify(dataset, outputGenerator, iterationsClasifier, sess, half_batch, clf, outFolder)
 
         # Do the other experiment
+        dataset = DataFolder(dataFolder, originalBatchSize, testProp=0.2, validation_proportion=0.3, out_size=imageSize)
         experimentPlot(dataset, sess, featuresDiscr, outputGenerator, originalBatchSize, outFolder)
 
     tf.reset_default_graph()
