@@ -86,7 +86,7 @@ def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, o
     result['threshold'] = threshold
     result['MissPoints'] = len(weirdPoints)
 
-    data = pd.DataFrame.from_dict(result)
+    data = pd.DataFrame(result, index=[0])
 
     writer = pd.ExcelWriter(os.path.join(outFolder, expName + '.xlsx'))
     data.to_excel(writer, 'Sheet1')
