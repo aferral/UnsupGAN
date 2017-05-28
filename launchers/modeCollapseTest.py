@@ -60,7 +60,7 @@ def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, o
         batchLabels = np.array([0 for i in range(batch_size)] + [1 for i in range(batch_size)])
 
         # Add batches and add a little noise
-        batchData = np.hstack([generatedBatch, realBatch])  # todo check if this is reight
+        batchData = np.vstack([generatedBatch, realBatch])  # todo check if this is reight
         batchData = batchData + np.random.normal(0, 0.3, batchData.shape)
 
         clasifier.partial_fit(batchData, batchLabels)
@@ -98,7 +98,7 @@ def main(configPath):
     dataFolder = res['dataFolder']
     modelPath = res['modelPath']
     imageSize = res['imageSize']
-    outFolder = os.path.join("/home/user/Escritorio/reportes",res['outFolder'])
+    outFolder = os.path.join("/home/user/Escritorio/reportes",res['outFolder']) #TODO  WERE TO STORE??
     batch_size = int(res['batch_size'] * 0.5)
 
     if not os.path.exists(outFolder):
