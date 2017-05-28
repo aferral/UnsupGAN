@@ -209,6 +209,18 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])   #todo config dataset image format
 
         return toReturn
+    def getTestSet(self):
+        testSet = self.dataObj.test_data
+        testLabels = self.dataObj.test_labels
+
+        if testSet.shape[1:] != (self.image_shape): #TODO why i dont use the self.batch_size
+            temp = np.zeros(list(testSet.shape[0]) + list(self.image_shape))
+            for i in range(testSet.shape[0]):
+                temp[i,:,:] = resize(testSet[i,:,:],(self.output_size,self.output_size))
+            testSet = temp
+        #Here all the images are in 255-0 range we have to get them in -1 +1 range
+        toReturn = ((testSet/127.5) - 1 , testLabels)   #todo config dataset image format
+        return toReturn
 
 class MnistDataset(object):
     def __init__(self):
