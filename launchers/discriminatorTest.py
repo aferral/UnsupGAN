@@ -25,38 +25,38 @@ import json
 from infogan.misc.utilsTest import generate_new_color
 
 if len(sys.argv) > 1:
+    print os.getcwd()
     configFile = sys.argv[1]
-else:
-    configFile = 'exp/testt.json'
-print os.getcwd()
-print "Loading config file ",configFile
+    print "Loading config file ", configFile
 
-res = {}
-with open(configFile,'r') as f:
-    res = json.load(f)
+    res = {}
+    with open(configFile, 'r') as f:
+        res = json.load(f)
 
-dataFolder = res['dataFolder']
-modelPath = res['modelPath']
+    dataFolder = res['dataFolder']
+    modelPath = res['modelPath']
 
-#Define methods to use for label (BOOLEAN)
-doCluster = res['doCluster']
-doEncoderLabel = res['doEncoderLabel']
-showTNSE = res['showTNSE']
+    # Define methods to use for label (BOOLEAN)
+    doCluster = res['doCluster']
+    doEncoderLabel = res['doEncoderLabel']
+    showTNSE = res['showTNSE']
 
-#Define in and outputs to use (String)
-discrInputName = res['discrInputName']
-discrLastFeatName = res['discrLastFeatName']
-discrEncoderName = res['discrEncoderName']
-#Define output folder for results (STRING)
-outFolder = res['outFolder']
-#This has to be the saved batch_size (INT)
-batch_size = res['batch_size']
-#The image size used in the arch (int) (square image)
-imageSize = res['imageSize']
+    # Define in and outputs to use (String)
+    discrInputName = res['discrInputName']
+    discrLastFeatName = res['discrLastFeatName']
+    discrEncoderName = res['discrEncoderName']
+    # Define output folder for results (STRING)
+    outFolder = res['outFolder']
+    # This has to be the saved batch_size (INT)
+    batch_size = res['batch_size']
+    # The image size used in the arch (int) (square image)
+    imageSize = res['imageSize']
 
-#Define data_transform to use "convFeat" OR "convFeatEncoder" (STRING)
-nameDataTransform = res['nameDataTransform']
-nClustersTofind = res['nClustersTofind']
+    # Define data_transform to use "convFeat" OR "convFeatEncoder" (STRING)
+    nameDataTransform = res['nameDataTransform']
+    nClustersTofind = res['nClustersTofind']
+
+
 
 
 #----------------------PARAMETERS --------------------
