@@ -376,10 +376,30 @@ def loadDatatransform(values,sess,addEnc=False):
 
     return transformList
 
+
+def plotInteractive(transformed,realLabels,dataset): #HERE IT MUST USE THE VALIDATION SET
+    # Save points,labels,name,fileNames TODO still here uses validation hardcoded
+    # TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
+    # if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
+    savepoints = transformed
+    iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
+    saverls = np.where(dataset.dataObj.validation_labels)[
+        1]  # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
+    names = [dataset.dataObj.getValFilename(i) for i in range(saverls.shape[0])]
+
+    desfase = saverls.shape[0] - np.array(realLabels).shape[0]
+    # THIS WILL MAKE THE saverls and realLabels coincide in values
+    saverls = np.roll(saverls[:-1 * desfase], -dataset.dataObj.batch_size)
+    assert (np.array_equal(saverls, realLabels))
+
+    iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
+    names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
+
+    plotBlokeh([savepoints, saverls, iamgeSave, names], test=False)
 def main():
     #Get dataset
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
-    showBlokeh = True
+
 
     #Load discriminator
     print os.getcwd()
@@ -401,6 +421,7 @@ def main():
             nAlgCluster += 1
 
         for indT,tupleTranform in enumerate(transformList):
+            showBlokeh = True
             transformName = tupleTranform[0]
             dtransform = tupleTranform[1]
             currentCol = 0
@@ -418,26 +439,6 @@ def main():
             # SHOW PCA2 of data with REAL labels
             pca = PCA(n_components=2)
             transformed = showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca,outFolder)
-
-
-            if showBlokeh:
-                # Save points,labels,name,fileNames TODO still here uses validation hardcoded
-                # TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
-                # if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
-                savepoints = transformed
-                savelabels = np.where(dataset.dataObj.validation_labels)[
-                    1] # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
-                iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
-                names = [dataset.dataObj.getValFilename(i) for i in range(savelabels.shape[0])]
-                desfase = savelabels.shape[0] - np.array(rlbs).shape[0]
-                # THIS WILL MAKE THE saverls and realLabels coincide in values
-                saverls = np.roll(savelabels[:-1 * desfase], -dataset.dataObj.batch_size)
-                assert (np.array_equal(saverls, rlbs))
-
-                iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
-                names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
-
-                plotBlokeh([savepoints, savelabels, iamgeSave, names], test=False)
 
             currentCol += 1
 
@@ -475,6 +476,10 @@ def main():
                     print "Showing results for Cluster ",name
                     showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name))
                     currentCol += 1
+
+                    if showBlokeh: #This will plot once per transformation
+                        plotInteractive(points,realsLab,dataset)
+                        showBlokeh = False
 
             if doEncoderLabel:
                 d_in = sess.graph.get_tensor_by_name(discrInputName)
