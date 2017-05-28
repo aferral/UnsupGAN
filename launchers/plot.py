@@ -11,6 +11,7 @@ from io import BytesIO
 from PIL import Image
 import pandas as pd
 from skimage import img_as_ubyte
+import os
 import base64
 import pickle
 import sys
@@ -30,7 +31,7 @@ def b64_image_files(images, colormap='magma'):
         urls.append(url)
     return urls
 
-def plotBlokeh(lista, test=False):
+def plotBlokeh(lista,name,outputFolder, test=False):
     assert (len(lista) == 4)
 
     savepoints = lista[0]
@@ -92,7 +93,7 @@ def plotBlokeh(lista, test=False):
 
     df['label'] = savelabels
 
-    bplot.output_file('plot.html')
+    bplot.output_file(os.path.join(outputFolder,name+'.html'))
     hover0 = HoverTool(tooltips=tooltip)
 
     tools0 = [t() for t in TOOLS] + [hover0]
@@ -122,7 +123,6 @@ def plotBlokeh(lista, test=False):
         print "c ",c," elements ",elements[0].shape
         temp = plt.scatter(df['z'].values[elements], df['w'].values[elements],
                    facecolors='none', label='Class ' + str(c),c=colorList[c])
-    plt.show()
 
 
     p.scatter(source=df, x='z', y='w', fill_color=colors,size=10 )

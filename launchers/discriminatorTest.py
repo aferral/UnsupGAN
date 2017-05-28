@@ -475,7 +475,7 @@ def main():
                     points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
                     name = clusterAlg.__class__.__name__
                     print "Showing results for Cluster ",name
-                    
+
                     if showBlokeh: #This will plot once per transformation
                         showResults(dataset, points, predClust, realsLab, transformName + " " + 'Cluster ' + str(name),showBlokeh=True)
                         showBlokeh = False
