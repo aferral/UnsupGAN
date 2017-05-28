@@ -13,9 +13,9 @@ args = parser.parse_args()
 
 configFilePath = args.configFile
 print "About to use ",configFilePath
-if args.train:
-    print "train turned on"
-    #train(configFilePath)
+# if args.train:
+#     print "train turned on"
+#     train(configFilePath)
 if args.classExp:
     print "clasifyExp turned on"
     os.system("python -m launchers.clasifyExp"+ " " + configFilePath)
