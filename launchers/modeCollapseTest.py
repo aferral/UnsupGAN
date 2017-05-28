@@ -48,7 +48,7 @@ def experimentPlot(dataset,sess,d_feat,d_in,batch_size,outFolder):
         points += batch_size
 
     #plot sublot both images
-    plt.plot(generatedSample)
+    plt.scatter(generatedSample[:,0],generatedSample[:,1])
     plt.savefig(os.path.join(outFolder,'generatedSamplePCA.png'))
 
 def modeCollapseClasify(dataset,outGenerator,iterations,sess,batch_size,clasifier, outFolder):
