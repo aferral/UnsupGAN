@@ -78,7 +78,9 @@ def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, o
     fullRes = classification_report(np.array([1 for i in range(predicted.shape[0])]), predicted)
     print fullRes
 
-    weirdPoints = filter(lambda x,th=threshold: x > th, predictedTest)
+    probForReal = predictedTest[:,1]
+    weirdPoints = filter(lambda x,th=threshold: x > th, probForReal)
+    print "There are ",len(weirdPoints)," weird points"
 
     result = {}
     result['threshold'] = threshold
