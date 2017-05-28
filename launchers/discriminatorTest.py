@@ -28,7 +28,7 @@ import json
 
 #TODO generalize to VAL TEST SET
 #TODO This can scale to large datasets ????
-
+#TODO FIX THIS GLOBAL PARAMETERES
 #----------------------PARAMETERS ALL DEFINED IN CONFIG FILE --------------------
 from infogan.misc.utilsTest import generate_new_color
 
@@ -257,7 +257,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None,showBlokeh=False):
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     if showBlokeh:
-        plotInteractive(transformed, realLabels, dataset)
+        plotInteractive(transformed, realLabels, dataset,name,outFolder)
 
     n_classes = len(set(labels))
     labels = np.array(labels)
@@ -378,7 +378,7 @@ def loadDatatransform(values,sess,addEnc=False):
     return transformList
 
 
-def plotInteractive(transformed,realLabels,dataset): #HERE IT MUST USE THE VALIDATION SET
+def plotInteractive(transformed,realLabels,dataset,name,outputFolder): #HERE IT MUST USE THE VALIDATION SET
     # Save points,labels,name,fileNames TODO still here uses validation hardcoded
     # TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
     # if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
@@ -396,7 +396,7 @@ def plotInteractive(transformed,realLabels,dataset): #HERE IT MUST USE THE VALID
     iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
     names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
 
-    plotBlokeh([savepoints, saverls, iamgeSave, names], test=False)
+    plotBlokeh([savepoints, saverls, iamgeSave, names],name,outputFolder, test=False)
 def main():
     #Get dataset
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
