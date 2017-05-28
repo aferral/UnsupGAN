@@ -65,7 +65,7 @@ def modeCollapseClasify(dataset,outGenerator,epochs,sess,batch_size,clasifier, o
         #Remeber to flat the image for the clasifier (batchData.reshape(batch_size*2,-1) )
         flatBatch = batchData.reshape(batch_size*2,-1)
         clasifier.partial_fit(flatBatch, batchLabels, classes=np.unique(batchLabels))
-    threshold = 0.9
+    threshold = 0.8
     # Now at test set get all data with realProb > threshold
     # This are weird points that could mean a mode collapse in the generator
     testData,testL  =dataset.getTestSet()
@@ -116,7 +116,7 @@ def main(configPath):
 
 
     #Set MLP for clasification
-    clf = MLPClassifier( alpha=1e-5, hidden_layer_sizes = (50, 1))
+    clf = MLPClassifier( alpha=1e-5, hidden_layer_sizes = (50, ))
 
     # Load saved GAN
     with tf.Session() as sess:
