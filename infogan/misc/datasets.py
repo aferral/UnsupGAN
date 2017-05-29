@@ -171,13 +171,15 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
         self.batch_idx['train'] = self.dataObj.n_batches
         self.batch_idx['val'] = (len(self.dataObj.validation_labels)) // batch_size
-	self.batch_size = batch_size
+        self.batch_size = batch_size
 
-        w = self.dataObj.imageSize
 
-        self.image_dim = w * w
-        self.image_shape = (out_size, out_size, 1)
-	self.output_size = out_size
+        self.image_shape = tuple(self.dataObj.getDataShape())
+
+        if type(out_size) == int:
+            self.output_size = (out_size,out_size,1)
+        else:
+            self.output_size = out_size
 
         self.valBatchIdx = 0
 
