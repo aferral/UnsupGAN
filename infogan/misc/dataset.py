@@ -98,7 +98,13 @@ class Dataset:
         # Read all the images and labels
         for ind, f in fileList:
             if f.split('.')[-1] in supImage:
-                ray_image = grayscaleEq(io.imread(os.path.join(dataFolder, f)))
+                image = io.imread(os.path.join(dataFolder, f))
+                if len(image.shape) == 3 and image.shape[2] == 3:
+                    ray_image = grayscaleEq(image)
+                elif len(image.shape) == 2:
+                    ray_image = image
+                else:
+                    raise Exception("That is neighter an RGB image or a Grayscale Image ",image.shape)
                 self.dataShape = ray_image.shape
                 if len(self.dataShape) == 2:
                     self.dataShape = (self.dataShape[0],self.dataShape[1],1)
