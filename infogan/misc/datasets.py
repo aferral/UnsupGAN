@@ -174,12 +174,14 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         self.batch_size = batch_size
 
 
-        self.image_shape = tuple(self.dataObj.getDataShape())
+
 
         if type(out_size) == int:
             self.output_size = (out_size,out_size,1)
+            self.image_shape = (out_size,out_size,1)
         else:
             self.output_size = out_size
+            self.image_shape = out_size #todo what is the purpose of image_shape and output_size?
 
         self.valBatchIdx = 0
 
