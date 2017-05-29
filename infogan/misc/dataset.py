@@ -97,7 +97,7 @@ class Dataset:
         supImage = ["jpg", 'png']
         # Read all the images and labels
         for ind, f in fileList:
-            if f.split('.')[-1] in supImage:
+            if (f.split('.')[-1] in supImage) and (f.split('.')[0] != ''):
                 image = io.imread(os.path.join(dataFolder, f))
                 if len(image.shape) == 3 and image.shape[2] == 3:
                     ray_image = grayscaleEq(image)
@@ -109,7 +109,7 @@ class Dataset:
                 if len(self.dataShape) == 2:
                     self.dataShape = (self.dataShape[0],self.dataShape[1],1)
                 assert(len(self.dataShape) == 3)
-                label = int(f.split("_")[1].split('.')[0])
+                label = int(f.split("_")[-1].split('.')[0])
                 all.append(ray_image)
                 allL.append(label)
                 self.fileNames.append(f)
@@ -180,4 +180,4 @@ class Dataset:
 
 
 if __name__ == '__main__':
-    cifar10 = Dataset("data/MFPT96",batch_size=20,seed=1)
+    cifar10 = Dataset("data/simulatedFault",batch_size=20,seed=1)
