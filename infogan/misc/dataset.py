@@ -1,6 +1,6 @@
 import os
 from collections import Counter
-
+import scipy.io as sio
 import numpy as np
 from skimage.color import rgb2gray
 import skimage.io as io
@@ -24,7 +24,7 @@ class Dataset:
         #140      41
         self.classes = 0
         self.fileNames = []
-        self.imageSize = None
+        self.dataShape = None
         labels = []
         data = []
 
@@ -33,24 +33,8 @@ class Dataset:
 
 
         #Here open files in folder somehow
-        all = []
-        allL = []
-        fileList = enumerate(os.listdir(dataFolder))
+        all, allL, indAll = self.readMatrixData(dataFolder)
 
-        supImage = ["jpg", 'png']
-        #Read all the images and labels
-        for ind,f in fileList:
-            if f.split('.')[-1] in supImage:
-                ray_image = grayscaleEq(io.imread(os.path.join(dataFolder,f)))
-                self.imageSize = ray_image.shape[0]
-                label = int(f.split("_")[1].split('.')[0])
-                all.append(ray_image)
-                allL.append(label)
-                self.fileNames.append(f)
-        self.classes = len(set(allL)) #Get how many different classes are in the problem
-        all = np.array(all)
-        allL = np.array(allL)
-        indAll = np.arange(all.shape[0]) #Get index to data to asociate filenames with data
 
         #split trainVal -  test
         tvdata,test_data,tv_labs,test_labels,indTrainVal,indTest = train_test_split(all,allL,indAll, test_size=testProp,random_state=seed)
@@ -75,37 +59,59 @@ class Dataset:
         self.mean = self.train_data.mean(axis=0)
         self.std = self.train_data.std(axis=0)
 
-	if normalize:
-		self.train_data = np.array([   (im-self.mean)/self.std for im in self.train_data])
-		self.validation_data = np.array([   (im-self.mean)/self.std for im in self.validation_data])
-		self.test_data =  np.array([   (im-self.mean)/self.std for im in self.test_data])
+        if normalize:
+            self.train_data = np.array([   (im-self.mean)/self.std for im in self.train_data])
+            self.validation_data = np.array([   (im-self.mean)/self.std for im in self.validation_data])
+            self.test_data =  np.array([   (im-self.mean)/self.std for im in self.test_data])
 
-		#If we find image with no variation std = 0 and the data will have mean / 0 = nan. Replace nan with zero
-		zeroStdTrain = np.where(self.std < 1e-10)  #I tried with the scipy zscore but the error in cords [0,73] keep happening (-1 const in Z score of constant value)
+            #If we find image with no variation std = 0 and the data will have mean / 0 = nan. Replace nan with zero
+            zeroStdTrain = np.where(self.std < 1e-10)  #I tried with the scipy zscore but the error in cords [0,73] keep happening (-1 const in Z score of constant value)
 
-		self.train_data[:, zeroStdTrain] = 0
-		self.train_data = np.nan_to_num(self.train_data)
-		self.validation_data = np.nan_to_num(self.validation_data)
-		self.test_data = np.nan_to_num(self.test_data)
+            self.train_data[:, zeroStdTrain] = 0
+            self.train_data = np.nan_to_num(self.train_data)
+            self.validation_data = np.nan_to_num(self.validation_data)
+            self.test_data = np.nan_to_num(self.test_data)
 
         # Batching & epochs
         self.batch_size = batch_size
-
-
         self.n_batches = len(self.train_labels) // self.batch_size
-	print "There are ",len(self.train_labels),' train points ',' so ',self.n_batches,' batches'
-	print 'There are ',len(self.validation_labels),' val points '
-	print 'There are ',len(self.test_labels),' test points'
+        print "There are ",len(self.train_labels),' train points ',' so ',self.n_batches,' batches'
+        print 'There are ',len(self.validation_labels),' val points '
+        print 'There are ',len(self.test_labels),' test points'
         self.current_batch = 0
         self.current_epoch = 0
 
     def getNumberOfBatches(self):
         return self.n_batches
     def getDataShape(self):
-        return (self.imageSize,self.imageSize)
+        return self.dataShape
     def classDistribution(self):
         return "Train set "+str(Counter(np.where(self.train_labels == 1)[1]))+\
                " test set "+str(Counter(np.where(self.test_labels == 1)[1]))
+
+    def readMatrixData(self,dataFolder):
+        all = []
+        allL = []
+        fileList = enumerate(os.listdir(dataFolder))
+
+        supImage = ["jpg", 'png']
+        # Read all the images and labels
+        for ind, f in fileList:
+            if f.split('.')[-1] in supImage:
+                ray_image = grayscaleEq(io.imread(os.path.join(dataFolder, f)))
+                self.dataShape = ray_image.shape
+                if len(self.dataShape) == 2:
+                    self.dataShape = (self.dataShape[0],self.dataShape[1],1)
+                assert(len(self.dataShape) == 3)
+                label = int(f.split("_")[1].split('.')[0])
+                all.append(ray_image)
+                allL.append(label)
+                self.fileNames.append(f)
+        self.classes = len(set(allL))  # Get how many different classes are in the problem
+        all = np.array(all)
+        allL = np.array(allL)
+        indAll = np.arange(all.shape[0])  # Get index to data to asociate filenames with data
+        return all, allL, indAll
 
     def getTrainFilename(self,trainIndex):
         return self.fileNames[self.trainInd[trainIndex]]
@@ -127,7 +133,7 @@ class Dataset:
         ''' Returns a tuple with batch and batch index '''
         start_idx = self.current_batch * self.batch_size
         end_idx = start_idx + self.batch_size
-        batch_data = self.train_data[start_idx:end_idx].reshape((self.batch_size,self.imageSize,self.imageSize,1))
+        batch_data = self.train_data[start_idx:end_idx].reshape((self.batch_size,) + self.dataShape)
         batch_labels = self.train_labels[start_idx:end_idx]
         batch_idx = self.current_batch
 
@@ -149,12 +155,12 @@ class Dataset:
                 start_idx = i * self.batch_size
                 end_idx = start_idx + self.batch_size
                 nElem = min(self.batch_size,data.shape[0])
-                batch_data = data[start_idx:end_idx].reshape((nElem,self.imageSize,self.imageSize,1))
+                batch_data = data[start_idx:end_idx].reshape((nElem,) + self.dataShape)
                 batch_labels = labels[start_idx:end_idx]
                 batches.append((batch_data, batch_labels))
             return batches
         else:
-            return (data.reshape((data.shape[0],self.imageSize,self.imageSize,1)), labels)
+            return (data.reshape((data.shape[0],) + self.dataShape), labels)
 
     def getValidationSet(self, asBatches=False):
         return self.getSample(self.validation_data,self.validation_labels,asBatches)
