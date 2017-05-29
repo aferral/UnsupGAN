@@ -180,8 +180,15 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
             self.output_size = (out_size,out_size,1)
             self.image_shape = (out_size,out_size,1)
         else:
-            self.output_size = out_size
-            self.image_shape = out_size #todo what is the purpose of image_shape and output_size?
+            if len(out_size) == 2:
+                self.output_size = (out_size[0],out_size[1],1)
+                self.image_shape = (out_size[0],out_size[1],1)
+            elif len(out_size) == 3:
+                self.output_size = out_size
+                self.image_shape = out_size  # todo what is the purpose of image_shape and output_size?
+            else:
+                raise Exception("Invalid out_size ",out_size)
+
 
         self.valBatchIdx = 0
 
