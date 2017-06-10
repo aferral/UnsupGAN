@@ -29,6 +29,7 @@ class InfoGANTrainer(object):
                  info_reg_coeff=1.0,
                  discriminator_learning_rate=2e-4,
                  generator_learning_rate=2e-4,
+                 semiSup = False,
                  ):
         """
         :type model: RegularizedGAN
@@ -50,6 +51,8 @@ class InfoGANTrainer(object):
         self.generator_trainer = None
         self.input_tensor = None
         self.log_vars = []
+        self.semiSup = semiSup
+        self.input_labels = None
 
     def init_opt(self):
         if self.dataset.name == "mnist":
@@ -65,14 +68,29 @@ class InfoGANTrainer(object):
             self.z_var = self.model.latent_dist.sample_prior(self.batch_size)
             fake_x, _ = self.model.generate(self.z_var)
             self.sample_x, _ = self.model.generate(self.z_var)
-            self.real_d = self.model.discriminate(input_tensor)
-            self.d_feat_real = self.real_d['features']
-            self.fake_d = self.model.discriminate(fake_x)
 
-            discriminator_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.real_d['logits'], tf.ones_like(self.real_d['prob'])))
-            discriminator_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.fake_d['logits'], tf.zeros_like(self.fake_d['prob'])))
-            discriminator_loss = discriminator_loss_real + discriminator_loss_fake
-            generator_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.fake_d['logits'], tf.ones_like(self.fake_d['prob'])))
+            self.d_feat_real = self.real_d['features']
+
+            if self.semiSup:
+                self.sup_d = self.model.discriminateSup(self.input_tensor,self.dataset.dataObj.getNclasses())
+            self.fake_d = self.model.discriminate(fake_x)
+            self.real_d = self.model.discriminate(input_tensor)
+
+            if self.semiSup:
+                self.input_labels = tf.placeholder(tf.float32, [self.batch_size])
+                discriminator_loss_sup = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.sup_d['logits'], self.input_labels))
+
+                discriminator_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.real_d['logits'],tf.zeros_like(self.real_d['logits'])))
+                discriminator_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.fake_d['logits'],tf.ones_like(self.real_d['logits'])))
+                discriminator_loss = discriminator_loss_real + discriminator_loss_fake + discriminator_loss_sup
+                generator_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.fake_d['logits'],tf.zeros_like(self.fake_d['logits'])))
+
+                self.log_vars.append(("discriminator_sup_loss", discriminator_loss_sup))
+            else:
+                discriminator_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.real_d['logits'], tf.ones_like(self.real_d['prob'])))
+                discriminator_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.fake_d['logits'], tf.zeros_like(self.fake_d['prob'])))
+                discriminator_loss = discriminator_loss_real + discriminator_loss_fake
+                generator_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.fake_d['logits'], tf.ones_like(self.fake_d['prob'])))
 
             self.log_vars.append(("discriminator_loss_real", discriminator_loss_real))
             self.log_vars.append(("discriminator_loss_fake", discriminator_loss_fake))
@@ -262,8 +280,12 @@ class InfoGANTrainer(object):
                 all_log_vals = []
                 for i in range(self.dataset.batch_idx['train']):
                     pbar.update(i)
-                    x, _ = self.dataset.next_batch(self.batch_size)
-                    feed_dict = {self.input_tensor: x}
+                    x, labels = self.dataset.next_batch(self.batch_size)
+
+                    if self.semiSup:
+                        feed_dict = {self.input_tensor: x, self.input_labels : labels}
+                    else:
+                        feed_dict = {self.input_tensor: x}
                     all_log_vals = sess.run([self.discriminator_trainer] + log_vars, feed_dict)[1:]
                     for ii in range(5):
                         sess.run(self.generator_trainer, feed_dict)
@@ -278,7 +300,7 @@ class InfoGANTrainer(object):
                     if counter % 10 == 0:
                         samples = sess.run(self.sample_x, feed_dict)
                         samples = samples[:logSamples, ...]
-			sqS = int(np.sqrt(logSamples))
+                        sqS = int(np.sqrt(logSamples))
                         if self.dataset.name != "mnist":
                             samples = inverse_transform(samples)
                             #xTolog = inverse_transform(x)[:logSamples, ...]
@@ -296,10 +318,8 @@ class InfoGANTrainer(object):
                     x, _ = self.dataset.next_batch(self.batch_size)
 
                     # Write summary to log file
-                    try:
-                        summary_str = sess.run(summary_op, {self.input_tensor: x})
-                    except:
-                        print("gi")
+
+                    summary_str = sess.run(summary_op, {self.input_tensor: x})
                     summary_writer.add_summary(summary_str, counter)
 
                     log_line = "; ".join("%s: %s" % (str(k), str(v)) for k, v in zip(log_keys, all_log_vals))

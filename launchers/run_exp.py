@@ -31,6 +31,11 @@ def train(configPath):
         exp_name = d['exp_name']
         arch = d['arch']
 
+        if d.haskey('semiSup'):
+            semiSup = d['semiSup']
+        else:
+            semiSup = False
+
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 
@@ -114,6 +119,7 @@ def train(configPath):
         info_reg_coeff=1.0,
         generator_learning_rate=2e-3,
         discriminator_learning_rate=2e-3,
+        semiSup=semiSup
     )
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)

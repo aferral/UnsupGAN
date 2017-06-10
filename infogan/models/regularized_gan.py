@@ -71,6 +71,23 @@ class RegularizedGAN(object):
                     raise NotImplementedError
                 self.generator_template = self.gen_model.gen_net(self.image_shape)
 
+    def discriminateSup(self,x_var,nClasses):
+        d_features = self.shared_template.construct(input=x_var)
+        d_logits = self.shared_template.custom_fully_connected(nClasses)
+        d_prob = tf.nn.softmax(d_logits)
+
+        d_dict = dict.fromkeys(self.keys)
+
+        d_dict['features'] = d_features
+        d_dict['logits'] = d_logits
+        d_dict['prob'] = d_prob
+
+        if self.is_reg:
+            reg_dist_flat = self.encoder_template.construct(input=x_var)
+            reg_dist_info = self.reg_latent_dist.activate_dist(reg_dist_flat)
+            d_dict['reg_dist_info'] = reg_dist_info
+
+        return d_dict
     def discriminate(self, x_var):
         d_features = self.shared_template.construct(input=x_var)
         d_logits = self.discriminator_template.construct(input=x_var)[:,0]
