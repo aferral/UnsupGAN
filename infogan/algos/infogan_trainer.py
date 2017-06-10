@@ -296,7 +296,10 @@ class InfoGANTrainer(object):
                     x, _ = self.dataset.next_batch(self.batch_size)
 
                     # Write summary to log file
-                    summary_str = sess.run(summary_op, {self.input_tensor: x})
+                    try:
+                        summary_str = sess.run(summary_op, {self.input_tensor: x})
+                    except:
+                        print("gi")
                     summary_writer.add_summary(summary_str, counter)
 
                     log_line = "; ".join("%s: %s" % (str(k), str(v)) for k, v in zip(log_keys, all_log_vals))

@@ -6,7 +6,7 @@ import numpy as np
 from cnnBlocks import conv_layer, fc_layer, test, validate, getPredandLabels
 import tensorflow as tf
 #basado en https://github.com/ignacioreyes/convnet-tutorial/blob/master/convnet-tutorial.ipynb
-from dataset import Dataset
+from dataset import DataDictionary
 
 
 
@@ -29,8 +29,8 @@ def runSession(dataFolder,testSplit,valSplit,batchsize,SUMMARIES_DIR,learning_ra
     # Load dataset
     import random
     seed = 100 * random.random()
+    dataset = DataDictionary.getDataset(dataFolder,batch_size=batchsize,seed=int(seed),testProp=testSplit,validation_proportion=valSplit)
 
-    dataset = Dataset(dataFolder,batch_size=batchsize,seed=int(seed),testProp=testSplit,validation_proportion=valSplit)
 
     outString.append("Using dataset seed  " + str(seed))
     outString.append("Class distribution  " + str(dataset.classDistribution()))
@@ -280,8 +280,7 @@ def runSession(dataFolder,testSplit,valSplit,batchsize,SUMMARIES_DIR,learning_ra
 
 
 
-
-if __name__ == "__main__":
+def test():
     # ---------------------Parameters---------------------
 
     dataFolder = "data/CW96Scalograms"
@@ -306,3 +305,5 @@ if __name__ == "__main__":
     print " "
     print "The averague train time for epoch is ", np.mean(np.array(resTime)), " std ", np.std(np.array(resTime))
     # ---------------------Parameters---------------------
+if __name__ == "__main__":
+    test()

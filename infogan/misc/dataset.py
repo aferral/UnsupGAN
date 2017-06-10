@@ -5,6 +5,7 @@ import numpy as np
 from skimage.color import rgb2gray
 import skimage.io as io
 from sklearn.model_selection import train_test_split
+import cifar10
 
 def grayscaleEq(rgbimage):
     cof = 1.0/3
@@ -15,6 +16,17 @@ def labels_to_one_hot(labels,n):
     one_hot_labels = np.zeros([N, n], dtype=int)
     one_hot_labels[np.arange(N), labels] = 1
     return one_hot_labels
+
+
+class DataDictionary:
+    def __init__(self):
+        pass
+    @staticmethod
+    def getDataset(datafolder,**others):
+        if datafolder == 'cifar10': #TODO maybe a better way to do this?
+            return cifar10Dataset(**others)
+        else:
+            return Dataset(datafolder,**others)
 
 #Todo crear indice y dar batch en demand nomas
 class Dataset:
@@ -34,7 +46,7 @@ class Dataset:
 
         #Here open files in folder somehow
         all, allL, indAll = self.readMatrixData(dataFolder)
-
+	
 
         #split trainVal -  test
         tvdata,test_data,tv_labs,test_labels,indTrainVal,indTest = train_test_split(all,allL,indAll, test_size=testProp,random_state=seed)
@@ -113,10 +125,11 @@ class Dataset:
                 all.append(ray_image)
                 allL.append(label)
                 self.fileNames.append(f)
-        self.classes = len(set(allL))  # Get how many different classes are in the problem
+        
         all = np.array(all)
         allL = np.array(allL)
         indAll = np.arange(all.shape[0])  # Get index to data to asociate filenames with data
+        self.classes = len(set(allL)) 
         return all, allL, indAll
 
     def getTrainFilename(self,trainIndex):
@@ -178,6 +191,33 @@ class Dataset:
         self.current_batch = 0
         self.current_epoch = 0
 
+class cifar10Dataset(Dataset):
+    def __init__(self, batch_size=100,testProp=0.3, validation_proportion=0.3,seed = 1, normalize=True):
+        
+        self.cifarFolder = "data/cifar10"
+        cifar10.data_path = self.cifarFolder
+        cifar10.maybe_download_and_extract()
+        Dataset.__init__(self,self.cifarFolder,batch_size=batch_size,testProp=testProp, validation_proportion=validation_proportion,seed = seed, normalize=normalize)
+    def readMatrixData(self,dataFolder):
+        images_train, cls_train, labels_train = cifar10.load_training_data()
+        indAll = np.arange(images_train.shape[0])  # Get index to data to asociate filenames with data
+        images_train = images_train * 255 #The data is asumed to have 0-255 range in this case is 0-1 range
+        #TODO add test set data (we are using the original train data as the full dataset)
+        images_train= images_train.astype(np.uint8)
+        self.dataShape = images_train[0].shape
+        self.classes = 10 #how many clases are there
+        return images_train,cls_train,indAll
+
+    def getTrainFilename(self,trainIndex): #Cifar 10 images are picked so no filename just a index and a label
+        return "image_"+str(trainIndex)+"_"+str(self.train_labels[trainIndex])
+
+    def getValFilename(self,valIndex): #Cifar 10 images are picked so no filename just a index and a label
+        return "image "+str(valIndex)+"_"+str(self.validation_labels[valIndex])
+
+    def getTestFilename(self,testIndex): #Cifar 10 images are picked so no filename just a index and a label
+        return "image "+str(testIndex)+"_"+str(self.test_labels[testIndex])
+
 
 if __name__ == '__main__':
-    cifar10 = Dataset("data/simulatedFault",batch_size=20,seed=1)
+    test = Dataset("data/simulatedFault",batch_size=20,seed=1)
+    #test2 = cifar10Dataset(batch_size=20,seed=1)

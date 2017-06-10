@@ -5,7 +5,7 @@ import sys
 from infogan.misc.utils import get_image
 from joblib import Parallel, delayed
 import multiprocessing
-from dataset import Dataset as dataScalograms
+from dataset import DataDictionary
 from skimage.transform import resize
 
 
@@ -159,11 +159,18 @@ class Dataset(object):
                 batch_images = np.array(batch).astype(np.float32)
             return batch_images, batch_labels
 
+
+
 class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
     def __init__(self,folderName,batch_size,testProp=0.3, validation_proportion=0.3,out_size=96):
         import random
         seed = int(100*random.random())
-        self.dataObj = dataScalograms(folderName,batch_size=batch_size,seed=seed,normalize=False,testProp=testProp, validation_proportion=validation_proportion)
+
+
+        self.dataObj = DataDictionary.getDataset(folderName,
+batch_size=batch_size,
+testProp=testProp,
+validation_proportion=validation_proportion,normalize=False)
 
         self.name = 'FOLDER '+folderName #TODO bypass if of chech name
         self.batch_idx = dict.fromkeys(['train','val'])
@@ -172,7 +179,6 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         self.batch_idx['train'] = self.dataObj.n_batches
         self.batch_idx['val'] = (len(self.dataObj.validation_labels)) // batch_size
         self.batch_size = batch_size
-
 
 
 
@@ -211,7 +217,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         elif split == 'val': #TODO USE BATCH IN VAL ???
             self.valBatchIdx = (self.valBatchIdx+1) % (self.batch_idx['val'])
             toReturn = self.dataObj.getValidationSet(asBatches=True)[self.valBatchIdx]
-        if toReturn[0].shape != ([batch_size] + list(self.image_shape)): #TODO why i dont use the self.batch_size
+        if toReturn[0].shape != tuple([batch_size] + list(self.image_shape)): #TODO why i dont use the self.batch_size
             temp = np.zeros([batch_size] + list(self.image_shape))
             for i in range(toReturn[0].shape[0]):
                 temp[i,:,:] = resize(toReturn[0][i,:,:],self.image_shape)

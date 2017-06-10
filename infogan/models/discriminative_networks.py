@@ -66,10 +66,12 @@ class dcgan_net():
         self.df_dim = 64
         self.image_shape = image_shape
 
-        if self.image_shape[0] == 32:
-            self.k_h = self.k_w = 3
-        else:
+        if (self.image_shape[0] == 96) and (self.image_shape[1] == 96):
             self.k_h = self.k_w = 5
+        elif (self.image_shape[0] < 20) or (self.image_shape[1] < 20):
+            self.k_h = self.k_w = 2
+        else:
+            self.k_h = self.k_w = 3
 
         self._shared_template = self.shared_net()
         self.is_reg = is_reg

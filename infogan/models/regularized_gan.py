@@ -64,9 +64,9 @@ class RegularizedGAN(object):
                 self.generator_template = self.gen_model.infoGAN_mnist_net(self.image_shape)
             else:
                 if self.network_type == 'dcgan':
-                    self.gen_model = G.dcgan_net()
+                    self.gen_model = G.dcgan_net(self.image_shape)
                 elif self.network_type == 'deeper_dcgan':
-                    self.gen_model = G.deeper_dcgan_net()
+                    self.gen_model = G.deeper_dcgan_net(self.image_shape)
                 else:
                     raise NotImplementedError
                 self.generator_template = self.gen_model.gen_net(self.image_shape)
