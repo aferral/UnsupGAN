@@ -79,7 +79,7 @@ class InfoGANTrainer(object):
             self.d_feat_real = self.real_d['features']
 
             if self.semiSup:
-                self.input_labels = tf.placeholder(tf.float32, [self.batch_size])
+                self.input_labels = tf.placeholder(tf.float32, [self.batch_size,self.dataset.dataObj.getNclasses()])
                 discriminator_loss_sup = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.sup_d['logits'], self.input_labels))
 
                 discriminator_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.real_d['logits'],tf.zeros_like(self.real_d['logits'])))
