@@ -35,6 +35,10 @@ def train(configPath):
             semiSup = d['semiSup']
         else:
             semiSup = False
+        if d.haskey('trainSplit'):
+            trainSplit = d['trainSplit']
+        else:
+            trainSplit = 0.7
 
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
@@ -73,7 +77,7 @@ def train(configPath):
         print("Creating VAL dataset ")
         val_dataset = dataset
     elif train_dataset == "dataFolder":
-        dataset = datasets.DataFolder(train_Folder,batch_size,out_size=output_size)
+        dataset = datasets.DataFolder(train_Folder,batch_size,out_size=output_size,validation_proportion=(1-trainSplit) )
 
         print("Folder datasets created ")
         val_dataset = dataset

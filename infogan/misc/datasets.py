@@ -168,9 +168,10 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
 
         self.dataObj = DataDictionary.getDataset(folderName,
-batch_size=batch_size,
-testProp=testProp,
-validation_proportion=validation_proportion,normalize=False)
+                                                 batch_size=batch_size,
+                                                 testProp=testProp,
+                                                 validation_proportion=validation_proportion
+                                                 ,normalize=False)
 
         self.name = 'FOLDER '+folderName #TODO bypass if of chech name
         self.batch_idx = dict.fromkeys(['train','val'])

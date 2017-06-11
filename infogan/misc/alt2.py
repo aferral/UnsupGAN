@@ -280,7 +280,7 @@ def runSession(dataFolder,testSplit,valSplit,batchsize,SUMMARIES_DIR,learning_ra
 
 
 
-def test():
+def main():
     # ---------------------Parameters---------------------
 
     dataFolder = "data/CW96Scalograms"
@@ -306,4 +306,4 @@ def test():
     print "The averague train time for epoch is ", np.mean(np.array(resTime)), " std ", np.std(np.array(resTime))
     # ---------------------Parameters---------------------
 if __name__ == "__main__":
-    test()
+    main()
