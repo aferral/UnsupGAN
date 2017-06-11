@@ -260,7 +260,7 @@ def runSession(dataFolder,testSplit,valSplit,batchsize,SUMMARIES_DIR,learning_ra
                 #break
         if fallas == 3 :
             print "3 epochs with higher val error EARLY STOP"
-            break
+            #break
 
     #--END TRAINING test accuracy
     trainTime = time.time() - t_i
@@ -269,7 +269,7 @@ def runSession(dataFolder,testSplit,valSplit,batchsize,SUMMARIES_DIR,learning_ra
     print "Testing set accuracy %f" % (test_acc)
     outString.append("Testing set accuracy %f" % (test_acc))
 
-    ypred,ytrue = getPredandLabels(dataset,sess,fc3_out,model_input,keep_prob)
+    ypred,ytrue = getPredandLabels(dataset,sess,fc3_out,model_input,{ keep_prob : 1.0})
 
 
 

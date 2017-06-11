@@ -79,10 +79,13 @@ def test(dataset,sess,accuracy,mi,t,kp):
     mean_acc = np.array(accs).mean()
     return mean_acc
 
-def getPredandLabels(dataset,sess,fc,mi,kp):
+def getPredandLabels(dataset,sess,fc,mi,otherArg={}):
     # metrics
     y_p = tf.argmax(fc, 1)
 
+    feedDict = {}
+    for elem in otherArg.keys():
+        feedDict[elem] = otherArg[elem]
 
     data=None
     labels = None
@@ -92,7 +95,8 @@ def getPredandLabels(dataset,sess,fc,mi,kp):
     y_true = []
     for batch in batches:
         data, labels = batch
-        temp = sess.run(y_p, feed_dict={mi: data, kp: 1.0})
+        feedDict[mi] = data
+        temp = sess.run(y_p, feed_dict=feedDict)
         for elem in temp:
             y_pred.append(elem)
         for elem in labels:
