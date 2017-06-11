@@ -322,7 +322,7 @@ class InfoGANTrainer(object):
                         self.validate(sess)
 
                     # Get next batch
-                    feed_dict = self.getFeedDict(self.dataset, self.semiSup)
+                    #feed_dict = self.getFeedDict(self.dataset, self.semiSup)
 
                     # Write summary to log file
 
