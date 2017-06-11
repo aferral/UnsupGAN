@@ -31,11 +31,11 @@ def train(configPath):
         exp_name = d['exp_name']
         arch = d['arch']
 
-        if d.haskey('semiSup'):
+        if d.has_key('semiSup'):
             semiSup = d['semiSup']
         else:
             semiSup = False
-        if d.haskey('trainSplit'):
+        if d.has_key('trainSplit'):
             trainSplit = d['trainSplit']
         else:
             trainSplit = 0.7
