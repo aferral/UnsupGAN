@@ -69,12 +69,14 @@ class InfoGANTrainer(object):
             fake_x, _ = self.model.generate(self.z_var)
             self.sample_x, _ = self.model.generate(self.z_var)
 
-            self.d_feat_real = self.real_d['features']
+
 
             if self.semiSup:
                 self.sup_d = self.model.discriminateSup(self.input_tensor,self.dataset.dataObj.getNclasses())
             self.fake_d = self.model.discriminate(fake_x)
             self.real_d = self.model.discriminate(input_tensor)
+
+            self.d_feat_real = self.real_d['features']
 
             if self.semiSup:
                 self.input_labels = tf.placeholder(tf.float32, [self.batch_size])
