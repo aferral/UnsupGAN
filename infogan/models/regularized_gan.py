@@ -73,8 +73,8 @@ class RegularizedGAN(object):
 
     def discriminateSup(self,x_var,nClasses):
         d_features = self.shared_template.construct(input=x_var)
-        d_logits = self.shared_template.custom_fully_connected(nClasses)
-        d_prob = tf.nn.softmax(d_logits).construct(input=x_var)
+        d_logits = self.shared_template.custom_fully_connected(nClasses).construct(input=x_var)
+        d_prob = tf.nn.softmax(d_logits)
 
         d_dict = dict.fromkeys(self.keys)
 
