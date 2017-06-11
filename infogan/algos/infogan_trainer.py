@@ -258,6 +258,14 @@ class InfoGANTrainer(object):
             imgs = tf.expand_dims(imgs, 0)
             tf.image_summary("image_%d_%s" % (dist_idx, dist.__class__.__name__), imgs)
 
+    def getFeedDict(self,dataset,semiSup):
+        x, labels = dataset.next_batch(self.batch_size)
+
+        if semiSup:
+            feed_dict = {self.input_tensor: x, self.input_labels: labels}
+        else:
+            feed_dict = {self.input_tensor: x}
+        return feed_dict
     def train(self, sess):
             init = tf.initialize_all_variables()
             sess.run(init)
@@ -282,12 +290,9 @@ class InfoGANTrainer(object):
                 all_log_vals = []
                 for i in range(self.dataset.batch_idx['train']):
                     pbar.update(i)
-                    x, labels = self.dataset.next_batch(self.batch_size)
 
-                    if self.semiSup:
-                        feed_dict = {self.input_tensor: x, self.input_labels : labels}
-                    else:
-                        feed_dict = {self.input_tensor: x}
+                    feed_dict = self.getFeedDict(self.dataset,self.semiSup)
+
                     all_log_vals = sess.run([self.discriminator_trainer] + log_vars, feed_dict)[1:]
                     for ii in range(5):
                         sess.run(self.generator_trainer, feed_dict)
@@ -317,11 +322,11 @@ class InfoGANTrainer(object):
                         self.validate(sess)
 
                     # Get next batch
-                    x, _ = self.dataset.next_batch(self.batch_size)
+                    feed_dict = self.getFeedDict(self.dataset, self.semiSup)
 
                     # Write summary to log file
 
-                    summary_str = sess.run(summary_op, {self.input_tensor: x})
+                    summary_str = sess.run(summary_op, feed_dict)
                     summary_writer.add_summary(summary_str, counter)
 
                     log_line = "; ".join("%s: %s" % (str(k), str(v)) for k, v in zip(log_keys, all_log_vals))
@@ -353,9 +358,9 @@ class InfoGANTrainer(object):
         print "Getting all the training features."
         for ii in range(self.val_dataset.batch_idx['train']):
 
-            x, _ = self.dataset.next_batch(self.batch_size)
+            feed_dict = self.getFeedDict(self.dataset, self.semiSup)
 
-            d_features = sess.run(self.d_feat_real, {self.input_tensor: x})
+            d_features = sess.run(self.d_feat_real, feed_dict)
             d_features = pool_features(d_features, pool_type='avg')
             if trainX.shape[0] == 0:  # Is empty
                 trainX = d_features
