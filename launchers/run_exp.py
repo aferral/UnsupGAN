@@ -126,9 +126,10 @@ def train(configPath):
         semiSup=semiSup
     )
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+    #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+    #config=tf.ConfigProto(gpu_options=gpu_options)
     algo.init_opt()
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+    with tf.Session() as sess:
         algo.train(sess)
 
 
