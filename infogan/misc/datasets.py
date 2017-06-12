@@ -227,6 +227,17 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])   #todo config dataset image format
 
         return toReturn
+    def reshapeIfNeeded(self,batch_data):
+        if batch_data.shape[1:] != (self.image_shape):  # TODO why i dont use the self.batch_size
+            temp = np.zeros([batch_data.shape[0]] + list(self.image_shape))
+            for i in range(batch_data.shape[0]):
+                temp[i, :, :] = resize(batch_data[i, :, :], self.image_shape)
+            batch_data = temp
+        # Here all the images are in 255-0 range we have to get them in -1 +1 range
+        toReturn = ((batch_data / 127.5) - 1)  # todo config dataset image format
+        return toReturn
+
+
     def getTestSet(self,asBatches=True):
         data = self.dataObj.test_data
         labels = self.dataObj.test_labels
@@ -238,17 +249,11 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
                 nElem = min(self.batch_size,data.shape[0])
                 batch_data = data[start_idx:end_idx].reshape((nElem,) + self.dataObj.dataShape)
                 batch_labels = labels[start_idx:end_idx]
-                toReturn.append((batch_data, batch_labels))
+                toReturn.append((self.reshapeIfNeeded(batch_data), batch_labels))
             return toReturn
         else:
-            if data.shape[1:] != (self.image_shape): #TODO why i dont use the self.batch_size
-                temp = np.zeros([data.shape[0]] + list(self.image_shape))
-                for i in range(data.shape[0]):
-                    temp[i,:,:] = resize(data[i,:,:],self.image_shape)
-                testSet = temp
-            #Here all the images are in 255-0 range we have to get them in -1 +1 range
-            toReturn = ((testSet/127.5) - 1 , labels)   #todo config dataset image format
-        return toReturn
+            toReturn = (self.reshapeIfNeeded(data), labels)   #todo config dataset image format
+            return toReturn
 
 class MnistDataset(object):
     def __init__(self):
