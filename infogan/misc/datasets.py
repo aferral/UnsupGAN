@@ -228,16 +228,26 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
         return toReturn
     def getTestSet(self,asBatches=True):
-        testSet = self.dataObj.test_data
-        testLabels = self.dataObj.test_labels
-
-        if testSet.shape[1:] != (self.image_shape): #TODO why i dont use the self.batch_size
-            temp = np.zeros([testSet.shape[0]] + list(self.image_shape))
-            for i in range(testSet.shape[0]):
-                temp[i,:,:] = resize(testSet[i,:,:],self.image_shape)
-            testSet = temp
-        #Here all the images are in 255-0 range we have to get them in -1 +1 range
-        toReturn = ((testSet/127.5) - 1 , testLabels)   #todo config dataset image format
+        data = self.dataObj.test_data
+        labels = self.dataObj.test_labels
+        if asBatches:
+            toReturn = []
+            for i in range(max(1,data.shape // self.batch_size)):
+                start_idx = i * self.batch_size
+                end_idx = start_idx + self.batch_size
+                nElem = min(self.batch_size,data.shape[0])
+                batch_data = data[start_idx:end_idx].reshape((nElem,) + self.dataObj.dataShape)
+                batch_labels = labels[start_idx:end_idx]
+                toReturn.append((batch_data, batch_labels))
+            return toReturn
+        else:
+            if data.shape[1:] != (self.image_shape): #TODO why i dont use the self.batch_size
+                temp = np.zeros([data.shape[0]] + list(self.image_shape))
+                for i in range(data.shape[0]):
+                    temp[i,:,:] = resize(data[i,:,:],self.image_shape)
+                testSet = temp
+            #Here all the images are in 255-0 range we have to get them in -1 +1 range
+            toReturn = ((testSet/127.5) - 1 , labels)   #todo config dataset image format
         return toReturn
 
 class MnistDataset(object):
