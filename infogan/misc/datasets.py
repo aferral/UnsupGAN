@@ -232,7 +232,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         labels = self.dataObj.test_labels
         if asBatches:
             toReturn = []
-            for i in range(max(1,data.shape // self.batch_size)):
+            for i in range(max(1,data.shape[0] // self.batch_size)):
                 start_idx = i * self.batch_size
                 end_idx = start_idx + self.batch_size
                 nElem = min(self.batch_size,data.shape[0])
