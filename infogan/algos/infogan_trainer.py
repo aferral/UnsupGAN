@@ -334,6 +334,11 @@ class InfoGANTrainer(object):
                     sys.stdout.flush()
                     if np.any(np.isnan(all_log_vals)):
                         raise ValueError("NaN detected!")
+            print "Train ended"
+            # Test on validation (test) set
+            snapshot_name = "%s_%s" % (self.exp_name, str(counter))
+            fn = saver.save(sess, "%s/%s.ckpt" % (self.checkpoint_dir, snapshot_name))
+            print("Model saved in file: %s" % fn)
 
     def validate(self, sess):
         pred_labels = np.array([], dtype=np.int16).reshape(0,)

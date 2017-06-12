@@ -227,7 +227,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
         toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])   #todo config dataset image format
 
         return toReturn
-    def getTestSet(self):
+    def getTestSet(self,asBatches=True):
         testSet = self.dataObj.test_data
         testLabels = self.dataObj.test_labels
 

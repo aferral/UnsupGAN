@@ -42,7 +42,7 @@ def classifyWithDiscriminator(sess,datafolder,batch_size,imageSize):
 
         #Get the prediction in test set
         #CHECK QUE SE MANTENGA EL SPLIT
-        ypred, ytrue = getPredandLabels(dataset.dataObj, sess, classOutput, model_input)
+        ypred, ytrue = getPredandLabels(dataset, sess, classOutput, model_input)
 
         fullRes = classification_report(ytrue, ypred)
         accList.append(accuracy_score(ytrue, ypred))
