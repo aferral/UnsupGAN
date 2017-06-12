@@ -29,11 +29,11 @@ def trainCNNsupervised(dataFolder,batch_size,trainSplit = 0.7):
 
     return acc, fullRes
 
-def classifyWithDiscriminator(sess,datafolder,batch_size,discrInputName,discrOutputName,imageSize):
+def classifyWithDiscriminator(sess,datafolder,batch_size,imageSize):
     times = 4
     #Load discriminator
-    model_input = sess.graph.get_tensor_by_name(discrInputName)
-    classOutput = sess.graph.get_tensor_by_name(discrOutputName)
+    model_input = sess.graph.get_tensor_by_name("Placeholder:0")
+    classOutput = sess.graph.get_tensor_by_name("Softmax:0")
 
     # Do clasification in test and get acccuracy repeat a number of times to avoid to choose same points as train
     accList = []
@@ -49,8 +49,6 @@ def classifyWithDiscriminator(sess,datafolder,batch_size,discrInputName,discrOut
     print "Accuracy mean ",np.mean(np.array(accList)),"Accuracy std ",np.std(np.array(accList))
     return np.mean(np.array(accList)), fullRes
 
-
-    pass
 
 def flatImage(x):
     return x.reshape(x.shape[0],-1)
@@ -116,8 +114,7 @@ def main(configPath):
 
         # If we train semi supervised test the discriminator %class
         if semiSup:
-            acc, fullRes = classifyWithDiscriminator(sess, dataFolder, batch_size, res[''], discrOutputName,
-                                                     imageSize)
+            acc, fullRes = classifyWithDiscriminator(sess,dataFolder,batch_size,imageSize)
             result['Discriminator semi sup'] = {"acc": acc, "full": fullRes}
     tf.reset_default_graph()
 
