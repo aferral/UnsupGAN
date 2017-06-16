@@ -257,7 +257,7 @@ def showResults(dataset,points,labels,realLabels,name,ax=None,showBlokeh=False):
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     if showBlokeh:
-        #plotInteractive(transformed, realLabels, dataset,name,outFolder)
+        plotInteractive(transformed, realLabels, dataset,name,outFolder)
         pass
 
     n_classes = len(set(labels))
