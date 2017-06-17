@@ -38,11 +38,18 @@ if len(sys.argv) > 1:
     print "Loading config file ", configFile
 
     res = {}
+
     with open(configFile, 'r') as f:
         res = json.load(f)
 
     dataFolder = res['dataFolder']
-    modelPath = res['modelPath']
+    if res.has_key():
+        modelPath = res['modelPath']
+    else:
+        train_dataset = res['train_dataset']
+        exp_name  = res['exp_name']
+        modelPath = os.path.join("ckt",train_dataset,exp_name,"last.ckpt")
+
 
     # Define methods to use for label (BOOLEAN)
     doCluster = res['doCluster']

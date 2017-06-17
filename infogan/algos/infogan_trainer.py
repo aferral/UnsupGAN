@@ -336,7 +336,7 @@ class InfoGANTrainer(object):
                         raise ValueError("NaN detected!")
             print "Train ended"
             # Test on validation (test) set
-            snapshot_name = "%s_%s" % (self.exp_name, str(counter))
+            snapshot_name = "last"
             fn = saver.save(sess, "%s/%s.ckpt" % (self.checkpoint_dir, snapshot_name))
             print("Model saved in file: %s" % fn)
 
