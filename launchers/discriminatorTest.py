@@ -43,7 +43,7 @@ if len(sys.argv) > 1:
         res = json.load(f)
 
     dataFolder = res['dataFolder']
-    if res.has_key():
+    if res.has_key('modelPath'):
         modelPath = res['modelPath']
     else:
         train_dataset = res['train_dataset']
