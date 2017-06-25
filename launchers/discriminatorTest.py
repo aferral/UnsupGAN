@@ -398,31 +398,39 @@ def plot3Dpca(dataset,points,labels,pickleName,outFolder):
     fitted=PCA(n_components=3)
     fitted.fit(points)
     transformed = fitted.transform(points)
-    names = [dataset.dataObj.getValFilename(i) for i in range(labels.shape[0])]
+
+    names, labels, iamgeSave, saverls = fixrealLabels(dataset, labels)
 
     pickleName = os.path.join(outFolder,pickleName+" exp"+str(fitted.explained_variance_ratio_)+'.pkl')
     with open(pickleName, 'wb') as f:
         pickle.dump([transformed, labels, names, dataset.dataObj.getNclasses(), dataset.getFolderName()],f,-1)
 
-def plotInteractive(transformed,realLabels,dataset,name,outputFolder): #HERE IT MUST USE THE VALIDATION SET
-    # Save points,labels,name,fileNames TODO still here uses validation hardcoded
-    # TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
-    # if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
-    savepoints = transformed
-    iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
-    saverls = np.where(dataset.dataObj.validation_labels)[
-        1]  # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
-    names = [dataset.dataObj.getValFilename(i) for i in range(saverls.shape[0])]
 
+# Save points,labels,name,fileNames TODO still here uses validation hardcoded
+# TODO HERE FOR SOME REASON THE VAL DATA-LABELS ARE DESFASES BY 1 BATCH SIZE
+# if you are in the points[0], realLabels[0] the corresponding saverls[128] iamgeSave[128]
+def fixrealLabels(dataset,realLabels):
+    iamgeSave = dataset.dataObj.validation_data  # TODO DONT USE THE PRIVATE VARIABLES
+    saverls = np.where(dataset.dataObj.validation_labels)[1]  # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
     desfase = saverls.shape[0] - np.array(realLabels).shape[0]
     # THIS WILL MAKE THE saverls and realLabels coincide in values
     saverls = np.roll(saverls[:-1 * desfase], -dataset.dataObj.batch_size)
-    assert (np.array_equal(saverls, realLabels))
-
+    names = [dataset.dataObj.getValFilename(i) for i in range(saverls.shape[0])]
     iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
     names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
 
-    plotBlokeh([savepoints, saverls, iamgeSave, names],name,outputFolder, test=False)
+    return names,realLabels,iamgeSave,saverls
+
+
+def plotInteractive(transformed,realLabels,dataset,name,outputFolder): #HERE IT MUST USE THE VALIDATION SET
+
+    savepoints = transformed
+
+    names,realLabels,iamgeSave,saverls = fixrealLabels(dataset,realLabels)
+
+    assert (np.array_equal(saverls, realLabels))
+
+    plotBlokeh([savepoints, realLabels, iamgeSave, names],name,outputFolder, test=False)
 def main():
     #Get dataset
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
