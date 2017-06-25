@@ -76,15 +76,15 @@ def drawAllfrom(ax,x,y,labelsToDraw):
 
 if __name__ == '__main__':
     args = sys.argv
-    if len(args) == 1:
-        picklePath = args[1]
+    if len(args) == 2:
+        picklePath = args[2]
         limitPoints = None
-    elif len(args) == 2:
-        picklePath = args[1]
-        limitPoints = args[2]
+    elif len(args) == 3:
+        picklePath = args[2]
+        limitPoints = args[3]
     else:
         raise Exception("You must give arguments (python plot3d <picklePath> <Maxpoints>(Optional)  ). The pickle format is a list with [x(3D), y, fileListX, nLabels,whereImages]")
-
+    print "About to use ",picklePath," ",limitPoints
     #Cargar datos desde pickle
     with open(picklePath,'rb') as f:
         res = pickle.load(f)
