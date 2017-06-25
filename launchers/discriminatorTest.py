@@ -392,6 +392,8 @@ def loadDatatransform(values,sess,addEnc=False):
 
 def plot3Dpca(dataset,points,labels,pickleName,outFolder):
     #Create 3d PCA and export pickle
+    if type(labels) == list:
+        labels = np.array(labels)
 
     fitted=PCA(n_components=3)
     fitted.fit(points)
