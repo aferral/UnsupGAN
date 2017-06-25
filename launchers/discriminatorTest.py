@@ -421,7 +421,7 @@ def fixrealLabels(dataset,realLabels):
     iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
     names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
 
-    realLabels = realLabels[0:saverls.shape[0]]
+    realLabels = realLabels[0:names.shape[0]]
     return names,realLabels,iamgeSave,saverls
 
 
