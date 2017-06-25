@@ -400,7 +400,7 @@ def plot3Dpca(dataset,points,labels,pickleName,outFolder):
     transformed = fitted.transform(points)
 
     names, labels, iamgeSave, saverls = fixrealLabels(dataset, labels)
-
+    transformed = transformed[0:labels.shape[0]]
     pickleName = os.path.join(outFolder,pickleName+" exp"+str(fitted.explained_variance_ratio_)+'.pkl')
     with open(pickleName, 'wb') as f:
         pickle.dump([transformed, labels, names, dataset.dataObj.getNclasses(), dataset.getFolderName()],f,-1)
