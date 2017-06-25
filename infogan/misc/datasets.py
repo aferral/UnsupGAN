@@ -165,8 +165,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
     def __init__(self,folderName,batch_size,testProp=0.3, validation_proportion=0.3,out_size=96):
         import random
         seed = int(100*random.random())
-
-
+        self.fname=folderName
         self.dataObj = DataDictionary.getDataset(folderName,
                                                  batch_size=batch_size,
                                                  testProp=testProp,
@@ -201,7 +200,8 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
 
         self.n_labels = self.dataObj.classes
-
+    def getFolderName(self):
+        return self.fname
     def transform(self, data):
         return data
 

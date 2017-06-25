@@ -263,8 +263,13 @@ def showResults(dataset,points,labels,realLabels,name,ax=None,showBlokeh=False):
     transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca,outFolder)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
-    if showBlokeh:
+    #plot the 3pca of the transform
+    plot3Dpca(dataset, points, labels, name, outFolder)
+
+    if showBlokeh: #TODO showBlokeh is just true once in a transformation to be sure to plot just one real labels per transform
         plotInteractive(transformed, realLabels, dataset,name,outFolder)
+        #plot the 3pca of the real labels. Just one per transform
+        plot3Dpca(dataset, points, realLabels, name.split()[0]+"REAL_LABELS", outFolder)
         pass
 
     n_classes = len(set(labels))
@@ -385,6 +390,17 @@ def loadDatatransform(values,sess,addEnc=False):
 
     return transformList
 
+def plot3Dpca(dataset,points,labels,pickleName,outFolder):
+    #Create 3d PCA and export pickle
+
+    fitted=PCA(n_components=3)
+    fitted.fit(points)
+    transformed = fitted.transform(points)
+    names = [dataset.dataObj.getValFilename(i) for i in range(labels.shape[0])]
+
+    pickleName = os.path.join(outFolder,pickleName+" exp"+str(fitted.explained_variance_ratio_)+'.pkl')
+    with open(pickleName, 'wb') as f:
+        pickle.dump([transformed, labels, names, dataset.dataObj.getNclasses(), dataset.getFolderName()],f,-1)
 
 def plotInteractive(transformed,realLabels,dataset,name,outputFolder): #HERE IT MUST USE THE VALIDATION SET
     # Save points,labels,name,fileNames TODO still here uses validation hardcoded
