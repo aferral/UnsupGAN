@@ -28,7 +28,13 @@ def train(configPath):
         output_size = d['output_size']
         categories = d['categories']
         batch_size = d['batch_size']
-        exp_name = d['exp_name']
+
+        if d.has_key('exp_name'):
+            exp_name = d['exp_name']
+        else:
+            assert (len(configPath.split(".")) == 2)
+            exp_name = configPath.split(".")[0]
+
         arch = d['arch']
 
         if d.has_key('semiSup'):

@@ -43,6 +43,12 @@ if len(sys.argv) > 1:
         res = json.load(f)
 
     dataFolder = res['dataFolder']
+    if res.has_key('exp_name'):
+        exp_name = res['exp_name']
+    else:
+        assert(len(configFile.split(".")) == 2)
+        exp_name = configFile.split(".")[0]
+
     if res.has_key('modelPath'):
         modelPath = res['modelPath']
     else:
