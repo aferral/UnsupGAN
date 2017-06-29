@@ -32,8 +32,9 @@ def train(configPath):
         if d.has_key('exp_name'):
             exp_name = d['exp_name']
         else:
-            assert (len(configPath.split(".")) == 2)
-            exp_name = configPath.split(".")[0]
+            filename = os.path.split(configPath)[-1]
+            assert (len(filename.split(".")) == 2)
+            exp_name = filename.split(".")[0]
 
         arch = d['arch']
 

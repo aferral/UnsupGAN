@@ -298,7 +298,7 @@ class InfoGANTrainer(object):
                         sess.run(self.generator_trainer, feed_dict)
                     counter += 1
 
-                    if counter % self.snapshot_interval == 0:
+                    if (counter % self.snapshot_interval == 0):
                         snapshot_name = "%s_%s" % (self.exp_name, str(counter))
                         fn = saver.save(sess, "%s/%s.ckpt" % (self.checkpoint_dir, snapshot_name))
                         print("Model saved in file: %s" % fn)

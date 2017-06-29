@@ -46,14 +46,14 @@ if len(sys.argv) > 1:
     if res.has_key('exp_name'):
         exp_name = res['exp_name']
     else:
-        assert(len(configFile.split(".")) == 2)
-        exp_name = configFile.split(".")[0]
+        filename=os.path.split(configFile)[-1]
+        assert(len(filename.split(".")) == 2)
+        exp_name = filename.split(".")[0]
 
     if res.has_key('modelPath'):
         modelPath = res['modelPath']
     else:
         train_dataset = res['train_dataset']
-        exp_name  = res['exp_name']
         modelPath = os.path.join("ckt",train_dataset,exp_name,"last.ckpt")
 
 
