@@ -42,7 +42,7 @@ if len(sys.argv) > 1:
     with open(configFile, 'r') as f:
         res = json.load(f)
 
-    dataFolder = res['dataFolder']
+    dataFolder = res['train_Folder']
     if res.has_key('exp_name'):
         exp_name = res['exp_name']
     else:
@@ -67,7 +67,14 @@ if len(sys.argv) > 1:
     discrLastFeatName = res['discrLastFeatName']
     discrEncoderName = res['discrEncoderName']
     # Define output folder for results (STRING)
-    outFolder = res['outFolder']
+
+    if res.has_key('outFolder'):
+        outFolder = res['outFolder']
+    else:
+        assert (len(configFile.split(".")) == 2)
+        expName = configFile.split(".")[0]
+        outFolder = os.path.join("imagenesTest",expName)
+
     # This has to be the saved batch_size (INT)
     batch_size = res['batch_size']
     # The image size used in the arch (int) (square image)

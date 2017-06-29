@@ -62,11 +62,19 @@ def main(configPath):
     with open(configPath, 'r') as f:
         res = json.load(f)
 
-    dataFolder = res['dataFolder']
+    dataFolder = res['train_Folder']
     modelPath = res['modelPath']
     batch_size = res['batch_size']
     imageSize = res['imageSize']
-    outFolder = os.path.join("/home/user/Escritorio/reportes",res['outFolder'])
+
+    if res.has_key('outFolder'):
+        outp = res['outFolder']
+    else:
+        assert (len(configPath.split(".")) == 2)
+        expName = configPath.split(".")[0]
+        outp = os.path.join("imagenesTest",expName)
+
+    outFolder = outp
     batch_size = res['batch_size']
 
     if res.has_key('semiSup'):

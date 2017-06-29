@@ -107,10 +107,17 @@ def main(configPath):
     iterationsClasifier = 200
     discrInputName = res['discrInputName']
     featName = res['discrLastFeatName']
-    dataFolder = res['dataFolder']
+    dataFolder = res['train_Folder']
     modelPath = res['modelPath']
     imageSize = res['imageSize']
-    outFolder = res['outFolder']
+
+
+    if res.has_key('outFolder'):
+        outFolder = res['outFolder']
+    else:
+        assert (len(configPath.split(".")) == 2)
+        expName = configPath.split(".")[0]
+        outFolder = os.path.join("imagenesTest",expName)
 
     originalBatchSize = res['batch_size']
     half_batch = int(res['batch_size'] * 0.5)
