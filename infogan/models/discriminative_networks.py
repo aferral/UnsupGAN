@@ -108,7 +108,7 @@ class dcgan_net():
              apply(leaky_rectify).custom_fully_connected(512))
         self.intermLayer = (shared_template.as_layer())
 
-        shared_template=shared_template.fc_batch_norm().apply(leaky_rectify,name="OutDiscriminator")
+        shared_template=shared_template.apply(leaky_rectify,name="OutDiscriminator")
 
         return shared_template
 
