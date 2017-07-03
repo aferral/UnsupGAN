@@ -62,7 +62,8 @@ class InfoGAN_MNIST_net():
 
 
 class dcgan_net():
-    def __init__(self, image_shape=64, is_reg=False, encoder_dim=None):
+    def __init__(self, image_shape=64, is_reg=False, encoder_dim=None,addNoise=False):
+        self.addNoise=addNoise
         self.df_dim = 64
         self.image_shape = image_shape
 
@@ -97,14 +98,18 @@ class dcgan_net():
              custom_conv2d(self.df_dim, name='d_h0_conv', k_h=self.k_h, k_w=self.k_w).
              apply(leaky_rectify).
              custom_conv2d(self.df_dim*2, name='d_h1_conv', k_h=self.k_h, k_w=self.k_w).
-             conv_batch_norm().
+             conv_batch_norm(addNoise=self.addNoise).
              apply(leaky_rectify).
              custom_conv2d(self.df_dim*4, name='d_h2_conv', k_h=self.k_h, k_w=self.k_w).
-             conv_batch_norm().
+             conv_batch_norm(addNoise=self.addNoise).
              apply(leaky_rectify).
              custom_conv2d(self.df_dim*8, name='d_h3_conv', k_h=self.k_h, k_w=self.k_w).
-             conv_batch_norm().
-             apply(leaky_rectify,name="OutDiscriminator"))
+             conv_batch_norm(addNoise=self.addNoise).
+             apply(leaky_rectify).custom_fully_connected(512))
+        self.intermLayer = (shared_template.as_layer())
+
+        shared_template.fc_batch_norm().apply(leaky_rectify,name="OutDiscriminator")
+
         return shared_template
 
     def encoder_net(self):

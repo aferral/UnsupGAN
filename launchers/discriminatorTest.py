@@ -71,9 +71,10 @@ if len(sys.argv) > 1:
     if res.has_key('outFolder'):
         outFolder = res['outFolder']
     else:
-        assert (len(configFile.split(".")) == 2)
-        expName = configFile.split(".")[0]
-        outFolder = os.path.join("imagenesTest",expName)
+        filename = os.path.split(configFile)[-1]
+        assert (len(filename.split(".")) == 2)
+        exp_name = filename.split(".")[0]
+        outFolder = os.path.join("imagenesTest",exp_name)
 
     # This has to be the saved batch_size (INT)
     batch_size = res['batch_size']
@@ -550,7 +551,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    device_name = "/cpu:0"
+    with tf.device(device_name):
+        main()
 
 
 

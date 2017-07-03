@@ -7,13 +7,14 @@ import infogan.models.discriminative_networks as D
 
 
 class RegularizedGAN(object):
-    def __init__(self, output_dist, latent_spec, is_reg, batch_size, image_shape, network_type):
+    def __init__(self, output_dist, latent_spec, is_reg, batch_size, image_shape, network_type,impr=False):
         """
         :type output_dist: Distribution
         :type latent_spec: list[(Distribution, bool)]
         :type batch_size: int
         :type network_type: string
         """
+        self.impr=impr
         self.output_dist = output_dist
         self.latent_spec = latent_spec
         self.is_reg = is_reg
@@ -48,7 +49,8 @@ class RegularizedGAN(object):
                 self.encoder_template = self.D_model.encoder_template
             else:
                 if self.network_type == 'dcgan':
-                    self.D_model = D.dcgan_net(image_shape=self.image_shape,is_reg=self.is_reg,encoder_dim=self.encoder_dim)
+                    self.D_model = D.dcgan_net(image_shape=self.image_shape,is_reg=self.is_reg,
+                                               encoder_dim=self.encoder_dim,addNoise=self.impr)
                 elif self.network_type == 'deeper_dcgan':
                     self.D_model = D.deeper_dcgan_net(image_shape=self.image_shape,is_reg=self.is_reg,encoder_dim=self.encoder_dim)
                 else:
@@ -64,7 +66,7 @@ class RegularizedGAN(object):
                 self.generator_template = self.gen_model.infoGAN_mnist_net(self.image_shape)
             else:
                 if self.network_type == 'dcgan':
-                    self.gen_model = G.dcgan_net(self.image_shape)
+                    self.gen_model = G.dcgan_net(self.image_shape,useImproved=self.impr)
                 elif self.network_type == 'deeper_dcgan':
                     self.gen_model = G.deeper_dcgan_net(self.image_shape)
                 else:
@@ -88,6 +90,10 @@ class RegularizedGAN(object):
             d_dict['reg_dist_info'] = reg_dist_info
 
         return d_dict
+    def calcInterLayer(self,x_var):
+        return self.D_model.intermLayer.construct(input=x_var)
+
+
     def discriminate(self, x_var):
         d_features = self.shared_template.construct(input=x_var)
         d_logits = self.discriminator_template.construct(input=x_var)[:,0]

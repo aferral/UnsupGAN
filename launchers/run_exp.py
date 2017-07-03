@@ -14,8 +14,7 @@ import datetime
 import sys
 import json
 #Load exp Json
-
-
+from launchers.improvedGan import ImprovedGAN
 
 
 def train(configPath):
@@ -29,6 +28,11 @@ def train(configPath):
         categories = d['categories']
         batch_size = d['batch_size']
 
+        if d.has_key('improvedGan'):
+            improvedGan = d['improvedGan']
+        else:
+            improvedGan = False
+        print("Using improvedGAN ",improvedGan)
         if d.has_key('exp_name'):
             exp_name = d['exp_name']
         else:
@@ -106,7 +110,6 @@ def train(configPath):
     for x, y in latent_spec:
         if y:
             is_reg = True
-
     model = RegularizedGAN(
         output_dist=output_dist,
         latent_spec=latent_spec,
@@ -114,27 +117,47 @@ def train(configPath):
         batch_size=batch_size,
         image_shape=dataset.image_shape,
         network_type=network_type,
+        impr=improvedGan
     )
+    if (not improvedGan):
+        algo = InfoGANTrainer(
+            model=model,
+            dataset=dataset,
+            val_dataset=val_dataset,
+            batch_size=batch_size,
+            isTrain=True,
+            exp_name=exp_name,
+            log_dir=log_dir,
+            checkpoint_dir=checkpoint_dir,
+            samples_dir=samples_dir,
+            max_epoch=max_epoch,
+            info_reg_coeff=1.0,
+            generator_learning_rate=2e-3,
+            discriminator_learning_rate=2e-3,
+            semiSup=semiSup
+        )
+    else:
+        algo = ImprovedGAN(
+            model=model,
+            dataset=dataset,
+            val_dataset=val_dataset,
+            batch_size=batch_size,
+            isTrain=True,
+            exp_name=exp_name,
+            log_dir=log_dir,
+            checkpoint_dir=checkpoint_dir,
+            samples_dir=samples_dir,
+            max_epoch=max_epoch,
+            info_reg_coeff=1.0,
+            generator_learning_rate=2e-3,
+            discriminator_learning_rate=2e-3,
+            semiSup=semiSup
+        )
 
-    algo = InfoGANTrainer(
-        model=model,
-        dataset=dataset,
-        val_dataset=val_dataset,
-        batch_size=batch_size,
-        isTrain=True,
-        exp_name=exp_name,
-        log_dir=log_dir,
-        checkpoint_dir=checkpoint_dir,
-        samples_dir=samples_dir,
-        max_epoch=max_epoch,
-        info_reg_coeff=1.0,
-        generator_learning_rate=2e-3,
-        discriminator_learning_rate=2e-3,
-        semiSup=semiSup
-    )
-
-    #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+    #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.03)
     #config=tf.ConfigProto(gpu_options=gpu_options)
+    #device_name = "/gpu:0"
+    #with tf.device(device_name):
     algo.init_opt()
     with tf.Session() as sess:
         algo.train(sess)

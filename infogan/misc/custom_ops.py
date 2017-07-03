@@ -3,12 +3,25 @@ import tensorflow as tf
 from prettytensor.pretty_tensor_class import Phase
 import numpy as np
 
+def UnPooling2x2ZeroFilled(x):
+    # https://github.com/tensorflow/tensorflow/issues/2169
+    out = tf.concat([x, tf.zeros_like(x)], 3)
+    out = tf.concat([out, tf.zeros_like(out)], 2)
+
+    sh = x.get_shape().as_list()
+    if None not in sh[1:]:
+        out_size = [-1, sh[1] * 2, sh[2] * 2, sh[3]]
+        return tf.reshape(out, out_size)
+    else:
+        shv = tf.shape(x)
+        ret = tf.reshape(out, tf.stack([-1, shv[1] * 2, shv[2] * 2, sh[3]]))
+    return ret
 
 class conv_batch_norm(pt.VarStoreMethod):
     """Code modification of http://stackoverflow.com/a/33950177"""
 
     def __call__(self, input_layer, epsilon=1e-5, momentum=0.1, name="batch_norm",
-                 in_dim=None, phase=Phase.train):
+                 in_dim=None, phase=Phase.train,addNoise=False):
         self.ema = tf.train.ExponentialMovingAverage(decay=0.9)
 
         shape = input_layer.shape
@@ -33,7 +46,12 @@ class conv_batch_norm(pt.VarStoreMethod):
                     x, self.ema.average(self.mean), self.ema.average(self.variance), self.beta,
                     self.gamma, epsilon,
                     scale_after_normalization=True)
-            return input_layer.with_tensor(normalized_x, parameters=self.vars)
+            out = input_layer.with_tensor(normalized_x, parameters=self.vars)
+            if addNoise:
+                noise = tf.random_normal(shape=tf.shape(out), mean=0.0, stddev=0.2, dtype=tf.float32)
+                return out + noise
+            else:
+                return out
 
 
 pt.Register(assign_defaults=('phase'))(conv_batch_norm)
@@ -54,7 +72,6 @@ class fc_batch_norm(conv_batch_norm):
 def leaky_rectify(x, leakiness=0.01,name="Leaky_RELU"):
     assert leakiness <= 1
     ret = tf.maximum(x, leakiness * x,name=name)
-    # import ipdb; ipdb.set_trace()
     return ret
 
 
@@ -73,11 +90,12 @@ class custom_conv2d(pt.VarStoreMethod):
             return input_layer.with_tensor(tf.nn.bias_add(conv, biases), parameters=self.vars)
 
 
+
 @pt.Register
 class custom_deconv2d(pt.VarStoreMethod):
     def __call__(self, input_layer, output_shape,
                  k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02,
-                 name="deconv2d"):
+                 name="deconv2d",useResize=False):
         output_shape[0] = input_layer.shape[0]
         ts_output_shape = tf.pack(output_shape)
         with tf.variable_scope(name):
@@ -98,7 +116,10 @@ class custom_deconv2d(pt.VarStoreMethod):
             biases = self.variable('biases', [output_shape[-1]], init=tf.constant_initializer(0.0))
             deconv = tf.reshape(tf.nn.bias_add(deconv, biases), [-1] + output_shape[1:])
 
-            return deconv
+            if (useResize):
+                return tf.image.resize_images(deconv, output_shape[1], output_shape[2],1)
+            else:
+                return deconv
 
 
 @pt.Register
