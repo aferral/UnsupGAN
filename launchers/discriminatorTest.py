@@ -551,9 +551,9 @@ def main():
 
 
 if __name__ == '__main__':
-    device_name = "/cpu:0"
-    with tf.device(device_name):
-        main()
+    # device_name = "/cpu:0"
+    # with tf.device(device_name):
+    main()
 
 
 
