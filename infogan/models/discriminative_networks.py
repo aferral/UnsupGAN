@@ -63,7 +63,7 @@ class InfoGAN_MNIST_net():
 
 class dcgan_net():
     def __init__(self, image_shape=64, is_reg=False, encoder_dim=None,addNoise=False):
-        self.addNoise=addNoise
+        self.addNoise=False #PARA TESTEAR
         self.df_dim = 64
         self.image_shape = image_shape
 

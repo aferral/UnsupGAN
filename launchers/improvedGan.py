@@ -30,7 +30,7 @@ class ImprovedGAN(object):
                  info_reg_coeff=1.0,
                  discriminator_learning_rate=2e-4,
                  generator_learning_rate=2e-4,
-                 semiSup=False,
+                 semiSup=False
                  ):
         """
         :type model: RegularizedGAN

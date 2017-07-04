@@ -36,7 +36,9 @@ class dcgan_net():
         self.c_dim = image_shape[2]
         self.batch_size = 64
         self.k_h = self.k_w = 5
-        self.improved=useImproved
+
+
+        self.improved=False #PARA TESTEAR
 
     def gen_net(self, image_shape):
         sx = image_shape[0]
