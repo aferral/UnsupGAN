@@ -82,7 +82,8 @@ class ImprovedGAN(object):
             self.d_intermediateLayerGenerated = self.model.calcInterLayer(fake_x)
             self.d_intermediateLayerReal = self.model.calcInterLayer(input_tensor)
 
-            generator_loss = tf.reduce_mean(tf.squared_difference(self.d_intermediateLayerGenerated, self.d_intermediateLayerReal))
+            # generator_loss = tf.reduce_mean(tf.squared_difference(self.d_intermediateLayerGenerated, self.d_intermediateLayerReal))
+            generator_loss = 0
 
 
             if self.semiSup:
