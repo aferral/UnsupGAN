@@ -39,7 +39,7 @@ class dcgan_net():
 
 
         #self.improved=False #PARA TESTEAR
-
+        self.improved = useImproved
     def gen_net(self, image_shape):
         sx = image_shape[0]
         sy = image_shape[1]
