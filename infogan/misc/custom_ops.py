@@ -102,9 +102,8 @@ class custom_deconv2d(pt.VarStoreMethod):
 
             if useResize:
                 upsample = tf.image.resize_images(input_layer,output_shape[1],output_shape[2],1)
-                conv = custom_conv2d()
                 #Setting pad to 1,1 to keep dimensions
-                convUpsample = conv(upsample, upsample.shape,
+                convUpsample = custom_conv2d(upsample, upsample.shape,
                                                       k_h=k_h, k_w=k_w, d_h=1, d_w=1, stddev=stddev, in_dim=None,
                                                       padding='SAME',
                                                       name="conv2d")
