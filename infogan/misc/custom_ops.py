@@ -99,28 +99,30 @@ class custom_deconv2d(pt.VarStoreMethod):
         output_shape[0] = input_layer.shape[0]
         ts_output_shape = tf.pack(output_shape)
         with tf.variable_scope(name):
-            # filter : [height, width, output_channels, in_channels]
-            w = self.variable('w', [k_h, k_w, output_shape[-1], input_layer.shape[-1]],
-                              init=tf.random_normal_initializer(stddev=stddev))
 
-            try:
-                deconv = tf.nn.conv2d_transpose(input_layer, w,
-                                                output_shape=ts_output_shape,
-                                                strides=[1, d_h, d_w, 1])
-
-            # Support for versions of TensorFlow before 0.7.0
-            except AttributeError:
-                deconv = tf.nn.deconv2d(input_layer, w, output_shape=ts_output_shape,
-                                        strides=[1, d_h, d_w, 1])
-
-            biases = self.variable('biases', [output_shape[-1]], init=tf.constant_initializer(0.0))
-            deconv = tf.reshape(tf.nn.bias_add(deconv, biases), [-1] + output_shape[1:])
-
-            if (useResize):
-                return tf.image.resize_images(deconv, output_shape[1], output_shape[2],1)
+            if useResize:
+                upsample = tf.image.resize_images(input_layer, output_shape,1)
+                conv = custom_conv2d()
+                convUpsample = conv(upsample, upsample.shape,
+                                                      k_h=k_h, k_w=k_w, d_h=d_h, d_w=d_w, stddev=stddev, in_dim=None,
+                                                      padding='SAME',
+                                                      name="conv2d")
+                return convUpsample
             else:
+                # filter : [height, width, output_channels, in_channels]
+                w = self.variable('w', [k_h, k_w, output_shape[-1], input_layer.shape[-1]],
+                                  init=tf.random_normal_initializer(stddev=stddev))
+                try:
+                    deconv = tf.nn.conv2d_transpose(input_layer, w,
+                                                    output_shape=ts_output_shape,
+                                                    strides=[1, d_h, d_w, 1])
+                # Support for versions of TensorFlow before 0.7.0
+                except AttributeError:
+                    deconv = tf.nn.deconv2d(input_layer, w, output_shape=ts_output_shape,
+                                            strides=[1, d_h, d_w, 1])
+                biases = self.variable('biases', [output_shape[-1]], init=tf.constant_initializer(0.0))
+                deconv = tf.reshape(tf.nn.bias_add(deconv, biases), [-1] + output_shape[1:])
                 return deconv
-
 
 @pt.Register
 class custom_fully_connected(pt.VarStoreMethod):
