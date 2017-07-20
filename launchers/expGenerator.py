@@ -81,8 +81,8 @@ with tf.Session() as sess:
 		shape=imagesSampled[0].shape
 
 		allInOne = np.empty(shape)
-		for i in range(shape[0]):
-			np.concatenate([allInOne,imagesSampled[i]])
+		for i in range(imagesSampled.shape[0]):
+			allInOne=np.concatenate([allInOne,imagesSampled[i]])
 		plt.imshow(allInOne)
 		plt.savefig(name+"_cat_"+catAct+'.png')
 		
