@@ -51,9 +51,6 @@ def main(configFile):
     discrInputName = res['discrInputName']
 
 
-    # Crear lista de capas a usar
-    capas = ['d_h3_conv_2/d_h3_conv/BiasAdd']
-
     useDataset = DataFolder(dataFolder, batchSize, testProp=0.9, validation_proportion=0.5, out_size=imageSize)
 
     with tf.Session() as sess:
@@ -61,6 +58,28 @@ def main(configFile):
         new_saver.restore(sess, modelPath)
 
         d_in = sess.graph.get_tensor_by_name(discrInputName)
+
+        # Crear lista de capas a usar automaticamente mediante navegacion del grafo
+        capas = []
+
+        current = d_in.op.outputs[0]
+        it = 100
+        while not ('OutDiscriminator:0' in current.name):
+            nextNames = [elem.name for elem in current.consumers()]
+            if any([('batchnorm/mul_1' in name) for name in nextNames]):
+                for ind, way in enumerate(current.consumers()):
+                    if 'mul_1' in way.name:
+                        current = current.consumers()[ind].outputs[0]
+            else:
+                current = current.consumers()[0].outputs[0]
+            capas.append(current.name)
+            it = it - 1
+            if it == 0:
+                raise Exception("Error en busqueda de grafo entro a ciclo maxima profundidad 100")
+
+        if not res['discrEncoderName'] is None:
+            capas.append(res['discrEncoderName'])
+
 
         for layerName in capas:
 
