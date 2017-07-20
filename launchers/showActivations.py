@@ -82,7 +82,8 @@ def main(configFile):
 
 
         for layerName in capas:
-
+            if not ":0" in layerName:
+                layerName = layerName + ":0"
             #Define layer to use
             layerFunction = getActLayer(sess, layerName, d_in, norm=False)
 
