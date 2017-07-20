@@ -5,6 +5,7 @@ import json
 import os
 import sys
 from infogan.misc.dataset import Dataset
+from skimage.io import imsave
 from traditionalClusteringTests.dataUtils import inverseNorm
 
 #--------------------PARAMETROS--------------------
@@ -87,7 +88,6 @@ with tf.Session() as sess:
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1:
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
-		plt.imshow(allInOne)
-		plt.savefig(name+"_cat_"+str(catAct)+'.png')
+		imsave(name+"_cat_"+str(catAct)+'.png',allInOne)
 		
 
