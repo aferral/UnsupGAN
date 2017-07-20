@@ -61,6 +61,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples):
 	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network
 
 	valInput = np.random.rand(batchSize,inputSize)
+	valInput = np.zeros(batchSize, inputSize)
 	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 	activations = runSess(sess, layerOut, layerInput, valInput)
