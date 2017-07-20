@@ -95,6 +95,8 @@ with tf.Session() as sess:
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1:
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
-		imsave(name+"_cat_"+str(catAct)+'.png',allInOne)
+		plt.imshow(allInOne)
+		plt.savefig(name+"_cat_"+str(catAct)+'.png')
+		# imsave(name+"_cat_"+str(catAct)+'.png',allInOne)
 		
 
