@@ -79,10 +79,10 @@ with tf.Session() as sess:
 	for catAct in range(cSize):
 		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
 		shape=imagesSampled[0].shape
-
-		allInOne = np.empty(shape)
-		for i in range(imagesSampled.shape[0]):
-			allInOne=np.concatenate([allInOne,imagesSampled[i]])
+		nImages= imagesSampled.shape[0]
+		allInOne = np.empty(tuple(list(shape[0]*nImages)+shape[1:]))
+		for i in range(nImages):
+			allInOne[shape[0]*i:shape[0]*(i+1),:]=imagesSampled[i]
 		print allInOne.shape
 		plt.imshow(allInOne)
 		plt.savefig(name+"_cat_"+catAct+'.png')
