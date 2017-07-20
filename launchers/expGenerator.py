@@ -1,97 +1,91 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from skimage.io import imsave
-from skimage.transform import rescale
+import json
 import os
+import sys
 from infogan.misc.dataset import Dataset
+from traditionalClusteringTests.dataUtils import inverseNorm
 
 #--------------------PARAMETROS--------------------
 
-#modelPath = 'ckt/mnist/testC/t1.ckpt'
-modelPath = 'ckt/mnist/testN/t2.ckpt'
-#modelPath = 'ble.ckpt'
-#modelPath = 'ckt/sca2.ckpt'
+print os.getcwd()
+configFile = sys.argv[1]
+print "Loading config file ", configFile
 
-isCat = False
-ncat = 10
-nNoise = 100
-batchSize = 128
+res = {}
 
-dimToTest = 2
-testCat = 9
-imageShape = (96,96)
-scaleOut = 1
+with open(configFile, 'r') as f:
+	res = json.load(f)
+
+dataFolder = res['train_Folder']
+
+if res.has_key('exp_name'):
+	exp_name = res['exp_name']
+else:
+	filename = os.path.split(configFile)[-1]
+	assert (len(filename.split(".")) == 2)
+	exp_name = filename.split(".")[0]
+
+if res.has_key('modelPath'):
+	modelPath = res['modelPath']
+else:
+	train_dataset = res['train_dataset']
+	modelPath = os.path.join("ckt", train_dataset, exp_name, "last.ckpt")
+
+
+name= exp_name
+batchSize = res['batch_size']
+nSamples = 20
+inputSize=110
+noiseSize = 100
+cSize = 10
+useOriginalSpace =True
 isTan = True
-outFolder = '/home/user/Escritorio/imagenesTest'
 
-useDataset = Dataset("data/MFPT96Scalograms")
+layerInputName = "concat:0"
+layerOutputName = res['discrInputName']
+useDataset = Dataset(dataFolder)
+
+
 #--------------------PARAMETROS--------------------
 
-def rG(sess,fun,inp,val):
-	return sess.run(fun, {inp : val } )
-#Variar una dimension y mostrar 128 imagenes
-def doexp1(sess, fun, inp, v0, dim):
+def runSess(sess, tensor, tensorInput, val):
+	return sess.run(tensor, {tensorInput : val } )
 
-	testVector = np.repeat(v0,batchSize,axis=0)
-	testVector[:,dim] = np.linspace(-1,1,batchSize)
+#Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
+def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples):
+	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network
 
-	resultado = rG(sess,fun,inp,testVector)
+	valInput = np.random.rand(batchSize,inputSize)
+	valInput[:,0:cSize] = 0  #Setting all C inputs to 0
+	valInput[:,catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
+	activations = runSess(sess, layerOut, layerInput, valInput)
+
 	if isTan: #the result was in -1 to +1 units
-		resultado = (resultado + 1.0 ) * 0.5
-	#mean =  useDataset.mean / 255
-	#std = useDataset.std / 255
-	#resultado = (resultado[:,:,:,0]*std) + mean
+		resultado = (activations + 1.0 ) * 0.5
+	if useOriginalSpace:
+		for i in range(activations.shape[0]):
+			activations[i] = inverseNorm(activations[i], useDataset)
 
-	for i in range(batchSize):
-		#toSave = rescale(resultado[i].reshape(imageShape) , scaleOut)
-		#imsave(os.path.join(outFolder,'test'+str(i)+'.png'), toSave)
-		plt.imshow(resultado[i].reshape(imageShape))
-		plt.show()
-		#plt.savefig(os.path.join(outFolder,'test'+str(i)+'.png'))
+	return activations[0:nSamples]
 
-def exp2(sess, fun, inp, v0, nc):
-	testVector = np.repeat(v0,batchSize,axis=0)
-	testVector[0:nc,-10:] = np.eye(nc)
 
-	resultado = rG(sess,fun,inp,testVector)
+with tf.Session() as sess:
+	new_saver = tf.train.import_meta_graph(modelPath+'.meta')
+	new_saver.restore(sess, modelPath)
+	sigm = sess.graph.get_tensor_by_name(layerOutputName)
+	entrada = sess.graph.get_tensor_by_name(layerInputName)
 
-	for i in range(10):
-		toSave = rescale(resultado[i].reshape((28,28)) , 10)
-		imsave(os.path.join(outFolder,'test'+str(i)+'.png'), toSave)
-#
-#
-# def test5():
-# 	if isCat:
-# 		testCvector = np.zeros((1, ncat))
-# 		testCvector[np.arange(1), testCat] = 1
-#
-# 		joint=np.hstack([testV,testCvector])
-# 		print 'Ej cat : ',testV[0,-ncat:]
-# 		#test1(sess,sigm,entrada,joint,dimToTest)
-# 		test2(sess,sigm,entrada,joint,ncat)
-# 	else:
-# 		test1(sess,sigm,entrada,testV,dimToTest)
-			
-def exp4():
-	pass
 
-def main():
-	print os.getcwd()
+	for catAct in range(cSize):
+		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
+		shape=imagesSampled[0].shape
 
-	with tf.Session() as sess:
-		new_saver = tf.train.import_meta_graph(modelPath+'.meta')
-		new_saver.restore(sess, modelPath)
-		sigm = sess.graph.get_tensor_by_name('apply_op_9/Tanh:0')
-		entrada = sess.graph.get_tensor_by_name('concat:0')
-		testV = np.random.rand(1,nNoise)
-
-		print 'Ej ruido : ',testV[0,0:10]
-		
+		allInOne = np.empty(shape)
+		for i in range(shape[0]):
+			np.concatenate([allInOne,imagesSampled[i]])
+		plt.imshow(allInOne)
+		plt.savefig(name+"_cat_"+catAct+'.png')
 		
 
-		
-
-
-if __name__ == '__main__':
-	main()
