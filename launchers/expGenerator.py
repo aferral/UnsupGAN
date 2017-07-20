@@ -5,7 +5,7 @@ import json
 import os
 import sys
 from infogan.misc.dataset import Dataset
-from skimage.io import imsave
+from scipy.misc import imsave
 from skimage.transform import resize
 from traditionalClusteringTests.dataUtils import inverseNorm
 
