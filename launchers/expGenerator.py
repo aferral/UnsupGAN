@@ -80,10 +80,8 @@ with tf.Session() as sess:
 		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
 		shape=imagesSampled[0].shape
 		nImages= imagesSampled.shape[0]
-		print shape
-		print nImages
-		print tuple(list(shape[0]*nImages)+shape[1:])
-		allInOne = np.empty(tuple(list(shape[0]*nImages)+shape[1:]))
+
+		allInOne = np.empty(tuple([shape[0]*nImages]+list(shape[1:])))
 		for i in range(nImages):
 			allInOne[shape[0]*i:shape[0]*(i+1),:]=imagesSampled[i]
 		print allInOne.shape
