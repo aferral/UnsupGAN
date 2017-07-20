@@ -42,7 +42,6 @@ noiseSize = 100
 cSize = res['categories']
 inputSize=noiseSize+cSize
 
-useOriginalSpace =True
 isTan = True
 
 layerInputName = "concat:0"
@@ -66,9 +65,6 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples):
 
 	if isTan: #the result was in -1 to +1 units
 		resultado = (activations + 1.0 ) * 0.5
-	if useOriginalSpace:
-		for i in range(activations.shape[0]):
-			activations[i] = inverseNorm(activations[i], useDataset)
 
 	return activations[0:nSamples]
 
