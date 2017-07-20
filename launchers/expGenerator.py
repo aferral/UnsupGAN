@@ -44,7 +44,7 @@ noiseSize = 100
 cSize = res['categories']
 inputSize=noiseSize+cSize
 
-isTan = True
+isTan = False
 
 layerInputName = "concat:0"
 layerOutputName = res['discrInputName']
