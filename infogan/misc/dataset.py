@@ -2,6 +2,7 @@ import os
 from collections import Counter
 import scipy.io as sio
 import numpy as np
+import time
 from skimage.color import rgb2gray
 import skimage.io as io
 from sklearn.model_selection import train_test_split
@@ -190,6 +191,48 @@ class Dataset:
     def reset(self):
         self.current_batch = 0
         self.current_epoch = 0
+#This class open .mat files instead of images NOTE THAT IS A SUBCLASS OF Dataset so  inherit all his functions
+#The dataFolder should have inside N folder called like the labels. Example
+#if dataFolder is data/CWRfeatures inside that folder should be 4 folders called
+# label1 label2 label3 label4 . This class also save a log with the int-label used
+class DatasetMat(Dataset):
+    def readMatrixData(self,dataFolder):
+
+        #for each subfolder a new label (just read folder)
+        allFolders = filter(lambda x : os.path.isdir(os.path.join(dataFolder,x)), os.listdir(dataFolder))
+        if len(allFolders) == 0:
+            print "ERROR NOT FOUND FOLDERS ",dataFolder
+            print os.getcwd()
+            raise Exception('NOT FOUND FOLDERs')
+        now = time.strftime('Day%Y-%m-%d-Time%H-%M')
+        log = "\n\n Dataset label log "+str(dataFolder)+str(now)+" \n"
+
+        all = []
+        allL = []
+        for label,folder in enumerate(allFolders):
+            # Read all the mat files inside
+            log += "Label: "+str(0)+" -- "+str(folder)+" \n"
+            fileList = os.listdir(os.path.join(dataFolder,folder))
+            for f in fileList:
+                if f.split('.')[-1] == 'mat': #check that the file is mat
+                    matpath = os.path.join(dataFolder,folder,f)
+                    fileName = f.split('.')[-2] #Extract the .mat from the filename
+                    matrixData = sio.loadmat(matpath)[fileName] #The .mat is a dictionary and the fileName is the key for the data
+                    self.imageSize = matrixData.shape[0]
+                    self.dataShape = matrixData.shape
+                    all.append(matrixData)
+                    allL.append(label)
+                    self.fileNames.append(f)
+            self.classes = len(set(allL))  # Get how many different classes are in the problem
+
+        # Create a log with label - folder
+        outAll = np.zeros((len(all),all[0].shape[0],all[0].shape[1]))
+        for i in range(len(all)):
+            outAll[i] = all[i]
+        allL = np.array(allL)
+        indAll = np.arange(outAll.shape[0])  # Get index to data to asociate filenames with data
+
+        return outAll, allL, indAll
 
 class cifar10Dataset(Dataset):
     def __init__(self, batch_size=100,testProp=0.3, validation_proportion=0.3,seed = 1, normalize=True):

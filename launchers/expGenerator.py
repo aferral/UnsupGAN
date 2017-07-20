@@ -31,7 +31,7 @@ useDataset = Dataset("data/MFPT96Scalograms")
 def rG(sess,fun,inp,val):
 	return sess.run(fun, {inp : val } )
 #Variar una dimension y mostrar 128 imagenes
-def test1(sess,fun,inp,v0,dim):
+def doexp1(sess, fun, inp, v0, dim):
 
 	testVector = np.repeat(v0,batchSize,axis=0)
 	testVector[:,dim] = np.linspace(-1,1,batchSize)
@@ -50,7 +50,7 @@ def test1(sess,fun,inp,v0,dim):
 		plt.show()
 		#plt.savefig(os.path.join(outFolder,'test'+str(i)+'.png'))
 
-def test2(sess,fun,inp,v0,nc):
+def exp2(sess, fun, inp, v0, nc):
 	testVector = np.repeat(v0,batchSize,axis=0)
 	testVector[0:nc,-10:] = np.eye(nc)
 
@@ -59,28 +59,21 @@ def test2(sess,fun,inp,v0,nc):
 	for i in range(10):
 		toSave = rescale(resultado[i].reshape((28,28)) , 10)
 		imsave(os.path.join(outFolder,'test'+str(i)+'.png'), toSave)
-#Crear una ventana con perillitas
-def test3():
-	#Consigue dataset TRAIN
-	#clusteriza
-	#consigue labels
-	#Mostrar lista de imagenes de cada label en carpetas separadas.
-	#Mostrar centroide, mostrar distancia a el centroide
-	pass
-
-def test5():
-	if isCat:
-		testCvector = np.zeros((1, ncat))
-		testCvector[np.arange(1), testCat] = 1
-
-		joint=np.hstack([testV,testCvector])
-		print 'Ej cat : ',testV[0,-ncat:]
-		#test1(sess,sigm,entrada,joint,dimToTest)
-		test2(sess,sigm,entrada,joint,ncat)
-	else:
-		test1(sess,sigm,entrada,testV,dimToTest)
+#
+#
+# def test5():
+# 	if isCat:
+# 		testCvector = np.zeros((1, ncat))
+# 		testCvector[np.arange(1), testCat] = 1
+#
+# 		joint=np.hstack([testV,testCvector])
+# 		print 'Ej cat : ',testV[0,-ncat:]
+# 		#test1(sess,sigm,entrada,joint,dimToTest)
+# 		test2(sess,sigm,entrada,joint,ncat)
+# 	else:
+# 		test1(sess,sigm,entrada,testV,dimToTest)
 			
-def test4():
+def exp4():
 	pass
 
 def main():
