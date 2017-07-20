@@ -6,6 +6,7 @@ import os
 import sys
 from infogan.misc.dataset import Dataset
 from skimage.io import imsave
+from skimage.transform import resize
 from traditionalClusteringTests.dataUtils import inverseNorm
 
 #--------------------PARAMETROS--------------------
@@ -82,9 +83,14 @@ with tf.Session() as sess:
 		shape=imagesSampled[0].shape
 		nImages= imagesSampled.shape[0]
 
-		allInOne = np.empty(tuple([shape[0]*nImages]+list(shape[1:])))
+		factor=3
+		expandedShape = tuple([elem*factor for elem in shape[0:2]]+[shape[-1]])
+
+
+		allInOne = np.empty(tuple([expandedShape[0]*nImages]+list(expandedShape[1:])))
 		for i in range(nImages):
-			allInOne[shape[0]*i:shape[0]*(i+1),:]=imagesSampled[i]
+			expandedImage = resize(imagesSampled[i], expandedShape)
+			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:]=imagesSampled[i]
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1:
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
