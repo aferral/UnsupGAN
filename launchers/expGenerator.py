@@ -90,7 +90,7 @@ with tf.Session() as sess:
 		allInOne = np.empty(tuple([expandedShape[0]*nImages]+list(expandedShape[1:])))
 		for i in range(nImages):
 			expandedImage = resize(imagesSampled[i], expandedShape)
-			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:]=imagesSampled[i]
+			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1:
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
