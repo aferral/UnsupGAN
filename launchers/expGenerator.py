@@ -37,9 +37,11 @@ else:
 name= exp_name
 batchSize = res['batch_size']
 nSamples = 20
-inputSize=110
+
 noiseSize = 100
-cSize = 10
+cSize = res['categories']
+inputSize=noiseSize+cSize
+
 useOriginalSpace =True
 isTan = True
 
