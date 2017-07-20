@@ -96,6 +96,7 @@ def main(configFile):
             outFolder = os.path.join("ShowAct",exp_name)
             if not os.path.exists(outFolder):
                 os.makedirs(outFolder)
+            print trainX.shape
             showDimRed(trainX[0:10], realLabels[0:10], layerName + str(' TSNE_Real'), model, outFolder)
 
 
