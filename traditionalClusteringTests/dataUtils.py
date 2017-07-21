@@ -15,11 +15,20 @@ from sklearn.svm import SVC
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
+
 from launchers.plot import plotBlokeh
 
 from infogan.misc.dataset import Dataset, DatasetMat
 from infogan.misc.utilsTest import generate_new_color
 import os
+
+def OneHotToInt(labels):
+    #If realLabels are in one hot pass to list of integer labels
+    if labels[0].shape[0] > 1:
+        labels = np.where(labels)[1].tolist()
+    else:
+        labels = labels.tolist()
+    return labels
 
 def flatInput(train_data,train_labels,test_data,test_labels):
     trainX = train_data
@@ -340,6 +349,12 @@ def showResults(dataset,points,labels,realLabels,name,outFolder,ax=None,showBlok
     return log
 
 def showDimRed(points, labels, name, dimRalg, outF=None):
+
+    if type(labels) == list:
+        if hasattr(labels[0], 'shape'):
+            if labels[0].shape[0] > 1:
+                labels = OneHotToInt(labels)
+
 
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
