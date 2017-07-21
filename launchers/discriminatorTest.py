@@ -3,7 +3,7 @@ import numpy as np
 
 import matplotlib
 
-from traditionalClusteringTests.dataUtils import showDimRed, showResults
+from traditionalClusteringTests.dataUtils import showDimRed, showResults, OneHotToInt
 
 matplotlib.use('Agg') # Must be before importing matplotlib.pyplot or pylab!
 import matplotlib.pyplot as plt
@@ -157,13 +157,7 @@ def transformFeature_Norm(x,sess,d_feat,d_in):
     d_features = pool_features(d_features, pool_type='avg')
     return normalize(d_features, axis=1, norm='l2')
 
-def OneHotToInt(labels):
-    #If realLabels are in one hot pass to list of integer labels
-    if labels[0].shape[0] > 1:
-        labels = np.where(labels)[1].tolist()
-    else:
-        labels = labels.tolist()
-    return labels
+
 
 def clusterLabeling(sess,dataset,data_transform,clusterAlg,trainX):
 

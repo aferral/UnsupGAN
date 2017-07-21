@@ -84,6 +84,10 @@ def main(configFile):
             lastFcEncoder = finalEncoder.op.inputs[0].op.inputs[0].op.inputs[0].op.inputs[0]
             capas.append(lastFcEncoder.name)
 
+        #Filter capas like resize
+        capas = filter(lambda x : not "Reshape" in x,capas)
+
+
 
         for layerName in capas:
             if not ":0" in layerName:
