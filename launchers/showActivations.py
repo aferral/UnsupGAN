@@ -6,18 +6,19 @@ from sklearn.manifold import TSNE
 
 from infogan.misc.dataset import Dataset
 from infogan.misc.datasets import DataFolder
-from launchers.discriminatorTest import trainsetTransform
+from launchers.discriminatorTest import trainsetTransform, pool_features
 from sklearn.preprocessing import normalize
 
 from traditionalClusteringTests.dataUtils import showDimRed
 
 
+#First get activations, then pool if needed (conv filters are reduced to 1x1 per filter doing a mean) then normalize is needed
 def getActLayer(sess,layerName,d_in,norm=False):
     layer=sess.graph.get_tensor_by_name(layerName)
     if norm:
-        return lambda x : normalize(sess.run(layer, {d_in: x}), axis=1, norm='l2')
+        return lambda x : normalize(pool_features(sess.run(layer, {d_in: x})), axis=1, norm='l2')
     else:
-        return lambda x : (sess.run(layer, {d_in: x}))
+        return lambda x : pool_features((sess.run(layer, {d_in: x})))
 
 
 def main(configFile):
@@ -77,6 +78,7 @@ def main(configFile):
             if it == 0:
                 raise Exception("Error en busqueda de grafo entro a ciclo maxima profundidad 100")
 
+        #Todo add FC endoder
         if not res['discrEncoderName'] is None:
             capas.append(res['discrEncoderName'])
 
