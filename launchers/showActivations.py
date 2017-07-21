@@ -56,6 +56,7 @@ def main(configFile):
 
     useDataset = DataFolder(dataFolder, batchSize, testProp=0.6, validation_proportion=0.5, out_size=imageSize)
 
+
     outFolder = os.path.join("ShowAct", exp_name)
     if not os.path.exists(outFolder):
         os.makedirs(outFolder)
@@ -94,7 +95,7 @@ def main(configFile):
         capas = filter(lambda x : not "Reshape" in x,capas)
 
         #Do the TSNE of the raw image
-        layerFunction = lambda x : sess.run(d_in, {d_in: x})
+        layerFunction = lambda x : sess.run(d_in, {d_in: x}).reshape(batchSize,-1)
         trainX, realLabels = trainsetTransform(layerFunction, useDataset)
         model = TSNE(n_components=2)
         outName = "ImageRaw"+ str(' TSNE_Real')
