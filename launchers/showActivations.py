@@ -93,7 +93,7 @@ def main(configFile):
             if not ":0" in layerName:
                 layerName = layerName + ":0"
             #Define layer to use
-            layerFunction = getActLayer(sess, layerName, d_in, norm=False)
+            layerFunction = getActLayer(sess, layerName, d_in, norm=True)
 
             #Get layer activations of entire train set
             trainX, realLabels = trainsetTransform(layerFunction, useDataset)
