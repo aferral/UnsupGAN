@@ -25,6 +25,8 @@ def main(configFile):
     # -----Cargar parametros
     print "Loading config file ", configFile
 
+    limitPoints = 2000
+
     res = {}
 
     with open(configFile, 'r') as f:
@@ -54,6 +56,10 @@ def main(configFile):
 
     useDataset = DataFolder(dataFolder, batchSize, testProp=0.6, validation_proportion=0.5, out_size=imageSize)
 
+    outFolder = os.path.join("ShowAct", exp_name)
+    if not os.path.exists(outFolder):
+        os.makedirs(outFolder)
+
     with tf.Session() as sess:
         new_saver = tf.train.import_meta_graph(modelPath+'.meta')
         new_saver.restore(sess, modelPath)
@@ -61,7 +67,7 @@ def main(configFile):
         d_in = sess.graph.get_tensor_by_name(discrInputName)
 
         # Crear lista de capas a usar automaticamente mediante navegacion del grafo
-        capas = [d_in.name]
+        capas = []
 
         current = d_in.op.outputs[0]
         it = 100
@@ -87,7 +93,12 @@ def main(configFile):
         #Filter capas like resize
         capas = filter(lambda x : not "Reshape" in x,capas)
 
-
+        #Do the TSNE of the raw image
+        layerFunction = lambda x : sess.run(d_in, {d_in: x})
+        trainX, realLabels = trainsetTransform(layerFunction, useDataset)
+        model = TSNE(n_components=2)
+        outName = "ImageRaw"+ str(' TSNE_Real')
+        showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName, model, outFolder)
 
         for layerName in capas:
             if not ":0" in layerName:
@@ -106,7 +117,7 @@ def main(configFile):
                 os.makedirs(outFolder)
             print trainX.shape
             outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:2000], realLabels[0:2000], outName , model, outFolder)
+            showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder)
 
 
 
