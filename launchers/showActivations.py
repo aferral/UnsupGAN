@@ -52,7 +52,7 @@ def main(configFile):
     discrInputName = res['discrInputName']
 
 
-    useDataset = DataFolder(dataFolder, batchSize, testProp=0.9, validation_proportion=0.5, out_size=imageSize)
+    useDataset = DataFolder(dataFolder, batchSize, testProp=0.6, validation_proportion=0.5, out_size=imageSize)
 
     with tf.Session() as sess:
         new_saver = tf.train.import_meta_graph(modelPath+'.meta')
@@ -106,7 +106,7 @@ def main(configFile):
                 os.makedirs(outFolder)
             print trainX.shape
             outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:100], realLabels[0:100], outName , model, outFolder)
+            showDimRed(trainX[0:1000], realLabels[0:1000], outName , model, outFolder)
 
 
 
