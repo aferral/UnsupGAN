@@ -106,7 +106,7 @@ def main(configFile):
                 os.makedirs(outFolder)
             print trainX.shape
             outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:10], realLabels[0:10], outName , model, outFolder)
+            showDimRed(trainX[0:100], realLabels[0:100], outName , model, outFolder)
 
 
 
