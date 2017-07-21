@@ -93,7 +93,7 @@ def main(configFile):
             if not ":0" in layerName:
                 layerName = layerName + ":0"
             #Define layer to use
-            layerFunction = getActLayer(sess, layerName, d_in, norm=True)
+            layerFunction = getActLayer(sess, layerName, d_in, norm=False)
 
             #Get layer activations of entire train set
             trainX, realLabels = trainsetTransform(layerFunction, useDataset)
@@ -106,7 +106,7 @@ def main(configFile):
                 os.makedirs(outFolder)
             print trainX.shape
             outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:1000], realLabels[0:1000], outName , model, outFolder)
+            showDimRed(trainX[0:2000], realLabels[0:2000], outName , model, outFolder)
 
 
 
