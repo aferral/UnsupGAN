@@ -61,7 +61,7 @@ def main(configFile):
         d_in = sess.graph.get_tensor_by_name(discrInputName)
 
         # Crear lista de capas a usar automaticamente mediante navegacion del grafo
-        capas = []
+        capas = [d_in.name]
 
         current = d_in.op.outputs[0]
         it = 100
@@ -79,7 +79,7 @@ def main(configFile):
                 raise Exception("Error en busqueda de grafo entro a ciclo maxima profundidad 100")
 
         #Add FC endoder (las FC before encoder)
-        if not res['discrEncoderName'] is None:
+        if not (res['discrEncoderName'] is None):
             finalEncoder = sess.graph.get_tensor_by_name(res['discrEncoderName'])
             lastFcEncoder = finalEncoder.op.inputs[0].op.inputs[0].op.inputs[0].op.inputs[0]
             capas.append(lastFcEncoder.name)
