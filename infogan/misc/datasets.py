@@ -198,8 +198,10 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
         self.valBatchIdx = 0
 
-
         self.n_labels = self.dataObj.classes
+
+    def getImshape(self):
+        return self.image_shape
     def getFolderName(self):
         return self.fname
     def transform(self, data):
