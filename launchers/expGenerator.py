@@ -18,9 +18,9 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	valInput[:,-10:] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,-catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 
-	print 'Showing cat code row0: ', valInput[0, -cSize:]
-	print 'Showing cat code row1: ', valInput[1, -cSize:]
-	print " "
+	# print 'Showing cat code row0: ', valInput[0, -cSize:]
+	# print 'Showing cat code row1: ', valInput[1, -cSize:]
+	# print " "
 	imagesBatch = sess.run(layerOut, {layerInput : valInput } )
 
 	if isTan: #the result was in -1 to +1 units
@@ -39,8 +39,8 @@ def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 
 	testVector = np.repeat(joint,batchSize,axis=0)
 	testVector[0:cSize,-10:] = np.eye(cSize)
-	print 'Ej cat row0 : ', testVector[0, -cSize:]
-	print 'Ej cat row1 : ', testVector[1, -cSize:]
+	# print 'Ej cat row0 : ', testVector[0, -cSize:]
+	# print 'Ej cat row1 : ', testVector[1, -cSize:]
 
 
 	resultado=sess.run(outGen, {inputGen: testVector})
@@ -71,7 +71,7 @@ def main(configFile,isTan):
 		modelPath = os.path.join("ckt", train_dataset, exp_name, "last.ckpt")
 
 	batchSize = res['batch_size']
-	nSamples = 1
+	nSamples = 10
 
 	noiseSize = 100
 	cSize = res['categories']
@@ -119,7 +119,7 @@ def main(configFile,isTan):
 			print allInOne.shape
 			if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
 				allInOne = allInOne.reshape(allInOne.shape[0:-1])
-			imsave("Csamples " + exp_name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
+			# imsave("Csamples " + exp_name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
 			temp.append(np.copy(allInOne))
 
 		out=np.hstack(temp)
