@@ -12,10 +12,11 @@ from skimage.transform import rescale
 #--------------------PARAMETROS--------------------
 
 print os.getcwd()
-configFile = sys.argv[1]
-isTan = bool(sys.argv[2])
+# configFile = sys.argv[1]
+# isTan = bool(sys.argv[2])
+configFile = "exp/test/test_MNIST_c10_vist1ckpt.json"
+isTan = "0"
 print "Loading config file ", configFile
-
 res = {}
 
 with open(configFile, 'r') as f:
