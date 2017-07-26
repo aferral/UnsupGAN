@@ -48,6 +48,7 @@ def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 	for i in range(10):
 		toSave = rescale(resultado[i].reshape((28,28)) , 10)
 		imsave(os.path.join('test'+str(i)+'.png'), toSave)
+	return testVector[0:cSize]
 
 def main(configFile,isTan):
 	print "Loading config file ", configFile
@@ -87,14 +88,14 @@ def main(configFile,isTan):
 
 
 		temp=[]
-		inputMatrix=[[] for i in range(cSize)]
+		t1=[[] for i in range(cSize)]
 		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
 		for catAct in range(cSize):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
 			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
 			imagesSampled,inputs = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
-			inputMatrix[catAct].append(inputs)
+			t1[catAct].append(inputs)
 
 			if ("MNIST" in exp_name):
 				shape = (28, 28, 1)
@@ -124,7 +125,7 @@ def main(configFile,isTan):
 		out=np.hstack(temp)
 		imsave("Csamples "+exp_name+" right incresing C, Up random samples "+'.png',out)
 
-		oldTest(sess,sigm, entrada,batchSize,noiseSize,cSize)
+		t2=oldTest(sess,sigm, entrada,batchSize,noiseSize,cSize)
 
 if __name__ == "__main__":
 	print os.getcwd()
