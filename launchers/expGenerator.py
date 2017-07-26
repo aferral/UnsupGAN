@@ -21,7 +21,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	print 'Showing cat code row0: ', valInput[0, -cSize:]
 	print 'Showing cat code row1: ', valInput[1, -cSize:]
 	print " "
-	imagesBatch = sess.run(layerOut, {layerInput : np.random.rand(batchSize,110) } )
+	imagesBatch = sess.run(layerOut, {layerInput : valInput } )
 
 	if isTan: #the result was in -1 to +1 units
 		imagesBatch = (imagesBatch + 1.0 ) * 0.5
