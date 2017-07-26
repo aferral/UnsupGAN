@@ -59,6 +59,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	valInput = fixedNoiseSamples
 	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
+	print 'Showing cat code : ', valInput[0, -cSize:]
 	imagesBatch = runSess(sess, layerOut, layerInput, valInput)
 
 	if isTan: #the result was in -1 to +1 units
