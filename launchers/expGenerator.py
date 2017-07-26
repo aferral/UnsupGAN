@@ -30,7 +30,9 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	return imagesBatch[0:nSamples]
 
 def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
+
 	testV = np.random.rand(1, noiseSize)
+	print testV
 	testCvector = np.zeros((1, cSize))
 
 	joint = np.hstack([testV, testCvector])
