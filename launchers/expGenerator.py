@@ -86,7 +86,6 @@ with tf.Session() as sess:
 			shape = imagesSampled[0].shape
 
 		nImages= imagesSampled.shape[0]
-
 		factor=3
 		expandedShape = tuple([elem*factor for elem in shape[0:2]]+[shape[-1]])
 
