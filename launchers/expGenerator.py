@@ -9,8 +9,6 @@ from skimage.transform import resize
 from skimage.transform import rescale
 
 
-def runSess(sess, tensor, tensorInput, val):
-	return sess.run(tensor, {tensorInput : val } )
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
 def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan):
@@ -22,7 +20,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	print 'Showing cat code row0: ', valInput[0, -cSize:]
 	print 'Showing cat code row1: ', valInput[1, -cSize:]
 	print " "
-	imagesBatch = runSess(sess, layerOut, layerInput, valInput)
+	imagesBatch = sess.run(layerOut, {layerInput : layerInput } )
 
 	if isTan: #the result was in -1 to +1 units
 		imagesBatch = (imagesBatch + 1.0 ) * 0.5
