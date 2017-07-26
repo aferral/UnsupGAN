@@ -77,10 +77,12 @@ with tf.Session() as sess:
 
 	for catAct in range(cSize):
 		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
+
 		if ("MNIST" in exp_name):
-			shape=(28,28,1)
+			shape = (28, 28, 1)
 		else:
-			shape=imagesSampled[0].shape
+			shape = imagesSampled[0].shape
+
 		nImages= imagesSampled.shape[0]
 
 		factor=3
@@ -89,7 +91,13 @@ with tf.Session() as sess:
 
 		allInOne = np.empty(tuple([expandedShape[0]*nImages]+list(expandedShape[1:])))
 		for i in range(nImages):
-			expandedImage = resize(imagesSampled[i], expandedShape)
+
+			if ("MNIST" in exp_name):
+				expandedImage = resize(imagesSampled[i].reshape((28,28)), expandedShape)
+			else:
+				expandedImage = resize(imagesSampled[i], expandedShape)
+
+
 			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1:
