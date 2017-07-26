@@ -117,12 +117,11 @@ with tf.Session() as sess:
 		for i in range(nImages):
 
 			if ("MNIST" in exp_name):
-				expandedImage = resize(imagesSampled[i].reshape((28,28)), expandedShape)
+				expandedImage = rescale(imagesSampled[i].reshape((28,28)), factor)
 			else:
-				expandedImage = resize(imagesSampled[i], expandedShape)
-
-
+				expandedImage = rescale(imagesSampled[i], factor)
 			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
+			
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
