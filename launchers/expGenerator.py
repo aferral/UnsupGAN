@@ -78,8 +78,8 @@ def oldTest(outGen,inputGen):
 
 	testVector = np.repeat(joint,batchSize,axis=0)
 	testVector[0:cSize,-10:] = np.eye(cSize)
-	print 'Ej cat row0 : ', joint[0, -cSize:]
-	print 'Ej cat row1 : ', joint[1, -cSize:]
+	print 'Ej cat row0 : ', testVector[0, -cSize:]
+	print 'Ej cat row1 : ', testVector[1, -cSize:]
 
 	resultado=sess.run(outGen, {inputGen: testVector})
 
