@@ -17,6 +17,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	valInput = np.copy(fixedNoiseSamples)
 	valInput[:,-10:] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,-catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
+
 	print 'Showing cat code row0: ', valInput[0, -cSize:]
 	print 'Showing cat code row1: ', valInput[1, -cSize:]
 	print " "
@@ -109,10 +110,10 @@ def main(configFile,isTan):
 			for i in range(nImages):
 
 				if ("MNIST" in exp_name):
-					expandedImage = resize(imagesSampled[i].reshape((28,28)), expandedShape)
+					expandedImage = resize(np.copy(imagesSampled[i]).reshape((28,28)), expandedShape)
 				else:
-					expandedImage = resize(imagesSampled[i], expandedShape)
-				allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
+					expandedImage = resize(np.copy(imagesSampled[i]), expandedShape)
+				allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = np.copy(expandedImage)
 
 			print allInOne.shape
 			if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
