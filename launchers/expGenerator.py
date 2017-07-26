@@ -75,6 +75,7 @@ with tf.Session() as sess:
 	entrada = sess.graph.get_tensor_by_name(layerInputName)
 
 
+	temp=[]
 	for catAct in range(cSize):
 		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
 
@@ -100,8 +101,14 @@ with tf.Session() as sess:
 
 			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
 		print allInOne.shape
-		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1:
+		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
-		imsave(name+"_cat_"+str(catAct)+'.png',allInOne)
+
+		temp.append(allInOne)
+
+	out=np.empty((allInOne.shape))
+	for elem in temp:
+		out=np.hstack([out,allInOne])
+	imsave(name+'.png',out)
 		
 
