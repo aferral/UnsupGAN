@@ -37,7 +37,7 @@ else:
 
 name= exp_name
 batchSize = res['batch_size']
-nSamples = 10
+nSamples = 1
 
 noiseSize = 100
 cSize = res['categories']
