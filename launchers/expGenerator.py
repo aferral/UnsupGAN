@@ -16,7 +16,7 @@ def runSess(sess, tensor, tensorInput, val):
 def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan):
 	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network.
 
-	valInput = fixedNoiseSamples
+	valInput = np.copy(fixedNoiseSamples)
 	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 	print 'Showing cat code row0: ', valInput[0, -cSize:]
@@ -27,7 +27,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	if isTan: #the result was in -1 to +1 units
 		imagesBatch = (imagesBatch + 1.0 ) * 0.5
 
-	return imagesBatch[0:nSamples]
+	return imagesBatch[0:nSamples],valInput[0:nSamples]
 
 def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 
@@ -87,12 +87,14 @@ def main(configFile,isTan):
 
 
 		temp=[]
+		inputMatrix=[[] for i in range(cSize)]
 		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
 		for catAct in range(cSize):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
 			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
-			imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
+			imagesSampled,inputs = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
+			inputMatrix[catAct].append(inputs)
 
 			if ("MNIST" in exp_name):
 				shape = (28, 28, 1)
