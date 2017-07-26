@@ -108,7 +108,7 @@ with tf.Session() as sess:
 
 	out=np.empty((allInOne.shape))
 	for elem in temp:
-		out=np.hstack([out,allInOne])
+		out=np.hstack([out,elem])
 	imsave(name+'.png',out)
 		
 
