@@ -101,6 +101,8 @@ with tf.Session() as sess:
 	fixedNoiseSamples = np.random.rand(batchSize,inputSize)
 	for catAct in range(cSize):
 		print "Cact ",catAct
+		print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
+		print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
 		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples)
 
 		if ("MNIST" in exp_name):
