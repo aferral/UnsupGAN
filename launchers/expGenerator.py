@@ -20,8 +20,6 @@ res = {}
 with open(configFile, 'r') as f:
 	res = json.load(f)
 
-dataFolder = res['train_Folder']
-
 if res.has_key('exp_name'):
 	exp_name = res['exp_name']
 else:
@@ -48,7 +46,6 @@ isTan = False
 
 layerInputName = "concat:0"
 layerOutputName = res['discrInputName']
-useDataset = Dataset(dataFolder)
 
 
 #--------------------PARAMETROS--------------------
@@ -58,18 +55,17 @@ def runSess(sess, tensor, tensorInput, val):
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
 def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples):
-	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network
+	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network.
 
 	valInput = np.random.rand(batchSize,inputSize)
-	valInput = np.zeros((batchSize, inputSize))
 	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
-	activations = runSess(sess, layerOut, layerInput, valInput)
+	imagesBatch = runSess(sess, layerOut, layerInput, valInput)
 
 	if isTan: #the result was in -1 to +1 units
-		resultado = (activations + 1.0 ) * 0.5
+		imagesBatch = (imagesBatch + 1.0 ) * 0.5
 
-	return activations[0:nSamples]
+	return imagesBatch[0:nSamples]
 
 
 with tf.Session() as sess:
@@ -81,7 +77,10 @@ with tf.Session() as sess:
 
 	for catAct in range(cSize):
 		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
-		shape=imagesSampled[0].shape
+		if ("MNIST" in exp_name):
+			shape=(28,28,1)
+		else:
+			shape=imagesSampled[0].shape
 		nImages= imagesSampled.shape[0]
 
 		factor=3
