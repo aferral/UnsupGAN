@@ -109,6 +109,6 @@ with tf.Session() as sess:
 	out=np.empty((allInOne.shape))
 	for elem in temp:
 		out=np.hstack([out,elem])
-	imsave(name+" right incresing C, Up random samples "+'.png',out)
+	imsave("Csamples "+name+" right incresing C, Up random samples "+'.png',out)
 		
 
