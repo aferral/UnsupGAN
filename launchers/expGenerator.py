@@ -59,7 +59,9 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	valInput = fixedNoiseSamples
 	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
-	print 'Showing cat code : ', valInput[0, -cSize:]
+	print 'Showing cat code row0: ', valInput[0, -cSize:]
+	print 'Showing cat code row1: ', valInput[1, -cSize:]
+	print " "
 	imagesBatch = runSess(sess, layerOut, layerInput, valInput)
 
 	if isTan: #the result was in -1 to +1 units
@@ -72,10 +74,12 @@ def oldTest(outGen,inputGen):
 	testCvector = np.zeros((1, cSize))
 
 	joint = np.hstack([testV, testCvector])
-	print 'Ej cat : ', joint[0, -cSize:]
+
 
 	testVector = np.repeat(joint,batchSize,axis=0)
 	testVector[0:cSize,-10:] = np.eye(cSize)
+	print 'Ej cat row0 : ', joint[0, -cSize:]
+	print 'Ej cat row1 : ', joint[1, -cSize:]
 
 	resultado=sess.run(outGen, {inputGen: testVector})
 
