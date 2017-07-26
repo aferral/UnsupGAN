@@ -8,7 +8,7 @@ from infogan.misc.dataset import Dataset
 from scipy.misc import imsave
 from skimage.transform import resize
 from traditionalClusteringTests.dataUtils import inverseNorm
-
+from skimage.transform import rescale
 #--------------------PARAMETROS--------------------
 
 print os.getcwd()
@@ -66,6 +66,24 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 
 	return imagesBatch[0:nSamples]
 
+def oldTest(outGen,inputGen):
+	testV = np.random.rand(1, noiseSize)
+	testCvector = np.zeros((1, cSize))
+
+	joint = np.hstack([testV, testCvector])
+	print 'Ej cat : ', joint[0, -cSize:]
+
+	testVector = np.repeat(joint,batchSize,axis=0)
+	testVector[0:cSize,-10:] = np.eye(cSize)
+
+	resultado=sess.run(outGen, {inputGen: testVector})
+
+	for i in range(10):
+		toSave = rescale(resultado[i].reshape((28,28)) , 10)
+		imsave(os.path.join('test'+str(i)+'.png'), toSave)
+
+
+
 
 with tf.Session() as sess:
 	new_saver = tf.train.import_meta_graph(modelPath+'.meta')
@@ -109,5 +127,6 @@ with tf.Session() as sess:
 	for elem in temp:
 		out=np.hstack([out,elem])
 	imsave("Csamples "+name+" right incresing C, Up random samples "+'.png',out)
-		
+
+	oldTest(sigm, entrada)
 
