@@ -15,8 +15,8 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network.
 
 	valInput = np.copy(fixedNoiseSamples)
-	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
-	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
+	valInput[:,-10:] = 0  #Setting all C inputs to 0 (they are after the noise values)
+	valInput[:,-catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 	print 'Showing cat code row0: ', valInput[0, -cSize:]
 	print 'Showing cat code row1: ', valInput[1, -cSize:]
 	print " "
@@ -37,7 +37,7 @@ def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 
 
 	testVector = np.repeat(joint,batchSize,axis=0)
-	#testVector[0:cSize,-10:] = np.eye(cSize)
+	testVector[0:cSize,-10:] = np.eye(cSize)
 	print 'Ej cat row0 : ', testVector[0, -cSize:]
 	print 'Ej cat row1 : ', testVector[1, -cSize:]
 
