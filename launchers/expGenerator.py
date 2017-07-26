@@ -30,7 +30,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 
 def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 
-	testV = np.random.rand(1, noiseSize)
+	testV = np.random.rand(1, noiseSize) *2
 	print testV
 	testCvector = np.zeros((1, cSize))
 
