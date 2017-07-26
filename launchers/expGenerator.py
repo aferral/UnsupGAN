@@ -37,7 +37,7 @@ def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 
 
 	testVector = np.repeat(joint,batchSize,axis=0)
-	testVector[0:cSize,-10:] = np.eye(cSize)
+	#testVector[0:cSize,-10:] = np.eye(cSize)
 	print 'Ej cat row0 : ', testVector[0, -cSize:]
 	print 'Ej cat row1 : ', testVector[1, -cSize:]
 
