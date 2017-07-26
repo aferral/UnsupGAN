@@ -13,6 +13,7 @@ from traditionalClusteringTests.dataUtils import inverseNorm
 
 print os.getcwd()
 configFile = sys.argv[1]
+isTan = bool(sys.argv[2])
 print "Loading config file ", configFile
 
 res = {}
@@ -41,8 +42,6 @@ nSamples = 10
 noiseSize = 100
 cSize = res['categories']
 inputSize=noiseSize+cSize
-
-isTan = False
 
 layerInputName = "concat:0"
 layerOutputName = res['discrInputName']
