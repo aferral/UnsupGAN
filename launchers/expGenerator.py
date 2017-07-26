@@ -7,52 +7,13 @@ import sys
 from scipy.misc import imsave
 from skimage.transform import resize
 from skimage.transform import rescale
-#--------------------PARAMETROS--------------------
 
-print os.getcwd()
-# configFile = sys.argv[1]
-# isTan = bool(sys.argv[2])
-configFile = "/home/user/Escritorio/UnsupGAN/exp/test/test_MNIST_c10_vist1ckpt.json"
-isTan = "0"
-print "Loading config file ", configFile
-res = {}
-
-with open(configFile, 'r') as f:
-	res = json.load(f)
-
-if res.has_key('exp_name'):
-	exp_name = res['exp_name']
-else:
-	filename = os.path.split(configFile)[-1]
-	assert (len(filename.split(".")) == 2)
-	exp_name = filename.split(".")[0]
-
-if res.has_key('modelPath'):
-	modelPath = res['modelPath']
-else:
-	train_dataset = res['train_dataset']
-	modelPath = os.path.join("ckt", train_dataset, exp_name, "last.ckpt")
-
-
-name= exp_name
-batchSize = res['batch_size']
-nSamples = 1
-
-noiseSize = 100
-cSize = res['categories']
-inputSize=noiseSize+cSize
-
-layerInputName = "concat:0"
-layerOutputName = res['discrInputName']
-
-
-#--------------------PARAMETROS--------------------
 
 def runSess(sess, tensor, tensorInput, val):
 	return sess.run(tensor, {tensorInput : val } )
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
-def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples):
+def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan):
 	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network.
 
 	valInput = fixedNoiseSamples
@@ -68,7 +29,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 
 	return imagesBatch[0:nSamples]
 
-def oldTest(outGen,inputGen):
+def oldTest(sess,outGen,batchSize,inputGen,noiseSize,cSize):
 	testV = np.random.rand(1, noiseSize)
 	testCvector = np.zeros((1, cSize))
 
@@ -86,51 +47,83 @@ def oldTest(outGen,inputGen):
 		toSave = rescale(resultado[i].reshape((28,28)) , 10)
 		imsave(os.path.join('test'+str(i)+'.png'), toSave)
 
+def main(configFile,isTan):
+	print "Loading config file ", configFile
+	res = {}
+
+	with open(configFile, 'r') as f:
+		res = json.load(f)
+
+	if res.has_key('exp_name'):
+		exp_name = res['exp_name']
+	else:
+		filename = os.path.split(configFile)[-1]
+		assert (len(filename.split(".")) == 2)
+		exp_name = filename.split(".")[0]
+
+	if res.has_key('modelPath'):
+		modelPath = res['modelPath']
+	else:
+		train_dataset = res['train_dataset']
+		modelPath = os.path.join("ckt", train_dataset, exp_name, "last.ckpt")
+
+	batchSize = res['batch_size']
+	nSamples = 1
+
+	noiseSize = 100
+	cSize = res['categories']
+	inputSize = noiseSize + cSize
+
+	layerInputName = "concat:0"
+	layerOutputName = res['discrInputName']
+
+	with tf.Session() as sess:
+		new_saver = tf.train.import_meta_graph(modelPath+'.meta')
+		new_saver.restore(sess, modelPath)
+		sigm = sess.graph.get_tensor_by_name(layerOutputName)
+		entrada = sess.graph.get_tensor_by_name(layerInputName)
 
 
-
-with tf.Session() as sess:
-	new_saver = tf.train.import_meta_graph(modelPath+'.meta')
-	new_saver.restore(sess, modelPath)
-	sigm = sess.graph.get_tensor_by_name(layerOutputName)
-	entrada = sess.graph.get_tensor_by_name(layerInputName)
-
-
-	temp=[]
-	fixedNoiseSamples = np.random.rand(batchSize,inputSize)
-	for catAct in range(cSize):
-		print "Cact ",catAct
-		print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
-		print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
-		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples)
-
-		if ("MNIST" in exp_name):
-			shape = (28, 28, 1)
-		else:
-			shape = imagesSampled[0].shape
-
-		nImages= imagesSampled.shape[0]
-		factor=3
-		expandedShape = tuple([elem*factor for elem in shape[0:2]]+[shape[-1]])
-
-
-		allInOne = np.empty(tuple([expandedShape[0]*nImages]+list(expandedShape[1:])))
-		for i in range(nImages):
+		temp=[]
+		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
+		for catAct in range(cSize):
+			print "Cact ",catAct
+			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
+			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
+			imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
 
 			if ("MNIST" in exp_name):
-				expandedImage = resize(imagesSampled[i].reshape((28,28)), expandedShape)
+				shape = (28, 28, 1)
 			else:
-				expandedImage = resize(imagesSampled[i], expandedShape)
-			allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
+				shape = imagesSampled[0].shape
 
-		print allInOne.shape
-		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
-			allInOne = allInOne.reshape(allInOne.shape[0:-1])
-		imsave("Csamples " + name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
-		temp.append(np.copy(allInOne))
+			nImages= imagesSampled.shape[0]
+			factor=3
+			expandedShape = tuple([elem*factor for elem in shape[0:2]]+[shape[-1]])
 
-	out=np.hstack(temp)
-	imsave("Csamples "+name+" right incresing C, Up random samples "+'.png',out)
 
-	oldTest(sigm, entrada)
+			allInOne = np.empty(tuple([expandedShape[0]*nImages]+list(expandedShape[1:])))
+			for i in range(nImages):
 
+				if ("MNIST" in exp_name):
+					expandedImage = resize(imagesSampled[i].reshape((28,28)), expandedShape)
+				else:
+					expandedImage = resize(imagesSampled[i], expandedShape)
+				allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = expandedImage
+
+			print allInOne.shape
+			if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
+				allInOne = allInOne.reshape(allInOne.shape[0:-1])
+			imsave("Csamples " + exp_name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
+			temp.append(np.copy(allInOne))
+
+		out=np.hstack(temp)
+		imsave("Csamples "+exp_name+" right incresing C, Up random samples "+'.png',out)
+
+		oldTest(sess,sigm, entrada,batchSize,noiseSize,cSize)
+
+if __name__ == "__main__":
+	print os.getcwd()
+	configFile = sys.argv[1]
+	isTan = bool(sys.argv[2])
+	main(configFile, isTan)
