@@ -12,7 +12,7 @@ from skimage.transform import rescale
 print os.getcwd()
 # configFile = sys.argv[1]
 # isTan = bool(sys.argv[2])
-configFile = "exp/test/test_MNIST_c10_vist1ckpt.json"
+configFile = "/home/user/Escritorio/UnsupGAN/exp/test/test_MNIST_c10_vist1ckpt.json"
 isTan = "0"
 print "Loading config file ", configFile
 res = {}
