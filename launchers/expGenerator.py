@@ -126,7 +126,7 @@ with tf.Session() as sess:
 		print allInOne.shape
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
-		imsave("Csamples " + name + " right incresing C, Up random samples "+catAct+ ' .png', allInOne)
+		imsave("Csamples " + name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
 		temp.append(np.copy(allInOne))
 
 	out=np.empty((allInOne.shape))
