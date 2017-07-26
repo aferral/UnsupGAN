@@ -121,7 +121,7 @@ with tf.Session() as sess:
 		if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
 			allInOne = allInOne.reshape(allInOne.shape[0:-1])
 
-		temp.append(allInOne)
+		temp.append(np.copy(allInOne))
 
 	out=np.empty((allInOne.shape))
 	for elem in temp:
