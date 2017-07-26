@@ -42,6 +42,7 @@ def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
 	print 'Ej cat row0 : ', testVector[0, -cSize:]
 	print 'Ej cat row1 : ', testVector[1, -cSize:]
 
+
 	resultado=sess.run(outGen, {inputGen: testVector})
 
 	for i in range(10):
