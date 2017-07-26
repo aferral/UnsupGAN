@@ -54,10 +54,10 @@ def runSess(sess, tensor, tensorInput, val):
 	return sess.run(tensor, {tensorInput : val } )
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
-def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples):
+def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples):
 	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network.
 
-	valInput = np.random.rand(batchSize,inputSize)
+	valInput = fixedNoiseSamples
 	valInput[:,noiseSize:noiseSize+cSize] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 	imagesBatch = runSess(sess, layerOut, layerInput, valInput)
@@ -76,8 +76,9 @@ with tf.Session() as sess:
 
 
 	temp=[]
+	fixedNoiseSamples = np.random.rand(batchSize,inputSize)
 	for catAct in range(cSize):
-		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples)
+		imagesSampled = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples)
 
 		if ("MNIST" in exp_name):
 			shape = (28, 28, 1)
