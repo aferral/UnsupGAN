@@ -16,7 +16,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 
 	valInput = np.copy(fixedNoiseSamples)
 	valInput[:,-10:] = 0  #Setting all C inputs to 0 (they are after the noise values)
-	valInput[:,-catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
+	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 
 
 	imagesBatch = sess.run(layerOut, {layerInput : valInput } )
