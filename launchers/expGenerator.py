@@ -18,9 +18,7 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 	valInput[:,-10:] = 0  #Setting all C inputs to 0 (they are after the noise values)
 	valInput[:,-catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
 
-	print 'Showing cat code row0: ', valInput[0, -cSize:]
-	print 'Showing cat code row1: ', valInput[1, -cSize:]
-	print " "
+
 	imagesBatch = sess.run(layerOut, {layerInput : valInput } )
 
 	if isTan: #the result was in -1 to +1 units
@@ -28,19 +26,18 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 
 	return imagesBatch[0:nSamples],valInput[0:nSamples]
 
-def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize):
+def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize,useThis=None):
 
-	testV = np.random.rand(1, noiseSize) *2
-	print testV
-	testCvector = np.zeros((1, cSize))
-
-	joint = np.hstack([testV, testCvector])
-
+	if useThis is None:
+		testV = np.random.rand(1, noiseSize) *2
+		testCvector = np.zeros((1, cSize))
+		joint = np.hstack([testV, testCvector])
+	else:
+		joint = useThis
+	print " using Tvector ", joint
 
 	testVector = np.repeat(joint,batchSize,axis=0)
 	testVector[0:cSize,-10:] = np.eye(cSize)
-	print 'Ej cat row0 : ', testVector[0, -cSize:]
-	print 'Ej cat row1 : ', testVector[1, -cSize:]
 
 	resultado=sess.run(outGen, {inputGen: testVector})
 
@@ -82,7 +79,7 @@ def main(configFile,isTan):
 	with tf.Session() as sess:
 		new_saver = tf.train.import_meta_graph(modelPath+'.meta')
 		new_saver.restore(sess, modelPath)
-		sigm = sess.graph.get_tensor_by_name(layerOutputName)
+		out = sess.graph.get_tensor_by_name(layerOutputName)
 		entrada = sess.graph.get_tensor_by_name(layerInputName)
 
 
@@ -93,8 +90,10 @@ def main(configFile,isTan):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
 			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
-			imagesSampled,inputs = doSampleFromSetC(sess, sigm, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
+			imagesSampled,inputs = doSampleFromSetC(sess, out, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
 			t1[catAct].append(inputs)
+
+			print "I just used ",inputs[0]
 
 			if ("MNIST" in exp_name):
 				shape = (28, 28, 1)
@@ -118,13 +117,13 @@ def main(configFile,isTan):
 			print allInOne.shape
 			if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
 				allInOne = allInOne.reshape(allInOne.shape[0:-1])
-			imsave("Csamples " + exp_name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
+			# imsave("Csamples " + exp_name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
 			temp.append(np.copy(allInOne))
 
 		out=np.hstack(temp)
 		imsave("Csamples "+exp_name+" right incresing C, Up random samples "+'.png',out)
 
-		t2=oldTest(sess,sigm, entrada,batchSize,noiseSize,cSize)
+		t2=oldTest(sess,out, entrada,batchSize,noiseSize,cSize,useThis=t1[0][0])
 
 if __name__ == "__main__":
 	print os.getcwd()
