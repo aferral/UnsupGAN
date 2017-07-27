@@ -124,7 +124,7 @@ def main(configFile,isTan):
 		out=np.hstack(temp)
 		imsave("Csamples "+exp_name+" right incresing C, Up random samples "+'.png',out)
 		print "About to use ",t1[0][0].shape
-		ble = t1[0][0].reshape((110,1))
+		ble = t1[0][0].reshape((1,110))
 		print "This is t1 ",ble
 		t2=oldTest(sess,out, entrada,batchSize,noiseSize,cSize,useThis=ble)
 
