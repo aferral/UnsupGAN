@@ -78,7 +78,7 @@ def main(configFile,isTan):
 	with tf.Session() as sess:
 		new_saver = tf.train.import_meta_graph(modelPath+'.meta')
 		new_saver.restore(sess, modelPath)
-		out = sess.graph.get_tensor_by_name(layerOutputName)
+		outLayer = sess.graph.get_tensor_by_name(layerOutputName)
 		entrada = sess.graph.get_tensor_by_name(layerInputName)
 
 
@@ -89,7 +89,7 @@ def main(configFile,isTan):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
 			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
-			imagesSampled,inputs = doSampleFromSetC(sess, out, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
+			imagesSampled,inputs = doSampleFromSetC(sess, outLayer, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
 
 			for ind,elem in enumerate(inputs):
 				t1[catAct][ind] = np.copy(elem)
@@ -126,7 +126,7 @@ def main(configFile,isTan):
 		print "About to use ",t1[0][0].shape
 		ble = t1[0][0].reshape((1,110))
 		print "This is t1 ",ble
-		t2=oldTest(sess,out, entrada,batchSize,noiseSize,cSize,useThis=ble)
+		t2=oldTest(sess,outLayer, entrada,batchSize,noiseSize,cSize,useThis=ble)
 
 if __name__ == "__main__":
 	print os.getcwd()
