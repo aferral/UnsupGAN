@@ -25,7 +25,6 @@ def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSampl
 		imagesBatch = (imagesBatch + 1.0 ) * 0.5
 
 	return imagesBatch[0:nSamples],valInput[0:nSamples]
-
 def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize,useThis=None):
 
 	if useThis is None:
@@ -122,7 +121,7 @@ def main(configFile,isTan):
 
 		out=np.hstack(temp)
 		imsave("Csamples "+exp_name+" right incresing C, Up random samples "+'.png',out)
-
+		print "About to use ",t1[0][0].shape
 		t2=oldTest(sess,out, entrada,batchSize,noiseSize,cSize,useThis=t1[0][0])
 
 if __name__ == "__main__":
