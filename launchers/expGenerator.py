@@ -90,7 +90,7 @@ def main(configFile,isTan):
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
 			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
 			imagesSampled,inputs = doSampleFromSetC(sess, out, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
-			t1[catAct].append(inputs)
+			t1[catAct].append(np.copy(inputs))
 
 			print "I just used ",inputs[0]
 
