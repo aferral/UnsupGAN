@@ -83,14 +83,16 @@ def main(configFile,isTan):
 
 
 		temp=[]
-		t1=[[] for i in range(cSize)]
+		t1=[[0 for k in range(1)] for i in range(cSize)]
 		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
 		for catAct in range(cSize):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
 			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
 			imagesSampled,inputs = doSampleFromSetC(sess, out, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
-			t1[catAct].append(np.copy(inputs))
+
+			for ind,elem in enumerate(inputs):
+				t1[catAct][ind] = np.copy(elem)
 
 			print "I just used ",inputs[0]
 
