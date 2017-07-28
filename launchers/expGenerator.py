@@ -36,6 +36,8 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
 			yinf,ysup = j*imageShape[1],(j+1)*imageShape[1]
 			outImage[xinf:xsup , yinf:ysup] = imagesBatch[iSample].reshape(imageShape)
+	if len(outImage.shape) == 3 and outImage.shape[-1] == 1:  # Make sure that allInOne is (x,y) and not (x,y,1)
+		outImage = outImage.reshape(outImage.shape[0:-1])
 	imsave(outName+ '.png', outImage)
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
@@ -109,24 +111,9 @@ def main(configFile,isTan):
 		outLayer = sess.graph.get_tensor_by_name(layerOutputName)
 		entrada = sess.graph.get_tensor_by_name(layerInputName)
 
-
 		temp=[]
 		t1=[[0 for k in range(1)] for i in range(cSize)]
 		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
-
-		listC = np.random.randint(10, size=64)
-		matC = np.zeros((64, 10))
-		matC[np.arange(64), listC] = 1
-		print matC
-
-		val = np.random.rand(128, 110)
-		val[0:64, -10:] = matC
-		print val[0]
-		print val[63]
-		print val[64]
-
-		plotSample(sess, outLayer, entrada, val, 64, batchSize, 0, 1, (8, 8), "randomSample")
-
 		for catAct in range(cSize):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
