@@ -107,7 +107,7 @@ def main(configFile,isTan):
 		# En este experimento salen derrepente muy mezclados. Cuidado el C vector no es para esto
 		# Al parecer no es global sino "local"
 		matC = np.zeros((64, cSize))
-		catTouse=np.random.randint(cSize)
+		catTouse=0
 		matC[np.arange(64), catTouse] = 1
 
 		val = np.random.rand(batchSize, inputSize)
