@@ -32,8 +32,8 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 			iSample = i*rows+j
 			if iSample >= nSamples:
 				break
-			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
-			yinf,ysup = j*imageShape[1],(j+1)*imageShape[1]
+			xinf,xsup = i*imageShape[0]*factor,(i+1)*imageShape[0]*factor
+			yinf,ysup = j*imageShape[1]*factor,(j+1)*imageShape[1]*factor
 			outImage[xinf:xsup , yinf:ysup] = rescale(imagesBatch[iSample].reshape(imageShape), factor)
 
 	if len(outImage.shape) == 3 and outImage.shape[-1] == 1:  # Make sure that allInOne is (x,y) and not (x,y,1)
