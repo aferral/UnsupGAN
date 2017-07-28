@@ -31,6 +31,7 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 	for i in range(rows):
 		for j in range(cols):
 			iSample = i*rows+cols
+			print i, j, " index ", iSample
 			if iSample > nSamples:
 				break
 			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
