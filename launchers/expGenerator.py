@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import json
 import os
@@ -8,7 +7,7 @@ from scipy.misc import imsave
 from skimage.transform import resize
 from skimage.transform import rescale
 
-def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gridShape,outName):
+def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gridShape,outName,factor):
 	assert(nSamples < batchSize)  # i was lazy and i didnt want to run a lot of times the network.
 	imagesBatch = sess.run(layerOut, {layerInput: val})
 
@@ -21,9 +20,9 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 	else:
 		imageShape = imagesBatch[0].shape
 	assert(len(imageShape)==3)
-	assert (len(gridShape) == 2)
+	assert(len(gridShape) == 2)
 
-	outImage = np.zeros((imageShape[0]*gridShape[0],imageShape[1]*gridShape[1],imageShape[2]))
+	outImage = np.zeros((imageShape[0]*gridShape[0]*factor,imageShape[1]*gridShape[1]*factor,imageShape[2]))
 	#Fill image from rows then columns (typical matrix order)
 
 	rows=gridShape[0]
@@ -35,45 +34,13 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 				break
 			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
 			yinf,ysup = j*imageShape[1],(j+1)*imageShape[1]
-			outImage[xinf:xsup , yinf:ysup] = imagesBatch[iSample].reshape(imageShape)
+			outImage[xinf:xsup , yinf:ysup] = rescale(imagesBatch[iSample].reshape(imageShape), factor)
+
 	if len(outImage.shape) == 3 and outImage.shape[-1] == 1:  # Make sure that allInOne is (x,y) and not (x,y,1)
 		outImage = outImage.reshape(outImage.shape[0:-1])
 	imsave(outName+ '.png', outImage)
 
-#Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
-def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan):
-	assert(nSamples < batchSize) #i was lazy and i didnt want to run a lot of times the network.
 
-	valInput = np.copy(fixedNoiseSamples)
-	valInput[:,-10:] = 0  #Setting all C inputs to 0 (they are after the noise values)
-	valInput[:,noiseSize+catActiva] = 1 #Setting catActiva as 1 to get one-hot encoding in first part of the input.
-
-
-	imagesBatch = sess.run(layerOut, {layerInput : valInput } )
-
-	if isTan: #the result was in -1 to +1 units
-		imagesBatch = (imagesBatch + 1.0 ) * 0.5
-
-	return imagesBatch[0:nSamples],valInput[0:nSamples]
-def oldTest(sess,outGen,inputGen,batchSize,noiseSize,cSize,useThis=None):
-
-	if useThis is None:
-		testV = np.random.rand(1, noiseSize) *2
-		testCvector = np.zeros((1, cSize))
-		joint = np.hstack([testV, testCvector])
-	else:
-		joint = useThis
-	print " using Tvector ", joint
-
-	testVector = np.repeat(joint,batchSize,axis=0)
-	testVector[0:cSize,-10:] = np.eye(cSize)
-
-	resultado=sess.run(outGen, {inputGen: testVector})
-
-	for i in range(10):
-		toSave = rescale(resultado[i].reshape((28,28)) , 10)
-		imsave(os.path.join('test'+str(i)+'.png'), toSave)
-	return testVector[0:cSize]
 
 def main(configFile,isTan):
 	print "Loading config file ", configFile
@@ -96,14 +63,18 @@ def main(configFile,isTan):
 		modelPath = os.path.join("ckt", train_dataset, exp_name, "last.ckpt")
 
 	batchSize = res['batch_size']
-	nSamples = 1
 
 	noiseSize = 100
+	factor=2
 	cSize = res['categories']
 	inputSize = noiseSize + cSize
+	isMNIST= "MNIST" in exp_name
 
 	layerInputName = "concat:0"
 	layerOutputName = res['discrInputName']
+
+	assert(cSize>0)
+	assert(cSize<11) #You need to fix the setup grid is 10x10 for the categorical
 
 	with tf.Session() as sess:
 		new_saver = tf.train.import_meta_graph(modelPath+'.meta')
@@ -111,51 +82,70 @@ def main(configFile,isTan):
 		outLayer = sess.graph.get_tensor_by_name(layerOutputName)
 		entrada = sess.graph.get_tensor_by_name(layerInputName)
 
-		temp=[]
-		t1=[[0 for k in range(1)] for i in range(cSize)]
-		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
-		for catAct in range(cSize):
-			print "Cact ",catAct
-			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
-			print "Input Noise row1 ",fixedNoiseSamples[1,-20:]
-			imagesSampled,inputs = doSampleFromSetC(sess, outLayer, entrada, catAct, nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan)
+		#---------------------------Sample aleatoria---------------------------
+		listC=np.random.randint(cSize, size=64)
+		matC = np.zeros((64,cSize))
+		matC[np.arange(64),listC]=1
 
-			for ind,elem in enumerate(inputs):
-				t1[catAct][ind] = np.copy(elem)
+		val=np.random.rand(batchSize,inputSize)
+		val[0:64,-cSize:]=matC
+		plotSample(sess,outLayer,entrada,val,64,batchSize,isTan,isMNIST,(8,8),exp_name+" randomSample",factor=factor)
 
-			print "I just used ",inputs[0]
+		# ---------------------------Z fix random C---------------------------
+		# En este experimento logre que fueran todos diferentes entre C y luego se repiten
+		# Que es lo que se espera que ocurra
+		listC = np.random.randint(cSize, size=64)
+		matC = np.zeros((64, cSize))
+		matC[np.arange(64), listC] = 1
 
-			if ("MNIST" in exp_name):
-				shape = (28, 28, 1)
-			else:
-				shape = imagesSampled[0].shape
+		val = np.random.rand(1, inputSize)
+		val = np.repeat(val, batchSize, axis=0)
+		val[0:64, -cSize:] = matC
+		plotSample(sess, outLayer, entrada, val, 64, batchSize, isTan, isMNIST, (8, 8),exp_name+" ZfixedRandomC",factor=factor)
 
-			nImages= imagesSampled.shape[0]
-			factor=3
-			expandedShape = tuple([elem*factor for elem in shape[0:2]]+[shape[-1]])
+		# ---------------------------C fixed random Z---------------------------
+		# En este experimento salen derrepente muy mezclados. Cuidado el C vector no es para esto
+		# Al parecer no es global sino "local"
+		matC = np.zeros((64, cSize))
+		catTouse=np.random.randint(cSize)
+		matC[np.arange(64), catTouse] = 1
 
+		val = np.random.rand(batchSize, inputSize)
+		val[0:64, -cSize:] = matC
+		plotSample(sess, outLayer, entrada, val, 64, batchSize, isTan, isMNIST, (8, 8), exp_name+" CfixedRandomZ_"+catTouse,factor=factor)
 
-			allInOne = np.empty(tuple([expandedShape[0]*nImages]+list(expandedShape[1:])))
-			for i in range(nImages):
+		# ---------------------------C fixed by row---------------------------
+		gridX,gridY= cSize, 10
+		samples=gridX*gridY
+		assert(samples<batchSize)
 
-				if ("MNIST" in exp_name):
-					expandedImage = resize(np.copy(imagesSampled[i]).reshape((28,28)), expandedShape)
-				else:
-					expandedImage = resize(np.copy(imagesSampled[i]), expandedShape)
-				allInOne[expandedShape[0]*i:expandedShape[0]*(i+1),:] = np.copy(expandedImage)
+		matC = np.zeros((samples, cSize))
+		for i in range(cSize):
+			matC[i*gridY:(i+1)*gridY, i] = 1
 
-			print allInOne.shape
-			if len(allInOne.shape) == 3 and allInOne.shape[-1] == 1: #Make sure that allInOne is (x,y) and not (x,y,1)
-				allInOne = allInOne.reshape(allInOne.shape[0:-1])
-			# imsave("Csamples " + exp_name + " right incresing C, Up random samples "+str(catAct)+ ' .png', allInOne)
-			temp.append(np.copy(allInOne))
+		val = np.random.rand(batchSize, inputSize)
+		val[0:samples, -cSize:] = matC
+		plotSample(sess, outLayer, entrada, val, samples, batchSize, isTan, isMNIST, (gridX, gridY), exp_name+" CfixRow",factor=factor)
 
-		out=np.hstack(temp)
-		imsave("Csamples "+exp_name+" right incresing C, Up random samples "+'.png',out)
-		print "About to use ",t1[0][0].shape
-		ble = t1[0][0].reshape((1,110))
-		print "This is t1 ",ble
-		t2=oldTest(sess,outLayer, entrada,batchSize,noiseSize,cSize,useThis=ble)
+		# ---------------------------C fijo Zfijo cruzados---------------------------
+		gridX, gridY = cSize, 10
+		samples = gridX * gridY
+		assert (samples < batchSize)
+
+		matC = np.zeros((samples, cSize))
+		for i in range(cSize):
+			matC[i * gridY:(i + 1) * gridY, i] = 1
+
+		realNoiseM = np.random.rand(batchSize, inputSize)
+		randomNoises = np.random.rand(gridY, inputSize)
+
+		indexs = [i for i in range(samples)]
+		for i in range(cSize):
+			realNoiseM[np.array(filter(lambda x: x % cSize == i, indexs)), :] = randomNoises[i]
+
+		realNoiseM[0:samples, -cSize:] = matC
+		plotSample(sess, outLayer, entrada, val, samples, batchSize, isTan, isMNIST, (gridX, gridY), exp_name+" CZcross",factor=factor)
+
 
 if __name__ == "__main__":
 	print os.getcwd()
