@@ -31,8 +31,7 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 	for i in range(rows):
 		for j in range(cols):
 			iSample = i*rows+j
-			print i, j, " index ", iSample
-			if iSample > nSamples:
+			if iSample >= nSamples:
 				break
 			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
 			yinf,ysup = j*imageShape[1],(j+1)*imageShape[1]
@@ -114,6 +113,20 @@ def main(configFile,isTan):
 		temp=[]
 		t1=[[0 for k in range(1)] for i in range(cSize)]
 		fixedNoiseSamples = np.random.rand(batchSize,inputSize)
+
+		listC = np.random.randint(10, size=64)
+		matC = np.zeros((64, 10))
+		matC[np.arange(64), listC] = 1
+		print matC
+
+		val = np.random.rand(128, 110)
+		val[0:64, -10:] = matC
+		print val[0]
+		print val[63]
+		print val[64]
+
+		plotSample(sess, outLayer, entrada, val, 64, batchSize, 0, 1, (8, 8), "randomSample")
+
 		for catAct in range(cSize):
 			print "Cact ",catAct
 			print "Input Noise row0 ",fixedNoiseSamples[0,-20:]
