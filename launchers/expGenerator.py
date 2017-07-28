@@ -144,7 +144,7 @@ def main(configFile,isTan):
 			realNoiseM[np.array(filter(lambda x: x % cSize == i, indexs)), :] = randomNoises[i]
 
 		realNoiseM[0:samples, -cSize:] = matC
-		plotSample(sess, outLayer, entrada, val, samples, batchSize, isTan, isMNIST, (gridX, gridY), exp_name+" CZcross",factor=factor)
+		plotSample(sess, outLayer, entrada, realNoiseM, samples, batchSize, isTan, isMNIST, (gridX, gridY), exp_name+" CZcross",factor=factor)
 
 
 if __name__ == "__main__":
