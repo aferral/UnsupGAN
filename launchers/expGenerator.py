@@ -112,7 +112,7 @@ def main(configFile,isTan):
 
 		val = np.random.rand(batchSize, inputSize)
 		val[0:64, -cSize:] = matC
-		plotSample(sess, outLayer, entrada, val, 64, batchSize, isTan, isMNIST, (8, 8), exp_name+" CfixedRandomZ_"+catTouse,factor=factor)
+		plotSample(sess, outLayer, entrada, val, 64, batchSize, isTan, isMNIST, (8, 8), exp_name+" CfixedRandomZ_"+str(catTouse),factor=factor)
 
 		# ---------------------------C fixed by row---------------------------
 		gridX,gridY= cSize, 10
