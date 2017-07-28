@@ -30,7 +30,7 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 	cols=gridShape[1]
 	for i in range(rows):
 		for j in range(cols):
-			iSample = i*rows+cols
+			iSample = i*rows+j
 			print i, j, " index ", iSample
 			if iSample > nSamples:
 				break
