@@ -8,7 +8,32 @@ from scipy.misc import imsave
 from skimage.transform import resize
 from skimage.transform import rescale
 
+def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gridShape,outName):
+	assert(nSamples < batchSize)  # i was lazy and i didnt want to run a lot of times the network.
+	imagesBatch = sess.run(layerOut, {layerInput: val})
 
+	imagesBatch = imagesBatch[0:nSamples]
+	if isTan: #the result was in -1 to +1 units
+		imagesBatch = (imagesBatch + 1.0 ) * 0.5
+
+	if isMnist:
+		imageShape = (28, 28, 1)
+	else:
+		imageShape = imagesBatch[0].shape
+	assert(len(imageShape)==3)
+	assert (len(gridShape) == 2)
+
+	outImage = np.zeros((imageShape[0]*gridShape[0],imageShape[1]*gridShape[1],imageShape[2]))
+	#Fill image from rows then columns (typical matrix order)
+
+	rows=gridShape[0]
+	cols=gridShape[1]
+	for i in range(rows):
+		for j in range(cols):
+			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
+			yinf,ysup = j*imageShape[1],(j+1)*imageShape[1]
+			outImage[xinf:xsup , yinf:ysup] = imagesBatch[i*rows+cols]
+	imsave(outName+ '.png', outImage)
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
 def doSampleFromSetC(sess,layerOut,layerInput,catActiva,nSamples,fixedNoiseSamples,batchSize,noiseSize,cSize,isTan):
