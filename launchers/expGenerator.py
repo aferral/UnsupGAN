@@ -30,9 +30,12 @@ def plotSample(sess,layerOut,layerInput,val,nSamples,batchSize,isTan,isMnist,gri
 	cols=gridShape[1]
 	for i in range(rows):
 		for j in range(cols):
+			iSample = i*rows+cols
+			if iSample > nSamples:
+				break
 			xinf,xsup = i*imageShape[0],(i+1)*imageShape[0]
 			yinf,ysup = j*imageShape[1],(j+1)*imageShape[1]
-			outImage[xinf:xsup , yinf:ysup] = imagesBatch[i*rows+cols]
+			outImage[xinf:xsup , yinf:ysup] = imagesBatch[iSample]
 	imsave(outName+ '.png', outImage)
 
 #Generate n samples from set catActiva (we left only catActiva in the C input as 1 ex: catActiva=1 [0 1 0 0] )
