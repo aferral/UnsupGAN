@@ -9,7 +9,7 @@ from skimage.transform import rescale
 from sklearn import metrics
 from sklearn.decomposition import PCA
 import pandas
-import seaborn as sns
+
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import SGDClassifier
@@ -188,6 +188,7 @@ def processPca(flattenDataset, flatTest, fTrainLabels, fTestLabels,nComp = 6):
 
 
 def showDataplots(dx,ltrain):
+    import seaborn as sns
     data = pandas.DataFrame(data=dx, columns=['pca' + str(i) for i in range(dx.shape[1])])
     data['class'] = pandas.Series(ltrain, index=data.index)
     data.boxplot(by='class')
