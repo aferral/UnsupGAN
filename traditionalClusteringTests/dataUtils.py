@@ -253,7 +253,7 @@ def plotInteractive(transformed,realLabels,dataset,name,outputFolder): #HERE IT 
 
     plotBlokeh([savepoints, realLabels, iamgeSave, names],name,outputFolder, test=False)
 
-def showResults(dataset,points,labels,realLabels,name,outFolder,ax=None,showBlokeh=False,show3d=False):
+def showResults(dataset,points,labels,realLabels,name,outFolder,ax=None,showBlokeh=False,show3d=False,labelNames=None):
     outNameFile = "Results for "+str(name)+'.txt'
     log = ""
 
@@ -262,7 +262,7 @@ def showResults(dataset,points,labels,realLabels,name,outFolder,ax=None,showBlok
 
     pca = PCA(n_components=2)
 
-    transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca,outFolder)
+    transformed = showDimRed(points, labels, name + str('PCA_Predicted'), pca,outFolder,labelsName=labelNames)
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
 
     if show3d:

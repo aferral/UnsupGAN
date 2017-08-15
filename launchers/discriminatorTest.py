@@ -36,6 +36,13 @@ if len(sys.argv) > 1:
     print "Loading config file ", configFile
 
     res = {}
+    if len(sys.argv) > 2:
+        labelsNames = sys.argv[2:]
+    else:
+        labelsNames=None
+
+    for ind,elem in enumerate(labelsNames):
+        print "Label ",ind," ",elem
 
     with open(configFile, 'r') as f:
         res = json.load(f)
@@ -269,7 +276,7 @@ def loadDatatransform(values,sess,addEnc=False):
 
 
 
-def main():
+def main(labNames):
     #Get dataset
     dataset = DataFolder(dataFolder,batch_size,testProp=0.01, validation_proportion=0.5, out_size=imageSize)
 
@@ -306,12 +313,12 @@ def main():
                 print "About to show TSNE with real labels (may take a while)"
                 print "Showing TSNE with real labels"
                 model = TSNE(n_components=2)
-                showDimRed(trainX, rlbs, transformName+str(' TSNE_Real'), model,outFolder)
+                showDimRed(trainX, rlbs, transformName+str(' TSNE_Real'), model,outFolder,labelsName=labNames)
                 currentCol += 1
 
             # SHOW PCA2 of data with REAL labels
             pca = PCA(n_components=2)
-            transformed = showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca,outFolder)
+            transformed = showDimRed(trainX, rlbs, transformName+str(' PCA_Real'), pca,outFolder,labelsName=labNames)
 
             currentCol += 1
 
@@ -349,10 +356,10 @@ def main():
                     print "Showing results for Cluster ",name
 
                     if showBlokeh: #This will plot once per transformation
-                        showResults(dataset, points, predClust, realsLab, transformName + " " + 'Cluster ' + str(name),outFolder,showBlokeh=True)
+                        showResults(dataset, points, predClust, realsLab, transformName + " " + 'Cluster ' + str(name),outFolder,showBlokeh=True,labelNames=labNames)
                         showBlokeh = False
                     else:
-                        showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name),outFolder)
+                        showResults(dataset,points,predClust,realsLab,transformName+" "+'Cluster '+str(name),outFolder,labelNames=labNames)
                     currentCol += 1
 
 
@@ -363,7 +370,7 @@ def main():
                 points,predEncoder,realsLab = encoderLabeling(sess,dataset,d_in,dtransform,d_encoder)
 
                 print "Showing results for Encoder labeling"
-                showResults(dataset,points,predEncoder,realsLab,transformName+" "+'Encoder',outFolder)
+                showResults(dataset,points,predEncoder,realsLab,transformName+" "+'Encoder',outFolder,labelNames=labNames)
                 currentCol += 1
         plt.savefig(os.path.join(outFolder,'table1.png'))
 
@@ -372,7 +379,7 @@ def main():
 if __name__ == '__main__':
     # device_name = "/cpu:0"
     # with tf.device(device_name):
-    main()
+    main(labelsNames)
 
 
 
