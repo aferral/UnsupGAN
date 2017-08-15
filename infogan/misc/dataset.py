@@ -211,7 +211,7 @@ class DatasetMat(Dataset):
         allL = []
         for label,folder in enumerate(allFolders):
             # Read all the mat files inside
-            log += "Label: "+str(0)+" -- "+str(folder)+" \n"
+            log += "Label: "+str(label)+" -- "+str(folder)+" \n"
             fileList = os.listdir(os.path.join(dataFolder,folder))
             for f in fileList:
                 if f.split('.')[-1] == 'mat': #check that the file is mat
@@ -226,6 +226,9 @@ class DatasetMat(Dataset):
             self.classes = len(set(allL))  # Get how many different classes are in the problem
 
         # Create a log with label - folder
+        with open(os.path.join(dataFolder,"0_description"+os.path.split(dataFolder)[-1]+".txt"),'w') as f:
+            f.write(log)
+
         outAll = np.zeros((len(all),all[0].shape[0],all[0].shape[1]))
         for i in range(len(all)):
             outAll[i] = all[i]
@@ -262,5 +265,6 @@ class cifar10Dataset(Dataset):
 
 
 if __name__ == '__main__':
-    test = Dataset("data/simulatedFault",batch_size=20,seed=1)
+    test=DatasetMat("data/CWRfeatures stride8")
+    #test = Dataset("data/simulatedFault",batch_size=20,seed=1)
     #test2 = cifar10Dataset(batch_size=20,seed=1)

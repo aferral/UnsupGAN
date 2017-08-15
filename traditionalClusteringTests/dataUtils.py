@@ -348,7 +348,7 @@ def showResults(dataset,points,labels,realLabels,name,outFolder,ax=None,showBlok
         f.write(log)
     return log
 
-def showDimRed(points, labels, name, dimRalg, outF=None):
+def showDimRed(points, labels, name, dimRalg, outF=None,labelsName=None):
 
     try:
         labels=OneHotToInt(labels)
@@ -382,8 +382,11 @@ def showDimRed(points, labels, name, dimRalg, outF=None):
         temp = objPlot.scatter(transformed[elements, 0], transformed[elements, 1],
                                facecolors='none', label='Class ' + str(c), c=colors[c])
         allscatter.append(temp)
+
+    #Choose label names if labelsName is None use class X, else use labelsNames
+    lnames = ["class " + str(c) for c in range(n_classes)] if labelsName is None else labelsName
     objPlot.legend(tuple(allscatter),
-                   tuple(["class " + str(c) for c in range(n_classes)]),
+                   tuple(lnames),
                    scatterpoints=1,
                    loc='upper left',
                    ncol=3,
