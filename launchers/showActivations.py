@@ -21,7 +21,7 @@ def getActLayer(sess,layerName,d_in,norm=False):
         return lambda x : pool_features((sess.run(layer, {d_in: x})))
 
 
-def main(configFile):
+def main(configFile,labelNames=None):
     # -----Cargar parametros
     print "Loading config file ", configFile
 
@@ -99,7 +99,7 @@ def main(configFile):
         trainX, realLabels = trainsetTransform(layerFunction, useDataset)
         model = TSNE(n_components=2)
         outName = "ImageRaw"+ str(' TSNE_Real')
-        showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName, model, outFolder)
+        showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName, model, outFolder,labelsName=labelNames)
 
         for layerName in capas:
             if not ":0" in layerName:
@@ -118,10 +118,16 @@ def main(configFile):
                 os.makedirs(outFolder)
             print trainX.shape
             outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder)
+            showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
 
 
 
 if __name__ == '__main__':
     configFile = sys.argv[1]
-    main(configFile)
+    labelNms = None
+    if len(sys.argv) > 2:
+        labelNms = sys.argv[2:]
+    for ind,elem in enumerate(labelNms):
+        print "Label ",ind," ",elem
+
+    main(configFile,labelNms)
