@@ -350,10 +350,11 @@ def showResults(dataset,points,labels,realLabels,name,outFolder,ax=None,showBlok
 
 def showDimRed(points, labels, name, dimRalg, outF=None):
 
-    if type(labels) == list:
-        if hasattr(labels[0], 'shape'):
-            if labels[0].shape[0] > 1:
-                labels = OneHotToInt(labels)
+    try:
+        labels=OneHotToInt(labels)
+    except:
+        labels=labels
+
 
 
     transform_op = getattr(dimRalg, "transform", None)
