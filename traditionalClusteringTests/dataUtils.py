@@ -2,7 +2,6 @@ from collections import Counter
 import random
 from scipy import spatial
 from skimage.io import imsave
-
 import numpy as np
 import pylab as plt
 from skimage.transform import rescale
@@ -364,6 +363,13 @@ def showDimRed(points, labels, name, dimRalg, outF=None,labelsName=None):
         transformed = dimRalg.transform(points)
     else:
         transformed = dimRalg.fit_transform(points)
+
+    #Save plot to pickle
+    r3 = pandas.DataFrame(data=transformed)
+    r3['c'] = np.array(labels)
+    r3.to_pickle(os.path.join(outF, name + '.pkl'))
+
+
 
     objPlot = None
 
