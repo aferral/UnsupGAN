@@ -3,7 +3,7 @@ import os
 import sys
 import tensorflow as tf
 from sklearn.manifold import TSNE
-
+from scipy.io import savemat
 from infogan.misc.dataset import Dataset
 from infogan.misc.datasets import DataFolder
 from launchers.discriminatorTest import trainsetTransform, pool_features
@@ -11,6 +11,7 @@ from sklearn.preprocessing import normalize
 
 from traditionalClusteringTests.dataUtils import showDimRed
 
+saveAct=True
 
 #First get activations, then pool if needed (conv filters are reduced to 1x1 per filter doing a mean) then normalize is needed
 def getActLayer(sess,layerName,d_in,norm=False):
@@ -111,10 +112,17 @@ def main(configFile,labelNames=None):
             #Get layer activations of entire train set
             trainX, realLabels = trainsetTransform(layerFunction, useDataset)
 
+            outFolder = os.path.join("ShowAct", exp_name)
+
+
+            if saveAct:
+                data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName()}
+                savemat(os.path.join(outFolder,layerName),data_dict)
+
             #DO TSNE
             model = TSNE(n_components=2)
             #Save image expName_layer_TSNE.png
-            outFolder = os.path.join("ShowAct",exp_name)
+
             if not os.path.exists(outFolder):
                 os.makedirs(outFolder)
             print trainX.shape
