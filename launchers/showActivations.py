@@ -116,7 +116,8 @@ def main(configFile,labelNames=None):
 
 
             if saveAct:
-                data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName()}
+                #Export the activations to a .mat file save the layer namie, the dataset folder and the number of points (data is a matrix N,D )
+                data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName(),'n_points' : trainX.shape[0]}
                 savemat(os.path.join(outFolder,layerName),data_dict)
 
             #DO TSNE
