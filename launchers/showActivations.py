@@ -80,7 +80,10 @@ def main(configFile,labelNames=None):
                     if 'mul_1' in way.name:
                         current = current.consumers()[ind].outputs[0]
             else:
-                current = current.consumers()[0].outputs[0]
+                if len(current.consumers) > 0:
+                    current = current.consumers()[0].outputs[0]
+                else:
+                    break
             capas.append(current.name)
             it = it - 1
             if it == 0:
