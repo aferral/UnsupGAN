@@ -101,6 +101,7 @@ def main(configFile,labelNames=None):
         outName = "ImageRaw"+ str(' TSNE_Real')
         showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName, model, outFolder,labelsName=labelNames)
 
+
         for layerName in capas:
             if not ":0" in layerName:
                 layerName = layerName + ":0"
