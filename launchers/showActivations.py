@@ -114,18 +114,20 @@ def main(configFile,labelNames=None):
 
             outFolder = os.path.join("ShowAct", exp_name)
 
+            if not os.path.exists(outFolder):
+                os.makedirs(outFolder)
+
 
             if saveAct:
                 #Export the activations to a .mat file save the layer namie, the dataset folder and the number of points (data is a matrix N,D )
                 data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName(),'n_points' : trainX.shape[0]}
-                savemat(os.path.join(outFolder,layerName+'.mat'),data_dict)
+                savemat(os.path.join(outFolder,layerName.replace('/','_')+'.mat'),data_dict)
 
             #DO TSNE
             model = TSNE(n_components=2)
             #Save image expName_layer_TSNE.png
 
-            if not os.path.exists(outFolder):
-                os.makedirs(outFolder)
+
             print trainX.shape
             outName = layerName.replace('/','_')+ str(' TSNE_Real')
             showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
