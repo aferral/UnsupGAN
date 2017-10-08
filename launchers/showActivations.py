@@ -84,7 +84,7 @@ def main(configFile,labelNames=None):
                     current = current.consumers()[0].outputs[0]
                 else:
                     capas.append(current.name)
-                    break
+                    break #todo this stop somethimes where it shouldnt
             capas.append(current.name)
             it = it - 1
             if it == 0:
