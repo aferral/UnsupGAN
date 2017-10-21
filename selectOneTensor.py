@@ -63,7 +63,7 @@ def main(configFile,layerName,labelNames=None):
     if not os.path.exists(outFolder):
         os.makedirs(outFolder)
 
-    with tf.Session() as sess:
+    with tf.Session(config=tf.GPUOptions(per_process_gpu_memory_fraction=0.05)) as sess:
         new_saver = tf.train.import_meta_graph(modelPath+'.meta')
         new_saver.restore(sess, modelPath)
 
