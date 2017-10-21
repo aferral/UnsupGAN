@@ -32,7 +32,13 @@ def main(configFile):
         new_saver = tf.train.import_meta_graph(modelPath+'.meta')
         new_saver.restore(sess, modelPath)
 
+        nombresFiltrados = ['random_uniform','concat','fc_batch_norm','reshape',
+                            'conv_batch_norm','gradients']
+
         for n in tf.get_default_graph().as_graph_def().node:
+            for nombreF in nombresFiltrados:
+                if nombreF in n.name:
+                    continue
             print n.name
 
 
