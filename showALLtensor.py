@@ -33,7 +33,7 @@ def main(configFile):
         new_saver.restore(sess, modelPath)
 
         nombresFiltrados = ['random_uniform','concat','fc_batch_norm','reshape',
-                            'conv_batch_norm','gradients']
+                            'conv_batch_norm','loss','ScalarSummary','zeros','gradients','Adam','save']
 
         for n in tf.get_default_graph().as_graph_def().node:
             show=True
