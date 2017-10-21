@@ -13,7 +13,7 @@ from traditionalClusteringTests.dataUtils import showDimRed
 
 saveAct = True
 doTSNE = True
-justShowAllTensor = True
+selectOne = True
 
 #First get activations, then pool if needed (conv filters are reduced to 1x1 per filter doing a mean) then normalize is needed
 def getActLayer(sess,layerName,d_in,norm=False):
