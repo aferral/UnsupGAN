@@ -11,7 +11,9 @@ from sklearn.preprocessing import normalize
 
 from traditionalClusteringTests.dataUtils import showDimRed
 
-saveAct=True
+saveAct = True
+doTSNE = True
+justShowAllTensor = True
 
 #First get activations, then pool if needed (conv filters are reduced to 1x1 per filter doing a mean) then normalize is needed
 def getActLayer(sess,layerName,d_in,norm=False):
@@ -102,19 +104,27 @@ def main(configFile,labelNames=None):
         #Do the TSNE of the raw image
         layerFunction = lambda x : sess.run(d_in, {d_in: x}).reshape(batchSize,-1)
         trainX, realLabels = trainsetTransform(layerFunction, useDataset)
-        model = TSNE(n_components=2)
-        outName = "ImageRaw"+ str(' TSNE_Real')
-        showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName, model, outFolder,labelsName=labelNames)
+
+
+        if doTSNE:
+            model = TSNE(n_components=2)
+            outName = "ImageRaw"+ str(' TSNE_Real')
+            showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName, model, outFolder,labelsName=labelNames)
 
 
         for layerName in capas:
             if not ":0" in layerName:
                 layerName = layerName + ":0"
+
+
             #Define layer to use
             layerFunction = getActLayer(sess, layerName, d_in, norm=False)
 
             #Get layer activations of entire train set
             trainX, realLabels = trainsetTransform(layerFunction, useDataset)
+
+            print "Procesando " + str(layerName)
+            print trainX.shape
 
             outFolder = os.path.join("ShowAct", exp_name)
 
@@ -123,18 +133,16 @@ def main(configFile,labelNames=None):
 
 
             if saveAct:
-                #Export the activations to a .mat file save the layer namie, the dataset folder and the number of points (data is a matrix N,D )
+                #Export the activations to a .mat file save the layer name, the dataset folder and the number of points (data is a matrix N,D )
                 data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName(),'n_points' : trainX.shape[0]}
                 savemat(os.path.join(outFolder,layerName.replace('/','_')+'.mat'),data_dict)
 
             #DO TSNE
-            model = TSNE(n_components=2)
-            #Save image expName_layer_TSNE.png
-
-
-            print trainX.shape
-            outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
+            if doTSNE:
+                model = TSNE(n_components=2)
+                #Save image expName_layer_TSNE.png
+                outName = layerName.replace('/','_')+ str(' TSNE_Real')
+                showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
 
 
 
