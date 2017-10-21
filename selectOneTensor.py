@@ -114,7 +114,8 @@ if __name__ == '__main__':
         exit(1)
     if len(sys.argv) > 3:
         labelNms = sys.argv[2:]
-    for ind,elem in enumerate(labelNms):
-        print "Label ",ind," ",elem
+    if labelNms:
+        for ind,elem in enumerate(labelNms):
+            print "Label ",ind," ",elem
 
     main(configFile,Layer,labelNms)
