@@ -64,46 +64,48 @@ def main(configFile,layerName,labelNames=None):
         os.makedirs(outFolder)
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.05)
+    #config=tf.ConfigProto(gpu_options=gpu_options)
 
-    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        new_saver = tf.train.import_meta_graph(modelPath+'.meta')
-        new_saver.restore(sess, modelPath)
+    with tf.device('/cpu:0'):
+        with tf.Session() as sess:
+            new_saver = tf.train.import_meta_graph(modelPath+'.meta')
+            new_saver.restore(sess, modelPath)
 
-        d_in = sess.graph.get_tensor_by_name(discrInputName)
+            d_in = sess.graph.get_tensor_by_name(discrInputName)
 
-        # Crear lista de capas a usar automaticamente mediante navegacion del grafo
-
-
-        if not ":0" in layerName:
-            layerName = layerName + ":0"
+            # Crear lista de capas a usar automaticamente mediante navegacion del grafo
 
 
-        #Define layer to use
-        layerFunction = getActLayer(sess, layerName, d_in, norm=False)
-
-        #Get layer activations of entire train set
-        trainX, realLabels = trainsetTransform(layerFunction, useDataset)
-
-        print "Procesando " + str(layerName)
-        print trainX.shape
-
-        outFolder = os.path.join("ShowAct", exp_name)
-
-        if not os.path.exists(outFolder):
-            os.makedirs(outFolder)
+            if not ":0" in layerName:
+                layerName = layerName + ":0"
 
 
-        if saveAct:
-            #Export the activations to a .mat file save the layer name, the dataset folder and the number of points (data is a matrix N,D )
-            data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName(),'n_points' : trainX.shape[0]}
-            savemat(os.path.join(outFolder,layerName.replace('/','_')+'.mat'),data_dict)
+            #Define layer to use
+            layerFunction = getActLayer(sess, layerName, d_in, norm=False)
 
-        #DO TSNE
-        if doTSNE:
-            model = TSNE(n_components=2)
-            #Save image expName_layer_TSNE.png
-            outName = layerName.replace('/','_')+ str(' TSNE_Real')
-            showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
+            #Get layer activations of entire train set
+            trainX, realLabels = trainsetTransform(layerFunction, useDataset)
+
+            print "Procesando " + str(layerName)
+            print trainX.shape
+
+            outFolder = os.path.join("ShowAct", exp_name)
+
+            if not os.path.exists(outFolder):
+                os.makedirs(outFolder)
+
+
+            if saveAct:
+                #Export the activations to a .mat file save the layer name, the dataset folder and the number of points (data is a matrix N,D )
+                data_dict = {'layerName': layerName, 'data': trainX, 'dataset' : useDataset.getFolderName(),'n_points' : trainX.shape[0]}
+                savemat(os.path.join(outFolder,layerName.replace('/','_')+'.mat'),data_dict)
+
+            #DO TSNE
+            if doTSNE:
+                model = TSNE(n_components=2)
+                #Save image expName_layer_TSNE.png
+                outName = layerName.replace('/','_')+ str(' TSNE_Real')
+                showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
 
 
 
