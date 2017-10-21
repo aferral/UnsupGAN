@@ -106,6 +106,7 @@ def main(configFile,layerName,labelNames=None):
 
 
 if __name__ == '__main__':
+    print sys.argv
     configFile = sys.argv[1]
     Layer = sys.argv[2]
     labelNms = None
@@ -113,7 +114,7 @@ if __name__ == '__main__':
         print "Faltan parametros"
         exit(1)
     if len(sys.argv) > 3:
-        labelNms = sys.argv[2:]
+        labelNms = sys.argv[3:]
     if labelNms:
         for ind,elem in enumerate(labelNms):
             print "Label ",ind," ",elem
