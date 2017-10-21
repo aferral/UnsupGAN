@@ -36,10 +36,12 @@ def main(configFile):
                             'conv_batch_norm','gradients']
 
         for n in tf.get_default_graph().as_graph_def().node:
+            show=True
             for nombreF in nombresFiltrados:
                 if nombreF in n.name:
-                    continue
-            print n.name
+                    show = False
+            if show:
+                print n.name
 
 
 
