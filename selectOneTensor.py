@@ -108,9 +108,11 @@ def main(configFile,layerName,labelNames=None):
                 showDimRed(trainX[0:limitPoints], realLabels[0:limitPoints], outName , model, outFolder,labelsName=labelNames)
 
 
-
 if __name__ == '__main__':
     print sys.argv
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+
     configFile = sys.argv[1]
     Layer = sys.argv[2]
     labelNms = None

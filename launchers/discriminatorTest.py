@@ -377,9 +377,10 @@ def main(labNames):
 
 
 if __name__ == '__main__':
-    # device_name = "/cpu:0"
-    # with tf.device(device_name):
-    main(labelsNames)
+    device_name = "/cpu:0"
+    plt.style.use('ggplot')
+    with tf.device(device_name):
+        main(labelsNames)
 
 
 
