@@ -170,7 +170,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
                                                  batch_size=batch_size,
                                                  testProp=testProp,
                                                  validation_proportion=validation_proportion
-                                                 ,normalize=False)
+                                                 ,normalize=False,seed=seed)
 
         self.name = 'FOLDER '+folderName #TODO bypass if of chech name
         self.batch_idx = dict.fromkeys(['train','val'])
