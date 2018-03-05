@@ -10,6 +10,8 @@ Code for reproducing key results in the paper [InfoGAN: Interpretable Representa
 
 This project currently requires the dev version of TensorFlow available on Github: https://github.com/tensorflow/tensorflow. As of the release, the latest commit is [79174a](https://github.com/tensorflow/tensorflow/commit/79174afa30046ecdc437b531812f2cb41a32695e).
 
+(DiscriminatorTest.py can use tensorflow 1.0.0 the training need the 0.9)
+
 In addition, please `pip install` the following packages:
 - `prettytensor`
 - `progressbar`
