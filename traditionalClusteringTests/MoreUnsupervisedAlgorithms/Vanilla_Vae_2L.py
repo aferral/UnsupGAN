@@ -4,7 +4,7 @@ import numpy as np
 import os
 import time
 
-from infogan.misc.datasets import DataFolder
+from infogan.misc.datasets import DataFolder, MnistDataset
 from traditionalClusteringTests.MoreUnsupervisedAlgorithms.models import AbstractUnsupModel
 
 
@@ -160,7 +160,8 @@ class Vanilla_VAE(AbstractUnsupModel):
         layer_2_dp = tf.nn.dropout(layer_2,self.dp_prob_decoder)
         #Then as output we have a mean reconstruction vector
         #Sigmoid so that the bernoulli parameter is between 0 and 1.
-        x_reconstr_mean = tf.nn.sigmoid(tf.add(tf.matmul(layer_2_dp, weights['out_mean']), biases['out_mean']),name='Reconstruction')
+        self.logits = tf.add(tf.matmul(layer_2_dp, weights['out_mean']), biases['out_mean'],'logitsReconstruction')
+        x_reconstr_mean = tf.nn.sigmoid(self.logits,name='Reconstruction')
 
         return x_reconstr_mean
 
@@ -170,8 +171,11 @@ class Vanilla_VAE(AbstractUnsupModel):
 
         #Method that creates the VAE loss and optimizer
         # E_Q(logP(X|z))
-        P = -tf.reduce_sum(self.x * tf.log(1e-10 + self.x_reconstr_mean)
-                       + (1-self.x) * tf.log(1e-10 + 1 - self.x_reconstr_mean), 1)
+
+        P = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.x), 1)
+
+        # P = -tf.reduce_sum(self.x * tf.log(1e-10 + self.x_reconstr_mean)
+        #                + (1-self.x) * tf.log(1e-10 + 1 - self.x_reconstr_mean), 1)
 
         # KL divergence: KL[Q(z|X)||P(z)]
         KL = -0.5 * tf.reduce_sum(1 + self.z_log_sigma_sq
@@ -221,7 +225,6 @@ class Vanilla_VAE(AbstractUnsupModel):
     def train_transform(self,n_epochs=10,learning_rate=0.001,display_step=5):
 
         data_train = self.dataset
-        saver = tf.train.Saver()
 
         #Define a list to append all the errors
         E=[]
@@ -232,7 +235,8 @@ class Vanilla_VAE(AbstractUnsupModel):
         print ("Training of the VAE \n")
         init_time = time.time()
         #Number of data points
-        n_samples = data_train.shape[0]
+        n_samples = data_train.get_n_training_points()
+        print("N de samples : {0} ".format(n_samples))
         #Number of iterations per epoch
         total_batch = int(n_samples*1.0 / self.batch_size)
 
@@ -263,7 +267,6 @@ class Vanilla_VAE(AbstractUnsupModel):
                 pathFolder = os.path.join('VAE','model')
                 if not os.path.exists(pathFolder):
                     os.makedirs(pathFolder)
-                # save_path = saver.save(self.activeSession, os.path.join(pathFolder,'epoch{0}.ckpt'.format(epochs + 1)))
                 self.evaluate(show=1)
 
         total_time = time.time()-init_time
@@ -274,19 +277,21 @@ class Vanilla_VAE(AbstractUnsupModel):
 
 def testScript():
     batchSize = 10
-    imageShape = (32, 32, 3)
+    imageShape = (32, 32, 1)
 
-    dataset = DataFolder("cifar10", batchSize, testProp=0.3, validation_proportion=0.3, out_size=imageShape)
+    # dataset = DataFolder("cifar10", batchSize, testProp=0.3, validation_proportion=0.3, out_size=imageShape)
+    dataset = MnistDataset(outShape=(-1,28,28,1),batchSize=batchSize)
 
-    assert(dataset.getImshape()[0] == dataset.getImshape()[1]),'Dataset image shape must be square'
+    print(dataset.shape)
+    assert(dataset.shape[0] == dataset.shape[1]),'Dataset image shape must be square'
 
     # TRAINING OF THE VAE AND TRANSFORMATION OF DATASET
     # Define the Architecture for the VAE
     L1 = 10
-    L2 = 20
-    n_z = 10
+    L2 = 15
+    n_z = 50
     epochs = 10
-    learningRate = 0.001
+    learningRate = 0.01
     displayAfter = 1
 
     flattenSize = reduce(lambda x,y : x*y,dataset.getImshape())

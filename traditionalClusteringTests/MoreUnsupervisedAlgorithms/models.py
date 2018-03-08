@@ -18,6 +18,7 @@ class AbstractUnsupModel(object):
         self.inputSizeFlatten = reduce(lambda x,y : x*y, self.imageShape)
 
 
+
     def train(self):
         raise NotImplementedError()
 
@@ -28,24 +29,38 @@ class AbstractUnsupModel(object):
 
         outImageShape = self.imageShape[:-1] if (len(self.imageShape) == 3 and self.imageShape[2] == 1) else self.imageShape
 
-        # Show some reconstructions
-
 
         images, labeles = self.dataset.next_batch(self.batchSize)
         batchRecons = self.reconstruction(images)
 
-        def formatImage(image):  # IMAGES IN -1 +1 RANGE (normalized with std 1 mean 0)
-            return (image + 1) * 0.5  # This doesnt revert the normalization process just for visualization
+        # Check dataset format (min - max values)
+        minDataset = images.min()
+        maxDataset = images.max()
+
+        # Check reconstruction format (min - max values)
+        minRec = batchRecons.min()
+        maxRec = batchRecons.max()
+
+        formatImageDataset = lambda x : x
+        formatImageRec =  lambda x : x
+
+        if (minDataset < 0 or maxDataset > 1):
+            formatImageDataset = lambda image: (image - minDataset) / (maxDataset-minDataset)
+            print("Dataset image not in 0-1 range. Range ({0} / {1})".format(minDataset,maxDataset))
+        if (minRec < 0 or maxRec > 1):
+            formatImageRec = lambda image: (image - minRec) / (maxRec-minRec)
+            print("Rec image not in 0-1 range. Range ({0} / {1})".format(minRec,maxRec))
+
 
         for i in range(show):
-            original = images[i]
+            original = images[i].reshape(outImageShape)
             recon = batchRecons[i].reshape(outImageShape)
 
             plt.figure('original')
-            plt.imshow(formatImage(original))
+            plt.imshow(formatImageDataset(original))
 
             plt.figure('Reconstruction')
-            plt.imshow(formatImage(recon))
+            plt.imshow(formatImageRec(recon))
 
             plt.show()
 

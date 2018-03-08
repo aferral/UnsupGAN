@@ -7,6 +7,14 @@ from joblib import Parallel, delayed
 from dataset import DataDictionary
 from skimage.transform import resize
 
+"""
+Todo importantes
+
+-- Colocar explicitamente que transformaciones usa
+-- Dar opciones de batch aleatorio?
+
+"""
+
 
 class Dataset(object):
     def __init__(self, name=None, data_root=None, list_file=None, isVal=False,
@@ -199,12 +207,38 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
         self.n_labels = self.dataObj.classes
 
+    # --------- Start of fix (note different scale of input)
+
     # FIX TO USE AS ARRAY TODO do something more robust
     def __getitem__(self, item):
-        return self.dataObj.train_data[item]/255
+        # imagesRGB = (self.dataObj.train_data[item] - self.dataObj.mean) / self.dataObj.std
+
+        # zeroStd = np.where(
+        #     self.dataObj.std < 1e-10)  # I tried with the scipy zscore but the error in cords [0,73] keep happening (-1 const in Z score of constant value)
+        #
+        # imagesRGB[:, zeroStd] = 0
+        # imagesRGB = np.nan_to_num(imagesRGB)
+        #
+        # imagesRGB = (imagesRGB - imagesRGB.min()) / (imagesRGB.max() - imagesRGB.min())
+        #
+        # imagesGray = 0.333 * imagesRGB[:,:,:,0] + 0.333 * imagesRGB[:,:,:,1] +  0.333 * imagesRGB[:,:,:,2]
+        # out = imagesGray.reshape(-1,32,32,1)
+
+        # out = imagesRGB.reshape(-1,32,32,3)
+
+        out = (self.dataObj.train_data[item] * 1.0 / 255)
+        out = 0.333 * out[:,:,:,0] + 0.333 * out[:,:,:,1] +  0.333 * out[:,:,:,2]
+        out= out.reshape(-1,32,32,1)
+
+        return out
     @property
     def shape(self):
-        return self.dataObj.train_data.shape
+        return self.dataObj.train_data.shape[1:]
+
+    def get_n_training_points(self):
+        return (self.dataObj.train_data.shape[0])
+
+    # --------- end of fix
 
     def getImshape(self):
         return self.image_shape
@@ -267,7 +301,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
             return toReturn
 
 class MnistDataset(object):
-    def __init__(self):
+    def __init__(self,batchSize=64,outShape=(-1,784,1)):
         self.name = "mnist"
         data_directory = "MNIST"
         if not os.path.exists(data_directory):
@@ -296,13 +330,14 @@ class MnistDataset(object):
 
         self.batch_idx = dict.fromkeys(['train','val'])
 
+        self.outshape = outShape
 
-        batch_size = 64
-        self.batch_idx['train'] = (self.train.images.shape[0]) // batch_size
-        self.batch_idx['val'] = (self.validation.images.shape[0]) // batch_size
+        self.batch_size = batchSize
+        self.batch_idx['train'] = (self.train.images.shape[0]) // self.batch_size
+        self.batch_idx['val'] = (self.validation.images.shape[0]) // self.batch_size
 
         self.n_labels = len(set(sup_labels)) #TODO ESTAN EN ONE HOT ???
-        output_size = 64
+
 
     def transform(self, data):
         return data
@@ -310,8 +345,22 @@ class MnistDataset(object):
     def inverse_transform(self, data):
         return data
 
+    def get_n_training_points(self):
+        return (self.train.images.shape[0])
+
+    # FIX TO USE AS ARRAY TODO do something more robust
+    def __getitem__(self, item):
+        return (self.train.images[item]).reshape(self.outshape)
+    @property
+    def shape(self):
+        return self[0].shape[1:]
+    def getImshape(self):
+        return self.image_shape
+
     def next_batch(self, batch_size, split="train"):
         if split == 'train':
-            return self.train.next_batch(batch_size)
+            images,labels = self.train.next_batch(batch_size)
+            return images.reshape(self.outshape),labels
         elif split == 'val':
-            return self.validation.next_batch(batch_size)
+            images,labels = self.validation.next_batch(batch_size)
+            return images.reshape(self.outshape),labels
