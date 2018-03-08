@@ -272,9 +272,7 @@ class Vanilla_VAE(AbstractUnsupModel):
         print()
 
 
-
-if __name__ == '__main__':
-
+def testScript():
     batchSize = 10
     imageShape = (32, 32, 3)
 
@@ -308,3 +306,6 @@ if __name__ == '__main__':
     with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.tanh) as vae:
         vae.train(n_epochs=epochs,learning_rate=learningRate,display_step=displayAfter)
         vae.evaluate()
+
+if __name__ == '__main__':
+    testScript()
