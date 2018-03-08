@@ -4,7 +4,6 @@ import os
 import sys
 from infogan.misc.utils import get_image
 from joblib import Parallel, delayed
-import multiprocessing
 from dataset import DataDictionary
 from skimage.transform import resize
 
@@ -200,6 +199,13 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
         self.n_labels = self.dataObj.classes
 
+    # FIX TO USE AS ARRAY TODO do something more robust
+    def __getitem__(self, item):
+        return self.dataObj.train_data[item]/255
+    @property
+    def shape(self):
+        return self.dataObj.train_data.shape
+
     def getImshape(self):
         return self.image_shape
     def getFolderName(self):
@@ -212,6 +218,9 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
 
     def getTrainImageFile(self, index):
         return self.dataObj.getTrainFilename(index)
+
+    def formatRange(self,image_batch): #todo config dataset image format
+        return(image_batch/127.5) - 1
 
     def next_batch(self, batch_size, split="train"):
         toReturn = None
@@ -226,7 +235,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
                 temp[i,:,:] = resize(toReturn[0][i,:,:],self.image_shape)
             toReturn = (temp,toReturn[1])
         #Here all the images are in 255-0 range we have to get them in -1 +1 range
-        toReturn = ((toReturn[0]/127.5) - 1 , toReturn[1])   #todo config dataset image format
+        toReturn = (self.formatRange(toReturn[0]) , toReturn[1])
 
         return toReturn
     def reshapeIfNeeded(self,batch_data):
@@ -236,7 +245,7 @@ class DataFolder(object): #ALL THIS IMAGES ARE GRAYSCALE
                 temp[i, :, :] = resize(batch_data[i, :, :], self.image_shape)
             batch_data = temp
         # Here all the images are in 255-0 range we have to get them in -1 +1 range
-        toReturn = ((batch_data / 127.5) - 1)  # todo config dataset image format
+        toReturn = self.formatRange(batch_data)
         return toReturn
 
 

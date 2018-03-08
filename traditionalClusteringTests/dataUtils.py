@@ -54,7 +54,7 @@ def pca2Visua(pca,data,labels,nClases):
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
     print "PCA 2 comp of the data"
 
-    transformed = pca.transform(data)
+    transformed = pca.reconstruction(data)
 
     plt.figure()
     allscatter = []
@@ -360,7 +360,7 @@ def showDimRed(points, labels, name, dimRalg, outF=None,labelsName=None):
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
         dimRalg.fit(points)
-        transformed = dimRalg.transform(points)
+        transformed = dimRalg.reconstruction(points)
     else:
         transformed = dimRalg.fit_transform(points)
 
