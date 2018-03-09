@@ -2,3 +2,8 @@ prettytensor
 progressbar
 python-dateutil
 ipdb
+pandas
+scikit-image
+bokeh==0.12.6
+joblib
+sklearn

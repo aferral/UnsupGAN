@@ -1,8 +1,16 @@
+from sklearn import cluster
+from sklearn.decomposition import PCA
+import numpy as np
 from infogan.misc.datasets import DataFolder
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import datetime
 import os
+
+from launchers.discriminatorTest import trainsetTransform, clusterLabeling
+from traditionalClusteringTests.dataUtils import OneHotToInt, showDimRed, \
+    showResults
+
 
 def stringNow():
     now = datetime.datetime.now()
@@ -22,10 +30,13 @@ class AbstractUnsupModel(object):
     def train(self):
         raise NotImplementedError()
 
+    def getLatentRepresentation(self,imageBatch):
+        raise NotImplementedError()
+
     def reconstruction(self, imageBatch):
         raise NotImplementedError()
 
-    def evaluate(self,show = 3):
+    def evaluate(self,outName,show = 3,nClustersTofind=10):
 
         outImageShape = self.imageShape[:-1] if (len(self.imageShape) == 3 and self.imageShape[2] == 1) else self.imageShape
 
@@ -64,17 +75,47 @@ class AbstractUnsupModel(object):
 
             plt.show()
 
+
+        transformName = 'hiddenLayer'
+        labNames={}
+        showBlokeh=True
+
+        # Definir transformacion como activaciones en x capa
+        transfFun = lambda x: self.getLatentRepresentation(x)
+
         # Tomar activaciones
+        trainX, rlbs = trainsetTransform(transfFun, self.dataset)
+        rlbs = OneHotToInt(rlbs)
+
+        # Crear carpeta de resultados
+        if not os.path.exists(outName):
+            os.makedirs(outName)
 
         # Mostrar labels reales con PCA 2
+        pca = PCA(n_components=2)
+        transformed = showDimRed(trainX, rlbs, 'latentRep PCA_Real',
+                                 pca, outName)
 
-        # Categorizar con K means o spectral
+        kmeans = cluster.KMeans(n_clusters=nClustersTofind)
 
-        # Mostrar graficos predicted vs real
+        spectral = cluster.SpectralClustering(n_clusters=nClustersTofind,
+                                              eigen_solver='arpack',
+                                              affinity="nearest_neighbors")
+        algorithms = [kmeans,spectral]
 
-        # Calcular NMI ARI PURITY
+        for clusterAlg in algorithms:
+            # Categorizar con K means o spectral
+            points, predClust, realsLab = clusterLabeling(None, self.dataset, transfFun,clusterAlg, trainX)
+            name = clusterAlg.__class__.__name__
+            print "Showing results for Cluster ", name
 
-        # Evaluar labeling
+
+
+            showResults(self.dataset, points, predClust, np.array(realsLab),
+                        transformName + " " + 'Cluster ' + str(name), outName,
+                        labelNames=labNames)
+
+
 
 
 def checkSessionDecorator(func):
@@ -108,16 +149,28 @@ class AutoencoderVanilla(AbstractUnsupModel):
     def defArch(self):
         self.inputBatch = tf.placeholder(tf.float32, (self.batchSize, self.imageShape[0], self.imageShape[1], self.imageShape[2]), 'input')
         flattenInput = tf.reshape(self.inputBatch, (self.batchSize, self.inputSizeFlatten), name='flattenInput')
-        hiddenLayer = tf.contrib.layers.fully_connected(flattenInput, self.units, activation_fn=tf.nn.sigmoid)
-        self.reconstruction = tf.contrib.layers.fully_connected(hiddenLayer, self.inputSizeFlatten, activation_fn=tf.nn.tanh)
 
-        self.reconError = tf.losses.mean_squared_error(flattenInput, self.reconstruction)
+        enc1 = tf.contrib.layers.fully_connected(flattenInput,
+                                                             self.units,
+                                                             activation_fn=tf.nn.relu)
+
+
+        self.hiddenLayer = tf.contrib.layers.fully_connected(enc1, self.units*2, activation_fn=tf.nn.relu)
+
+        dec1 = self.reconstructionLayer = tf.contrib.layers.fully_connected(self.hiddenLayer, self.units*2, activation_fn=tf.nn.relu)
+
+        self.reconstructionLayer = tf.contrib.layers.fully_connected(dec1, self.inputSizeFlatten, activation_fn=tf.nn.tanh)
+
+        self.reconError = tf.losses.mean_squared_error(flattenInput, self.reconstructionLayer)
 
         self.train_step = tf.train.AdamOptimizer(self.learningRate).minimize(self.reconError)
 
         tf.summary.scalar('ReconstructionError', self.reconError)
         pass
 
+    @checkSessionDecorator
+    def getLatentRepresentation(self,x):
+        return self.activeSession.run(self.hiddenLayer, feed_dict={self.inputBatch: x})
 
 
     def __enter__(self):
@@ -159,7 +212,7 @@ class AutoencoderVanilla(AbstractUnsupModel):
 
     @checkSessionDecorator
     def reconstruction(self, imageBatch):
-        return self.activeSession.run(self.reconstruction, feed_dict={self.inputBatch: imageBatch})
+        return self.activeSession.run(self.reconstructionLayer, feed_dict={self.inputBatch: imageBatch})
 
 
 class ConvAutoencoder(AutoencoderVanilla):
@@ -170,6 +223,11 @@ class ConvAutoencoder(AutoencoderVanilla):
         self.logsDir = 'ConvAutoencoder'
         self.onelayer=oneLayer
 
+    @checkSessionDecorator
+    def getLatentRepresentation(self,x):
+        return self.activeSession.run(self.outEncoder, feed_dict={self.inputBatch: x}).reshape(x.shape[0],-1)
+
+
     def defArch(self):
         self.inputBatch = tf.placeholder(tf.float32, (self.batchSize, self.imageShape[0], self.imageShape[1], self.imageShape[2]), 'input')
 
@@ -179,21 +237,21 @@ class ConvAutoencoder(AutoencoderVanilla):
         if not self.onelayer:
             conv2 = tf.layers.conv2d(inputs=conv1, filters=self.units*2, kernel_size=[3, 3], padding="same",strides=(2,2),
                                      activation=tf.nn.relu, name='Conv2')
-            outEncoder = conv2
+            self.outEncoder = conv2
         else:
-            outEncoder = conv1
+            self.outEncoder = conv1
 
         # Decoder
         if not self.onelayer:
-            convT1 = tf.layers.conv2d_transpose(outEncoder, self.units, kernel_size=[3, 3], strides=(2, 2), padding='same',
+            convT1 = tf.layers.conv2d_transpose(self.outEncoder, self.units, kernel_size=[3, 3], strides=(2, 2), padding='same',
                                                 activation=tf.nn.relu, name='convT1')
             outDecoder = convT1
         else:
             outDecoder = conv1
 
-        self.reconstruction = tf.layers.conv2d_transpose(outDecoder,self.inputBatch.shape[3],kernel_size=[3, 3],strides=(2, 2),padding='same',activation=tf.nn.tanh,name='Recons')
+        self.reconstructionLayer = tf.layers.conv2d_transpose(outDecoder,self.inputBatch.shape[3],kernel_size=[3, 3],strides=(2, 2),padding='same',activation=tf.nn.tanh,name='Recons')
 
-        self.reconError = tf.losses.mean_squared_error(self.inputBatch, self.reconstruction)
+        self.reconError = tf.losses.mean_squared_error(self.inputBatch, self.reconstructionLayer)
 
         self.train_step = tf.train.AdamOptimizer(self.learningRate).minimize(self.reconError)
 

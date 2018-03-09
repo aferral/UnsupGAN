@@ -107,6 +107,7 @@ class Vanilla_VAE(AbstractUnsupModel):
         #Method that create a dictionary with all the weights and bias of the encoder and decoder's NN.
         all_weights = dict()
 
+        initializer = tf.contrib.layers.xavier_initializer()
         #Encoder Weights
         all_weights['weights_encoder'] = {
             'h1' : tf.Variable(xavier_init(n_input,n_hidden_encoder_1)),
@@ -194,8 +195,8 @@ class Vanilla_VAE(AbstractUnsupModel):
         self.recon_error= error_matrix
 
 
-    def train(self,n_epochs=10,learning_rate=0.001,display_step=5):
-        self.train_transform(n_epochs=n_epochs,learning_rate=learning_rate,display_step=display_step)
+    def train(self,n_epochs=10,learning_rate=0.001,display_step=5,transformRange=False):
+        self.train_transform(n_epochs=n_epochs,learning_rate=learning_rate,display_step=display_step,transformRange=transformRange)
 
     def reconstruction(self, imageBatch):
 
@@ -222,7 +223,7 @@ class Vanilla_VAE(AbstractUnsupModel):
         self.activeSession.close()
         self.train_writer.close()
 
-    def train_transform(self,n_epochs=10,learning_rate=0.001,display_step=5):
+    def train_transform(self,n_epochs=10,learning_rate=0.001,display_step=5,transformRange=False):
 
         data_train = self.dataset
 
@@ -240,7 +241,6 @@ class Vanilla_VAE(AbstractUnsupModel):
         #Number of iterations per epoch
         total_batch = int(n_samples*1.0 / self.batch_size)
 
-        lastCost=99999
 
         # Training cycle
         for epoch in range(n_epochs):
@@ -248,10 +248,15 @@ class Vanilla_VAE(AbstractUnsupModel):
             # Loop over all batches
             for i in range(total_batch):
 
-                batch_data = data_train[np.random.choice(n_samples, self.batch_size, replace = False),:]
+                batch_images,labels = self.dataset.next_batch(self.batchSize)
+
+                # Batch images in -1 +1 range ? transform to 0 1 range
+                if transformRange:
+                    batch_images = (batch_images + 1)* 0.5
+
                 # Fit training using batch data, and calculate mean error of reconstruction
                 opt,cost,error = self.activeSession.run((self.optimizer, self.cost,self.recon_error),
-                                feed_dict={self.input: batch_data , self.learning_rate:learning_rate,
+                                feed_dict={self.input: batch_images , self.learning_rate:learning_rate,
                                         self.dp_prob_encoder: self.dropout_encoder,
                                         self.dp_prob_decoder: self.dropout_decoder})
 
@@ -263,11 +268,12 @@ class Vanilla_VAE(AbstractUnsupModel):
 
             # Display logs per epoch step
             if epoch % display_step == 0:
+
                 print(( "Epoch: {0}  Cost: {1} MSE: {2} ".format((epoch+1), avg_cost, error)))
                 pathFolder = os.path.join('VAE','model')
                 if not os.path.exists(pathFolder):
                     os.makedirs(pathFolder)
-                self.evaluate(show=1)
+                # self.evaluate(show=1)
 
         total_time = time.time()-init_time
         print()
@@ -275,12 +281,13 @@ class Vanilla_VAE(AbstractUnsupModel):
         print()
 
 
-def testScript():
-    batchSize = 10
-    imageShape = (32, 32, 1)
+def main():
+    batchSize = 128
 
-    # dataset = DataFolder("cifar10", batchSize, testProp=0.3, validation_proportion=0.3, out_size=imageShape)
+    # dataset = DataFolder("cifar10", batchSize, testProp=0.3, validation_proportion=0.3, out_size=(32, 32, 1))
     dataset = MnistDataset(outShape=(-1,28,28,1),batchSize=batchSize)
+    transformRange = False # is the dataset in range -1 +1 ?
+
 
     print(dataset.shape)
     assert(dataset.shape[0] == dataset.shape[1]),'Dataset image shape must be square'
@@ -288,10 +295,10 @@ def testScript():
     # TRAINING OF THE VAE AND TRANSFORMATION OF DATASET
     # Define the Architecture for the VAE
     L1 = 10
-    L2 = 15
-    n_z = 50
+    L2 = 20
+    n_z = 30
     epochs = 10
-    learningRate = 0.01
+    learningRate = 0.001
     displayAfter = 1
 
     flattenSize = reduce(lambda x,y : x*y,dataset.getImshape())
@@ -308,9 +315,9 @@ def testScript():
                           dropout_encoder=1,
                           dropout_decoder=1)
 
-    with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.tanh) as vae:
-        vae.train(n_epochs=epochs,learning_rate=learningRate,display_step=displayAfter)
+    with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.relu) as vae:
+        vae.train(n_epochs=epochs,learning_rate=learningRate,display_step=displayAfter,transformRange=transformRange)
         vae.evaluate()
 
 if __name__ == '__main__':
-    testScript()
+    main()

@@ -54,7 +54,7 @@ def pca2Visua(pca,data,labels,nClases):
     print  "Pca with 2 components explained variance " + str(pca.explained_variance_ratio_)
     print "PCA 2 comp of the data"
 
-    transformed = pca.reconstruction(data)
+    transformed = pca.transform(data)
 
     plt.figure()
     allscatter = []
@@ -214,10 +214,16 @@ def fixrealLabels(dataset,realLabels):
     saverls = np.where(dataset.dataObj.validation_labels)[1]  # HERE IS THE PROBLEM FOR THE VAL - TRAIN CASE. If you merge the you cant get the images back
     desfase = saverls.shape[0] - np.array(realLabels).shape[0]
     # THIS WILL MAKE THE saverls and realLabels coincide in values
-    saverls = np.roll(saverls[:-1 * desfase], -dataset.dataObj.batch_size)
-    names = [dataset.dataObj.getValFilename(i) for i in range(saverls.shape[0])]
-    iamgeSave = np.roll(iamgeSave[:-1 * desfase], -dataset.dataObj.batch_size, axis=0)
-    names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
+
+    if desfase != 0:
+        saverls = np.roll(saverls[:-1 * desfase], -dataset.dataObj.batch_size)
+
+    names = np.array([dataset.dataObj.getValFilename(i) for i in
+                 range(saverls.shape[0])])
+    if desfase != 0:
+        iamgeSave = np.roll(iamgeSave[:-1 * desfase],-dataset.dataObj.batch_size, axis=0)
+        names = np.roll(names[:-1 * desfase], -dataset.dataObj.batch_size)
+
 
     realLabels = realLabels[0:names.shape[0]]
     saverls = saverls[0:names.shape[0]]
@@ -360,7 +366,7 @@ def showDimRed(points, labels, name, dimRalg, outF=None,labelsName=None):
     transform_op = getattr(dimRalg, "transform", None)
     if callable(transform_op):
         dimRalg.fit(points)
-        transformed = dimRalg.reconstruction(points)
+        transformed = dimRalg.transform(points)
     else:
         transformed = dimRalg.fit_transform(points)
 
