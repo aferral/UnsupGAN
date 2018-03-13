@@ -166,7 +166,7 @@ def transformFeature_Norm(x,sess,d_feat,d_in):
 
 
 
-def clusterLabeling(sess,dataset,data_transform,clusterAlg,trainX):
+def clusterLabeling(dataset, data_transform, clusterAlg, trainX):
 
     print "Learning the clusters."
 
@@ -351,7 +351,10 @@ def main(labNames):
 
                 # ----------------Define cluster methods----------------------------------------
                 for clusterAlg in clustering_algorithms:
-                    points,predClust,realsLab = clusterLabeling(sess,dataset,dtransform,clusterAlg,trainX)
+                    points,predClust,realsLab = clusterLabeling(dataset,
+                                                                dtransform,
+                                                                clusterAlg,
+                                                                trainX)
                     name = clusterAlg.__class__.__name__
                     print "Showing results for Cluster ",name
 

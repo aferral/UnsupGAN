@@ -4,9 +4,13 @@ import numpy as np
 import os
 import time
 
+from skimage import exposure
+
 from infogan.misc.datasets import DataFolder, MnistDataset
 from traditionalClusteringTests.MoreUnsupervisedAlgorithms.models import AbstractUnsupModel
 
+# TODO probar con redes de varios elementos pocas epocas
+# TODO probar con tanh
 
 def xavier_init(f_in,f_out,constant=1):
     """ Iniciamos los pesos de la red con Xavier"""
@@ -173,10 +177,10 @@ class Vanilla_VAE(AbstractUnsupModel):
         #Method that creates the VAE loss and optimizer
         # E_Q(logP(X|z))
 
-        P = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.x), 1)
-
-        # P = -tf.reduce_sum(self.x * tf.log(1e-10 + self.x_reconstr_mean)
-        #                + (1-self.x) * tf.log(1e-10 + 1 - self.x_reconstr_mean), 1)
+        # P = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.x), 1)
+        #
+        P = -tf.reduce_sum(self.x * tf.log(1e-10 + self.x_reconstr_mean)
+                       + (1-self.x) * tf.log(1e-10 + 1 - self.x_reconstr_mean), 1)
 
         # KL divergence: KL[Q(z|X)||P(z)]
         KL = -0.5 * tf.reduce_sum(1 + self.z_log_sigma_sq
@@ -205,6 +209,10 @@ class Vanilla_VAE(AbstractUnsupModel):
         '''
         # First set of data
         return self.activeSession.run(self.x_reconstr_mean, feed_dict={self.input: imageBatch,
+                                                              self.dp_prob_encoder: 1,self.dp_prob_decoder: 1})
+
+    def getLatentRepresentation(self,x):
+        return self.activeSession.run(self.z, feed_dict={self.input: x,
                                                               self.dp_prob_encoder: 1,self.dp_prob_decoder: 1})
 
     def __enter__(self):
@@ -252,7 +260,11 @@ class Vanilla_VAE(AbstractUnsupModel):
 
                 # Batch images in -1 +1 range ? transform to 0 1 range
                 if transformRange:
-                    batch_images = (batch_images + 1)* 0.5
+                    batch_images = (batch_images + 1) * 0.5
+                    # batch_images = (batch_images / batch_images.sum(axis=(1,2)).reshape(-1,1,1,1))
+                    # for i in range(batch_images.shape[0]):
+                        # batch_images[i] = exposure.equalize_adapthist(batch_images[i].reshape(96, 96),clip_limit=0.03).reshape(1,96,96,1)
+
 
                 # Fit training using batch data, and calculate mean error of reconstruction
                 opt,cost,error = self.activeSession.run((self.optimizer, self.cost,self.recon_error),
@@ -280,13 +292,29 @@ class Vanilla_VAE(AbstractUnsupModel):
         print(('Training ready!, Total time: ', total_time))
         print()
 
+        # Loop over all batches
+        for i in range(5):
+            import matplotlib.pyplot as plt
+            batch_images, labels = self.dataset.next_batch(self.batchSize)
+            batch_images = (batch_images + 1) * 0.5
+            r = self.activeSession.run(self.x_reconstr_mean,
+                                       feed_dict={self.input: batch_images,
+                                                  self.dp_prob_encoder: 1,
+                                                  self.dp_prob_decoder: 1});
+            plt.imshow(r[0].reshape(96, 96))
+
+            plt.figure();
+
+            plt.imshow(batch_images[0].reshape(96, 96));
+            plt.show()
 
 def main():
-    batchSize = 128
+    batchSize = 30
 
     # dataset = DataFolder("cifar10", batchSize, testProp=0.3, validation_proportion=0.3, out_size=(32, 32, 1))
-    dataset = MnistDataset(outShape=(-1,28,28,1),batchSize=batchSize)
-    transformRange = False # is the dataset in range -1 +1 ?
+    # dataset = MnistDataset(outShape=(-1,28,28,1),batchSize=batchSize)
+    dataset = DataFolder("data/MFPT96Scalograms", batchSize, testProp=0.3,validation_proportion=0.3, out_size=(96, 96, 1))
+    transformRange = True # is the dataset in range -1 +1 ?
 
 
     print(dataset.shape)
@@ -294,10 +322,10 @@ def main():
 
     # TRAINING OF THE VAE AND TRANSFORMATION OF DATASET
     # Define the Architecture for the VAE
-    L1 = 10
-    L2 = 20
-    n_z = 30
-    epochs = 10
+    L1 = 30
+    L2 = 50
+    n_z = 10
+    epochs = 2
     learningRate = 0.001
     displayAfter = 1
 
@@ -312,12 +340,12 @@ def main():
                                     n_z=n_z)  # dimensionality of latent space
     # Define the parameters for the VAE
     vae_parameters = dict(batch_size=batchSize,
-                          dropout_encoder=1,
-                          dropout_decoder=1)
+                          dropout_encoder=0.5,
+                          dropout_decoder=0.5)
 
     with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.relu) as vae:
         vae.train(n_epochs=epochs,learning_rate=learningRate,display_step=displayAfter,transformRange=transformRange)
-        vae.evaluate()
+        vae.evaluate('VAE')
 
 if __name__ == '__main__':
     main()

@@ -36,7 +36,7 @@ class AbstractUnsupModel(object):
     def reconstruction(self, imageBatch):
         raise NotImplementedError()
 
-    def evaluate(self,outName,show = 3,nClustersTofind=10):
+    def evaluate(self,outName,show = 3,nClustersTofind=3):
 
         outImageShape = self.imageShape[:-1] if (len(self.imageShape) == 3 and self.imageShape[2] == 1) else self.imageShape
 
@@ -76,11 +76,11 @@ class AbstractUnsupModel(object):
             plt.show()
 
 
-        transformName = 'hiddenLayer'
+        transformName = outName
         labNames={}
         showBlokeh=True
 
-        # Definir transformacion como activaciones en x capa
+        # Definir transformacion como activaciones en salida encoder
         transfFun = lambda x: self.getLatentRepresentation(x)
 
         # Tomar activaciones
@@ -105,7 +105,9 @@ class AbstractUnsupModel(object):
 
         for clusterAlg in algorithms:
             # Categorizar con K means o spectral
-            points, predClust, realsLab = clusterLabeling(None, self.dataset, transfFun,clusterAlg, trainX)
+            points, predClust, realsLab = clusterLabeling(self.dataset,
+                                                          transfFun, clusterAlg,
+                                                          trainX)
             name = clusterAlg.__class__.__name__
             print "Showing results for Cluster ", name
 
@@ -174,7 +176,7 @@ class AutoencoderVanilla(AbstractUnsupModel):
 
 
     def __enter__(self):
-
+        tf.reset_default_graph()
         # Initialize
         self.defArch()
 
@@ -225,7 +227,7 @@ class ConvAutoencoder(AutoencoderVanilla):
 
     @checkSessionDecorator
     def getLatentRepresentation(self,x):
-        return self.activeSession.run(self.outEncoder, feed_dict={self.inputBatch: x}).reshape(x.shape[0],-1)
+        return self.activeSession.run(tf.reduce_mean(self.outEncoder,axis=[1,2]), feed_dict={self.inputBatch: x})
 
 
     def defArch(self):
@@ -235,7 +237,7 @@ class ConvAutoencoder(AutoencoderVanilla):
         conv1 = tf.layers.conv2d(inputs=self.inputBatch,filters=self.units,kernel_size=[3, 3],padding="same",strides=(2,2),
                                  activation=tf.nn.relu,name='Conv1')
         if not self.onelayer:
-            conv2 = tf.layers.conv2d(inputs=conv1, filters=self.units*2, kernel_size=[3, 3], padding="same",strides=(2,2),
+            conv2 = tf.layers.conv2d(inputs=conv1, filters=self.units, kernel_size=[3, 3], padding="same",strides=(2,2),
                                      activation=tf.nn.relu, name='Conv2')
             self.outEncoder = conv2
         else:
