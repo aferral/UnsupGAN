@@ -33,13 +33,13 @@ inputSizeFlatten = imageShape[0] * imageShape[1] * imageShape[2]
 #
 
 
-with ConvAutoencoder(dataset,iterations=100,units=50,learningRate=0.01,oneLayer=False) as autoencoder:
-    autoencoder.train()
-    autoencoder.evaluate('AutoencoderConv')
+# with ConvAutoencoder(dataset,iterations=100,units=50,learningRate=0.01,oneLayer=False) as autoencoder:
+#     autoencoder.train()
+#     autoencoder.evaluate('AutoencoderConv')
 
-with AutoencoderVanilla(dataset,iterations=1000,units=100,learningRate=0.01) as autoencoder:
-    autoencoder.train()
-    autoencoder.evaluate('AutoencoderVanilla')
+with AutoencoderVanilla(dataset,iterations=100,units=100,learningRate=0.01) as autoencoder:
+   autoencoder.train()
+   autoencoder.evaluate('AutoencoderVanilla')
 
 # Definir modelo a cargar
 

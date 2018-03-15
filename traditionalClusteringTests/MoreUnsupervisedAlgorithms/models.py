@@ -153,11 +153,11 @@ class AutoencoderVanilla(AbstractUnsupModel):
         flattenInput = tf.reshape(self.inputBatch, (self.batchSize, self.inputSizeFlatten), name='flattenInput')
 
         enc1 = tf.contrib.layers.fully_connected(flattenInput,
-                                                             self.units,
+                                                             self.units*2,
                                                              activation_fn=tf.nn.relu)
 
 
-        self.hiddenLayer = tf.contrib.layers.fully_connected(enc1, self.units*2, activation_fn=tf.nn.relu)
+        self.hiddenLayer = tf.contrib.layers.fully_connected(enc1, self.units, activation_fn=tf.nn.relu)
 
         dec1 = self.reconstructionLayer = tf.contrib.layers.fully_connected(self.hiddenLayer, self.units*2, activation_fn=tf.nn.relu)
 
@@ -184,8 +184,13 @@ class AutoencoderVanilla(AbstractUnsupModel):
         tf.global_variables_initializer().run()
         self.merged = tf.summary.merge_all()
 
-        self.train_writer = tf.summary.FileWriter(os.path.join('logs',self.logsDir, stringNow(), 'train'), self.activeSession.graph)
+
+        modelPath = os.path.join('logs',self.logsDir, stringNow(), 'train')
+        self.train_writer = tf.summary.FileWriter(modelPath, self.activeSession.graph)
         self.val_writer = tf.summary.FileWriter(os.path.join('logs',self.logsDir, stringNow(), 'val'), self.activeSession.graph)
+
+        saver = tf.train.Saver()
+        save_path = saver.save(self.activeSession, modelPath)
 
         return self
 
@@ -234,7 +239,7 @@ class ConvAutoencoder(AutoencoderVanilla):
         self.inputBatch = tf.placeholder(tf.float32, (self.batchSize, self.imageShape[0], self.imageShape[1], self.imageShape[2]), 'input')
 
         # Encoder
-        conv1 = tf.layers.conv2d(inputs=self.inputBatch,filters=self.units,kernel_size=[3, 3],padding="same",strides=(2,2),
+        conv1 = tf.layers.conv2d(inputs=self.inputBatch,filters=self.units*2,kernel_size=[3, 3],padding="same",strides=(2,2),
                                  activation=tf.nn.relu,name='Conv1')
         if not self.onelayer:
             conv2 = tf.layers.conv2d(inputs=conv1, filters=self.units, kernel_size=[3, 3], padding="same",strides=(2,2),
@@ -245,7 +250,7 @@ class ConvAutoencoder(AutoencoderVanilla):
 
         # Decoder
         if not self.onelayer:
-            convT1 = tf.layers.conv2d_transpose(self.outEncoder, self.units, kernel_size=[3, 3], strides=(2, 2), padding='same',
+            convT1 = tf.layers.conv2d_transpose(self.outEncoder, self.units*2, kernel_size=[3, 3], strides=(2, 2), padding='same',
                                                 activation=tf.nn.relu, name='convT1')
             outDecoder = convT1
         else:
