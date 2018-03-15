@@ -261,7 +261,7 @@ class Vanilla_VAE(AbstractUnsupModel):
                 # Batch images in -1 +1 range ? transform to 0 1 range
                 if transformRange:
                     batch_images = (batch_images + 1) * 0.5
-                    # batch_images = (batch_images / batch_images.sum(axis=(1,2)).reshape(-1,1,1,1))
+                    #batch_images = (batch_images / batch_images.sum(axis=(1,2)).reshape(-1,1,1,1))
                     # for i in range(batch_images.shape[0]):
                         # batch_images[i] = exposure.equalize_adapthist(batch_images[i].reshape(96, 96),clip_limit=0.03).reshape(1,96,96,1)
 
@@ -322,10 +322,10 @@ def main():
 
     # TRAINING OF THE VAE AND TRANSFORMATION OF DATASET
     # Define the Architecture for the VAE
-    L1 = 30
-    L2 = 50
-    n_z = 10
-    epochs = 2
+    L1 = 100
+    L2 = 200
+    n_z = 30
+    epochs = 10
     learningRate = 0.001
     displayAfter = 1
 
@@ -340,10 +340,10 @@ def main():
                                     n_z=n_z)  # dimensionality of latent space
     # Define the parameters for the VAE
     vae_parameters = dict(batch_size=batchSize,
-                          dropout_encoder=0.5,
-                          dropout_decoder=0.5)
+                          dropout_encoder=0.3,
+                          dropout_decoder=0.3)
 
-    with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.relu) as vae:
+    with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.tanh) as vae:
         vae.train(n_epochs=epochs,learning_rate=learningRate,display_step=displayAfter,transformRange=transformRange)
         vae.evaluate('VAE')
 
