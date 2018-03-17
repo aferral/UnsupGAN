@@ -32,12 +32,12 @@ inputSizeFlatten = imageShape[0] * imageShape[1] * imageShape[2]
 
 #
 
-
+#
 # with ConvAutoencoder(dataset, iterations=1000, units=50, learningRate=0.01) as autoencoder:
 #     autoencoder.train()
 #     autoencoder.evaluate('AutoencoderConv')
 
-with AutoencoderVanilla(dataset,iterations=1000,units=50,learningRate=0.01) as autoencoder:
+with AutoencoderVanilla(dataset,iterations=10000,units=200,learningRate=0.001) as autoencoder:
    autoencoder.train()
    autoencoder.evaluate('AutoencoderVanilla')
 

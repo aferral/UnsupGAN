@@ -111,13 +111,19 @@ class Vanilla_VAE(AbstractUnsupModel):
         #Method that create a dictionary with all the weights and bias of the encoder and decoder's NN.
         all_weights = dict()
 
-        initializer = tf.contrib.layers.xavier_initializer()
+        # tf.random_uniform((-0.5, 0.5), minval=low, maxval=high,dtype=tf.float32)
+
         #Encoder Weights
         all_weights['weights_encoder'] = {
             'h1' : tf.Variable(xavier_init(n_input,n_hidden_encoder_1)),
             'h2' : tf.Variable(xavier_init(n_hidden_encoder_1,n_hidden_encoder_2)),
-            'out_mean' : tf.Variable(xavier_init(n_hidden_encoder_2,n_z)),
-            'out_log_sigma' : tf.Variable(xavier_init(n_hidden_encoder_2,n_z))}
+
+            # 'out_mean' : tf.Variable(xavier_init(n_hidden_encoder_2,n_z)),
+            # 'out_log_sigma' : tf.Variable(xavier_init(n_hidden_encoder_2,n_z))}
+            'out_mean': tf.Variable(xavier_init(n_hidden_encoder_2, n_z)),
+            'out_log_sigma': tf.Variable(xavier_init(n_hidden_encoder_2, n_z))}
+            # 'out_mean': tf.Variable(tf.zeros([n_hidden_encoder_2,n_z], dtype=tf.float32)),
+            # 'out_log_sigma': tf.Variable(tf.zeros([n_hidden_encoder_2,n_z], dtype=tf.float32))}
         #Encoder Bias
         all_weights['biases_encoder'] = {
             'b1': tf.Variable(tf.zeros([n_hidden_encoder_1], dtype=tf.float32)),
@@ -134,8 +140,10 @@ class Vanilla_VAE(AbstractUnsupModel):
         all_weights['biases_decoder'] = {
             'b1': tf.Variable(tf.zeros([n_hidden_decoder_1], dtype=tf.float32)),
             'b2': tf.Variable(tf.zeros([n_hidden_decoder_2], dtype=tf.float32)),
-            'out_mean': tf.Variable(tf.zeros([n_input], dtype=tf.float32)),
-            'out_log_sigma': tf.Variable(tf.zeros([n_input], dtype=tf.float32))}
+            'out_mean': 0.7*tf.Variable(tf.ones([n_input], dtype=tf.float32)),
+            'out_log_sigma': tf.Variable(tf.ones([n_input], dtype=tf.float32))}
+            # 'out_mean': tf.Variable(tf.zeros([n_input], dtype=tf.float32)),
+            # 'out_log_sigma': tf.Variable(tf.zeros([n_input], dtype=tf.float32))}
 
         return all_weights
 
@@ -183,9 +191,9 @@ class Vanilla_VAE(AbstractUnsupModel):
                        + (1-self.x) * tf.log(1e-10 + 1 - self.x_reconstr_mean), 1)
 
         # KL divergence: KL[Q(z|X)||P(z)]
-        KL = -0.5 * tf.reduce_sum(1 + self.z_log_sigma_sq
+        KL = 0.1*-0.5 * tf.reduce_sum(1 + 2*self.z_log_sigma_sq
                                        - tf.square(self.z_mean)
-                                       - tf.exp(self.z_log_sigma_sq), 1)
+                                       - tf.exp(2*self.z_log_sigma_sq), 1)
 
         #N batch cost.
         self.cost = tf.reduce_mean(P+KL)
@@ -263,7 +271,7 @@ class Vanilla_VAE(AbstractUnsupModel):
                     batch_images = (batch_images + 1) * 0.5
                     #batch_images = (batch_images / batch_images.sum(axis=(1,2)).reshape(-1,1,1,1))
                     # for i in range(batch_images.shape[0]):
-                        # batch_images[i] = exposure.equalize_adapthist(batch_images[i].reshape(96, 96),clip_limit=0.03).reshape(1,96,96,1)
+                    #     batch_images[i] = exposure.equalize_adapthist(batch_images[i].reshape(96, 96),clip_limit=0.03).reshape(1,96,96,1)
 
 
                 # Fit training using batch data, and calculate mean error of reconstruction
@@ -322,20 +330,20 @@ def main():
 
     # TRAINING OF THE VAE AND TRANSFORMATION OF DATASET
     # Define the Architecture for the VAE
-    L1 = 100
-    L2 = 200
-    n_z = 30
-    epochs = 10
-    learningRate = 0.001
+    L1 = 200
+    L2 = 100
+    n_z = 1000
+    epochs = 200
+    learningRate = 0.0001
     displayAfter = 1
 
     flattenSize = reduce(lambda x,y : x*y,dataset.getImshape())
 
 
-    network_architecture_vae = dict(n_hidden_encoder_1=L1,  # 1st layer encoder neurons
-                                    n_hidden_encoder_2=L2,  # 2st layer encoder neurons
-                                    n_hidden_decoder_1=L2,  # 1st layer decoder neurons
-                                    n_hidden_decoder_2=L1,  # 2st layer decoder neurons
+    network_architecture_vae = dict(n_hidden_encoder_1=500,  # 1st layer encoder neurons
+                                    n_hidden_encoder_2=300,  # 2st layer encoder neurons
+                                    n_hidden_decoder_1=300,  # 1st layer decoder neurons
+                                    n_hidden_decoder_2=500,  # 2st layer decoder neurons
                                     n_input=flattenSize,  # data input (img shape)
                                     n_z=n_z)  # dimensionality of latent space
     # Define the parameters for the VAE
@@ -343,7 +351,7 @@ def main():
                           dropout_encoder=0.3,
                           dropout_decoder=0.3)
 
-    with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.tanh) as vae:
+    with Vanilla_VAE(dataset,network_architecture_vae, vae_parameters, transf_function=tf.nn.relu) as vae:
         vae.train(n_epochs=epochs,learning_rate=learningRate,display_step=displayAfter,transformRange=transformRange)
         vae.evaluate('VAE')
 
