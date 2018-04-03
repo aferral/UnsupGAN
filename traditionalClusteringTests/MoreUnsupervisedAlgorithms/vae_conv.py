@@ -94,7 +94,7 @@ class ConvVAE(AutoencoderVanilla):
         eps = tf.random_normal((self.batchSize, n_z), 0, 1, dtype=tf.float32)
         z = tf.add(self.z_mean,tf.multiply(tf.sqrt(tf.exp(self.z_log_sigma_sq)),eps),name='Z')
 
-        self.hiddenLayer = z
+        self.hiddenLayer = self.z_mean
 
 
 
@@ -106,7 +106,7 @@ class ConvVAE(AutoencoderVanilla):
 
         reshapeDecoder = tf.reshape(preprocessDecoder,conv3._shape_as_list())
 
-        convT1 = tf.layers.conv2d_transpose(reshapeDecoder,f1,[3,3],
+        convT1 = tf.layers.conv2d_transpose(reshapeDecoder,f3,[3,3],
                      strides=(2, 2),
                      padding='same',
                      activation=tf.nn.relu,
@@ -120,7 +120,7 @@ class ConvVAE(AutoencoderVanilla):
                      use_bias=True,
                      kernel_initializer=tf.contrib.layers.xavier_initializer(),name='ConvT2')
 
-        convT3 = tf.layers.conv2d_transpose(convT2,f3,[3,3],
+        convT3 = tf.layers.conv2d_transpose(convT2,f1,[3,3],
                      strides=(2, 2),
                      padding='same',
                      activation=tf.nn.relu,

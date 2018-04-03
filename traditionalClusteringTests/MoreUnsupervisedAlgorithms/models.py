@@ -205,7 +205,7 @@ class AutoencoderVanilla(AbstractUnsupModel):
     @checkSessionDecorator
     def train(self):
         for i in range(self.iterations):
-            if i % 10 == 0:  # Record summaries and test-set accuracy
+            if i % 30 == 0:  # Record summaries and test-set accuracy
                 images, labels = self.dataset.next_batch(self.batchSize, 'val')
                 summary, error = self.activeSession.run([self.merged, self.reconError], feed_dict={self.inputBatch: images})
                 print('Iteration {1} reconstruction Error {0} '.format(error, i))
@@ -241,29 +241,31 @@ class ConvAutoencoder(AutoencoderVanilla):
         self.inputBatch = tf.placeholder(tf.float32, (self.batchSize, self.imageShape[0], self.imageShape[1], self.imageShape[2]), 'input')
 
         # Encoder
-        conv1 = tf.layers.conv2d(inputs=self.inputBatch,filters=self.inputBatch.shape[3],kernel_size=[3, 3],padding="same",strides=(2,2),
-                                 activation=tf.nn.relu,name='Conv1')
+        conv1 = tf.layers.conv2d(inputs=self.inputBatch,filters=self.units*2,kernel_size=[3, 3],padding="same",strides=(2,2),
+                                 activation=tf.nn.relu,name='Conv1',kernel_initializer=tf.contrib.layers.xavier_initializer())
 
-        conv2 = tf.layers.conv2d(inputs=conv1,filters=self.units*2,kernel_size=[3, 3],padding="same",strides=(2,2),
-                                 activation=tf.nn.relu,name='Conv2')
-        conv3 = tf.layers.conv2d(inputs=conv2, filters=self.units, kernel_size=[3, 3], padding="same",strides=(2,2),
-                                 activation=tf.nn.relu, name='Conv3')
-        self.outEncoder = conv3
+        conv2 = tf.layers.conv2d(inputs=conv1,filters=self.units,kernel_size=[4, 4],padding="same",strides=(2,2),
+                                 activation=tf.nn.relu,name='Conv2',kernel_initializer=tf.contrib.layers.xavier_initializer())
 
-        self.hiddenRep = tf.layers.conv2d(inputs=self.outEncoder, filters=20, kernel_size=[3, 3], padding="same",strides=(1,1),
-                                 activation=tf.nn.relu, name='HidenRep')
+        self.outEncoder = conv2
+
+        self.hiddenRep = tf.layers.conv2d(inputs=self.outEncoder, filters=20, kernel_size=[5, 5], padding="same",strides=(1,1),
+                                 activation=tf.nn.relu, name='HidenRep',kernel_initializer=tf.contrib.layers.xavier_initializer())
 
 
         # Decoder
-        convT1 = tf.layers.conv2d_transpose(self.hiddenRep, self.units, kernel_size=[3, 3], strides=(2, 2), padding='same',
-                                            activation=tf.nn.relu, name='convT1')
+        convT1 = tf.layers.conv2d_transpose(self.hiddenRep, self.units, kernel_size=[4, 4], strides=(2, 2), padding='same',
+                                            activation=tf.nn.relu, name='convT1',kernel_initializer=tf.contrib.layers.xavier_initializer())
         convT2 = tf.layers.conv2d_transpose(convT1, self.units*2, kernel_size=[3, 3], strides=(2, 2), padding='same',
-                                            activation=tf.nn.relu, name='convT2')
+                                            activation=tf.nn.relu, name='convT2',kernel_initializer=tf.contrib.layers.xavier_initializer())
 
         outDecoder = convT2
 
 
-        self.reconstructionLayer = tf.layers.conv2d_transpose(outDecoder,self.inputBatch.shape[3],kernel_size=[3, 3],strides=(2, 2),padding='same',activation=tf.nn.tanh,name='Recons')
+        self.reconstructionLayer = tf.layers.conv2d_transpose(outDecoder,self.inputBatch.shape[3],
+                                                              kernel_size=[3, 3],strides=(1, 1),padding='same',
+                                                              activation=tf.nn.tanh,kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                                              name='Recons')
 
         self.reconError = tf.losses.mean_squared_error(self.inputBatch, self.reconstructionLayer)
 

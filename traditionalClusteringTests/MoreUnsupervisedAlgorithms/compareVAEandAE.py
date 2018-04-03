@@ -12,7 +12,7 @@ def stringNow():
 
 # definir datasets
 
-batchSize = 20
+batchSize = 50
 imageShape = (32,32,3)
 
 # dataset = DataFolder("cifar10",batchSize,testProp=0.3, validation_proportion=0.3,out_size=imageShape)
@@ -32,14 +32,14 @@ inputSizeFlatten = imageShape[0] * imageShape[1] * imageShape[2]
 
 #
 
-#
-# with ConvAutoencoder(dataset, iterations=1000, units=50, learningRate=0.01) as autoencoder:
-#     autoencoder.train()
-#     autoencoder.evaluate('AutoencoderConv')
 
-with AutoencoderVanilla(dataset,iterations=10000,units=200,learningRate=0.001) as autoencoder:
-   autoencoder.train()
-   autoencoder.evaluate('AutoencoderVanilla')
+with ConvAutoencoder(dataset, iterations=100, units=200, learningRate=0.001) as autoencoder:
+    autoencoder.train()
+    autoencoder.evaluate('AutoencoderConv')
+#
+# with AutoencoderVanilla(dataset,iterations=10000,units=200,learningRate=0.001) as autoencoder:
+#    autoencoder.train()
+#    autoencoder.evaluate('AutoencoderVanilla')
 
 # Definir modelo a cargar
 
